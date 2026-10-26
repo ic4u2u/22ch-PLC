@@ -1,5 +1,6 @@
 node_modules/
 .next/
+.vercel/
 out/
 .env
 .env.local
@@ -7,3 +8,5 @@ logs/*.db*
 logs/*.csv*
 logs/backups/
 *.log
+
+.vercel
