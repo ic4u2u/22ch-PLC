@@ -3,15 +3,16 @@
 /**
  * 파일명: src/components/dashboard/HeaderBar.tsx
  * 역할: 상단 헤더 제어 바
+ *  - 🚨 실시간 USB 3색 경광등(타워램프) 상태 위젯 (적/황/녹 LED 애니메이션, [🔕 경광등 부저만 끄기], [⚡ 경광등 테스트])
  *  - FND 4단위 원클릭 변환기 (0:PSI, 1:Bar, 2:MPa, 3:%)
  *  - 유지보수자 4자리 PIN 잠금 (1234, 해제 시 5분=300초 카운트다운 후 자동 잠금)
  *  - 한국어 TTS 음성안내 토글 (Web Speech API + Web Audio API 비프음)
- *  - [📡 통신진단 & 하드웨어 가이드] 버튼
- *  - [📱 모바일 접속 주소] & [💾 설정 백업/FA 복원] 버튼
+ *  - [📡 RJ-45(XBL-EMTA) 통신진단 & 하드웨어 결선 가이드] 버튼
+ *  - [📱 모바일 접속 주소] & [💾 FA 표준값 저장/복원(영점 보존)] 버튼
  */
 
 import React from "react";
-import { DiagnosticsData, PressureUnit } from "./types";
+import { DiagnosticsData, PressureUnit, TowerLampState } from "./types";
 
 interface HeaderBarProps {
   unit: PressureUnit;
@@ -22,6 +23,9 @@ interface HeaderBarProps {
   ttsEnabled: boolean;
   onToggleTts: () => void;
   diagnostics: DiagnosticsData;
+  towerLamp: TowerLampState;
+  onMuteTowerBuzzer: () => void;
+  onTestTowerLamp: () => void;
   onOpenHardwareModal: () => void;
   onOpenMobileModal: () => void;
   onOpenFaModal: () => void;
@@ -45,6 +49,9 @@ export default function HeaderBar({
   ttsEnabled,
   onToggleTts,
   diagnostics,
+  towerLamp,
+  onMuteTowerBuzzer,
+  onTestTowerLamp,
   onOpenHardwareModal,
   onOpenMobileModal,
   onOpenFaModal,
@@ -70,8 +77,8 @@ export default function HeaderBar({
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
                 ACSC 22채널 특수가스 스마트 관제 시스템
               </h1>
-              <span className="hidden md:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
-                QOOTEC Dual-LAN · LS XBL-EMTA (22CH / 11BANK)
+              <span className="hidden xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
+                QOOTEC 미니PC · LS XBL-EMTA · USB 경광등 (22CH / 11BANK)
               </span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
@@ -101,8 +108,78 @@ export default function HeaderBar({
           </div>
         </div>
 
-        {/* 우측: 컨트롤 버튼 그룹 (모바일 터치 최소 44px 높이 준수) */}
+        {/* 우측: USB 3색 타워램프 위젯 & 글로벌 컨트롤 버튼 그룹 */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* 🚨 실시간 USB 3색 경광등(타워램프) 상태 위젯 */}
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 shadow-inner">
+            <div className="flex items-center gap-1.5 pr-1">
+              <span className="text-[11px] font-extrabold text-slate-300">
+                🚨 USB 경광등
+              </span>
+              {/* 적색(Red) LED */}
+              <span
+                title={`적색(Red): ${towerLamp.red}`}
+                className={`h-4 w-4 rounded-full border transition-all ${
+                  towerLamp.red === "ON"
+                    ? "border-rose-300 bg-rose-500 shadow-[0_0_10px_#f43f5e]"
+                    : towerLamp.red === "BLINK"
+                    ? "border-rose-300 bg-rose-500 shadow-[0_0_12px_#f43f5e] animate-ping"
+                    : "border-slate-700 bg-rose-950/40 opacity-35"
+                }`}
+              />
+              {/* 황색(Yellow) LED */}
+              <span
+                title={`황색(Yellow): ${towerLamp.yellow}`}
+                className={`h-4 w-4 rounded-full border transition-all ${
+                  towerLamp.yellow === "ON"
+                    ? "border-amber-200 bg-amber-400 shadow-[0_0_10px_#fbbf24]"
+                    : towerLamp.yellow === "BLINK"
+                    ? "border-amber-200 bg-amber-400 shadow-[0_0_12px_#fbbf24] animate-pulse"
+                    : "border-slate-700 bg-amber-950/40 opacity-35"
+                }`}
+              />
+              {/* 녹색(Green) LED */}
+              <span
+                title={`녹색(Green): ${towerLamp.green}`}
+                className={`h-4 w-4 rounded-full border transition-all ${
+                  towerLamp.green !== "OFF"
+                    ? "border-emerald-200 bg-emerald-400 shadow-[0_0_10px_#34d399]"
+                    : "border-slate-700 bg-emerald-950/40 opacity-35"
+                }`}
+              />
+              <span
+                className={`ml-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                  towerLamp.buzzer === "ON"
+                    ? "bg-rose-500/30 text-rose-200 animate-pulse"
+                    : "bg-slate-800 text-slate-400"
+                }`}
+              >
+                {towerLamp.testing
+                  ? "전체점등 TEST"
+                  : towerLamp.buzzer === "ON"
+                  ? "🔊 부저 ON"
+                  : towerLamp.buzzerMuted
+                  ? "🔕 부저음소거"
+                  : "부저 OFF"}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onMuteTowerBuzzer}
+              className="min-h-[34px] rounded-lg border border-amber-500/40 bg-amber-500/15 px-2.5 py-1 text-[11px] font-extrabold text-amber-200 hover:bg-amber-500/25 transition-all"
+            >
+              🔕 경광등 부저만 끄기
+            </button>
+            <button
+              type="button"
+              onClick={onTestTowerLamp}
+              className="min-h-[34px] rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-2.5 py-1 text-[11px] font-extrabold text-cyan-200 hover:bg-cyan-500/25 transition-all"
+            >
+              ⚡ 경광등 테스트
+            </button>
+          </div>
+
           {/* 1. FND 4단위 원클릭 변환기 (10번 스펙) */}
           <div
             className="flex items-center rounded-xl border border-slate-700 bg-slate-900 p-1"
@@ -113,7 +190,7 @@ export default function HeaderBar({
                 key={opt.code}
                 type="button"
                 onClick={() => onChangeUnit(opt.code)}
-                className={`min-h-[38px] px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`min-h-[36px] px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                   unit === opt.code
                     ? "bg-cyan-500 text-slate-950 shadow"
                     : "text-slate-300 hover:bg-slate-800"
@@ -129,7 +206,7 @@ export default function HeaderBar({
           <button
             type="button"
             onClick={onClickPinToggle}
-            className={`min-h-[44px] flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border transition-all ${
+            className={`min-h-[42px] flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all ${
               isUnlocked
                 ? "border-amber-400/60 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
                 : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
@@ -147,7 +224,7 @@ export default function HeaderBar({
           <button
             type="button"
             onClick={onToggleTts}
-            className={`min-h-[44px] flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold border transition-all ${
+            className={`min-h-[42px] flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all ${
               ttsEnabled
                 ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-200"
                 : "border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800"
@@ -156,31 +233,31 @@ export default function HeaderBar({
             <span>{ttsEnabled ? "🔊 한국어 TTS 켜짐" : "🔇 한국어 TTS 꺼짐"}</span>
           </button>
 
-          {/* 4. [📡 통신진단 & 하드웨어 가이드] 버튼 */}
+          {/* 4. [📡 RJ-45(XBL-EMTA) 통신진단 & 하드웨어 결선 가이드] 버튼 */}
           <button
             type="button"
             onClick={onOpenHardwareModal}
-            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3.5 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-500/25 transition-all"
+            className="min-h-[42px] flex items-center gap-1.5 rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-500/25 transition-all"
           >
-            <span>📡 통신진단 & 하드웨어 가이드</span>
+            <span>📡 RJ-45(XBL-EMTA) 통신진단 & 결선 가이드</span>
           </button>
 
           {/* 5. [📱 모바일 접속 주소] */}
           <button
             type="button"
             onClick={onOpenMobileModal}
-            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-800 transition-all"
+            className="min-h-[42px] flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-bold text-slate-200 hover:bg-slate-800 transition-all"
           >
-            <span>📱 모바일 접속 주소</span>
+            <span>📱 모바일 접속</span>
           </button>
 
-          {/* 6. [💾 설정 백업/FA 복원] */}
+          {/* 6. [💾 FA 표준값 저장/복원(영점 보존)] */}
           <button
             type="button"
             onClick={onOpenFaModal}
-            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-500/15 px-3.5 py-2 text-xs font-bold text-indigo-200 hover:bg-indigo-500/25 transition-all"
+            className="min-h-[42px] flex items-center gap-1.5 rounded-xl border border-indigo-500/50 bg-indigo-500/15 px-3 py-2 text-xs font-bold text-indigo-200 hover:bg-indigo-500/25 transition-all"
           >
-            <span>💾 설정 백업/FA 복원</span>
+            <span>💾 FA 표준값 저장/복원</span>
           </button>
         </div>
       </div>

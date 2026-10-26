@@ -14,6 +14,7 @@ import {
   LeakTestLogItem,
   MonthlySummaryItem,
   ReplacementLogItem,
+  TowerLampState,
 } from "./types";
 
 const GAS_PRESET = [
@@ -107,6 +108,19 @@ export const INITIAL_DIAGNOSTICS: DiagnosticsData = {
   dbSizeBytes: 184320,
   dbSizeKB: 180.0,
   dbSizeMB: 0.18,
+};
+
+export const INITIAL_TOWER_LAMP: TowerLampState = {
+  connected: true,
+  portPath: "COM3 (USB-Serial CH340)",
+  mode: "WARNING",
+  red: "OFF",
+  yellow: "BLINK",
+  green: "OFF",
+  buzzer: "OFF",
+  buzzerMuted: false,
+  testing: false,
+  updatedAt: "2026-10-26T12:00:00.000Z",
 };
 
 export const INITIAL_ALERTS: AlertItem[] = [

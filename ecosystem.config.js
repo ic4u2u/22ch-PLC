@@ -19,6 +19,7 @@ module.exports = {
         PLC_PROTOCOL: "MODBUS",
         PLC_MODBUS_PORT: 502,
         PLC_XGT_PORT: 2004,
+        LAMP_USB_PORT: "AUTO",
         BRIDGE_PORT: 4000,
       },
       env_sim: {
@@ -26,6 +27,7 @@ module.exports = {
         PLC_IP: "127.0.0.1",
         PLC_PROTOCOL: "MODBUS",
         PLC_MODBUS_PORT: 8502,
+        LAMP_USB_PORT: "AUTO",
         BRIDGE_PORT: 4000,
       },
     },

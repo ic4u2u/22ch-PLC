@@ -94,7 +94,12 @@ flowchart LR
 
 ## ✨ 3. 핵심 엔터프라이즈 기능 명세
 
-### 3-1. 상단 글로벌 제어 바
+### 3-1. 상단 글로벌 제어 바 & 🚨 USB 3색 타워램프(경광등) 위젯
+* **🚨 실시간 USB 3색 경광등 상태 위젯 (`server/usb-tower-lamp.js` 연동)**:
+  * 큐텍 미니 PC의 USB 포트에 연결된 3색 타워램프(큐라이트 / CH340 / FTDI 릴레이 경광등)를 자동 탐색(`LAMP_USB_PORT=AUTO`)하여 실시간 제어하며, 미연결 시에도 가상 시뮬레이션 상태로 안전하게 동작합니다.
+  * **자동 연동 규칙**: 22채널 모두 `NORMAL` → **녹색(Green) ON** / 1개 이상 `WARNING` 또는 `SENSOR_FAULT` → **황색(Yellow) BLINK** / 1개 이상 `CRITICAL(DANGER)` → **적색(Red) BLINK + 부저 ON**
+  * **`[🔕 경광등 부저만 끄기]`**: 적색 점멸은 유지하면서 시끄러운 부저만 즉시 OFF
+  * **`[⚡ 경광등 테스트]`**: 3초간 적+황+녹+부저 전체 점등 테스트 후 원래 상태로 자동 복귀
 * **FND 4단위 원클릭 변환기 (`10번 스펙`)**: `0: PSI` ($\times 14.5$), `1: Bar` (기본), `2: MPa` ($\times 0.1$), `3: %` (잔량%) 즉시 변환
 * **유지보수자 4자리 PIN 잠금 (`1234`)**: 잠금 해제 시 **5분(300초) 카운트다운** 후 자동 재잠금으로 오조작 원천 방지
 * **한국어 TTS 음성안내 (`Web Speech API` + `Web Audio API`)**: 위험 저압 또는 센서 고장 발생 시 `"경고! N번 채널 수소 가스 압력이 위험 기준 이하입니다"` 한국어 음성 방송 및 경보 비프음 출력
@@ -179,7 +184,8 @@ npm run dev:all
 ├── server/
 │   ├── mock-plc.js                       # [파일 1] 22채널 가스 소모 & CH22 센서고장 가상 Modbus PLC (Port 8502)
 │   ├── ls-xgt-client.js                  # [파일 2] 순수 net.Socket 기반 LS XGT 전용 프로토콜 드라이버 (Port 2004)
-│   ├── plc-ws-bridge.js                  # [파일 3] 중앙 브릿지 서버 (0.5초 폴링 + WebSocket + REST API, Port 4000)
+│   ├── usb-tower-lamp.js                 # [파일 3] 상황실 미니 PC USB 3색 타워램프(경광등+부저) 제어 드라이버
+│   ├── plc-ws-bridge.js                  # [파일 4] 중앙 브릿지 서버 (0.5초 폴링 + WebSocket + REST API, Port 4000)
 │   └── lib/
 │       ├── db.js                         # SQLite WAL 데이터베이스 초기화 및 설정/감사로그 헬퍼
 │       ├── smart-ai-engine.js            # 11뱅크 Smart AI 스위칭 엔진 & 4~20mA SENSOR_FAULT 자가 진단

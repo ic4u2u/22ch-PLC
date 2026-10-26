@@ -192,13 +192,13 @@ export default function HardwareGuideModal({
             </section>
           )}
 
-          {/* 섹션 2: 듀얼 모니터 연결 (HDMI + DP) 시각적 안내도 */}
+          {/* 섹션 2: 듀얼 모니터 연결 (HDMI + DP) & USB 타워램프 안내도 */}
           {(subTab === "ALL" || subTab === "MONITOR") && (
             <section className="rounded-2xl border border-indigo-500/30 bg-slate-950/90 p-4">
               <h3 className="text-sm font-extrabold text-indigo-300">
-                🖥️ 2. 듀얼 모니터 연결 안내도 (HDMI + DP 단자 출력)
+                🖥️ 2. 듀얼 모니터 (HDMI + DP) & 🚨 USB 3색 타워램프(경광등) 연결 안내도
               </h3>
-              <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
                   <div className="flex items-center justify-between">
                     <span className="rounded bg-cyan-500/20 px-2.5 py-1 text-xs font-bold text-cyan-300">
@@ -213,14 +213,14 @@ export default function HardwareGuideModal({
                     접속 주소: http://localhost:3000/?view=control
                   </div>
                   <p className="mt-2 text-xs text-slate-300">
-                    • 24채널 정밀 감시, 원격 밸브 개폐, 12뱅크 Smart AI 설정, 기밀 시험 및 보고서 인쇄용 주 조작 모니터입니다.
+                    • 22채널 정밀 감시, 원격 밸브 개폐, 11뱅크 Smart AI 설정, 기밀 시험 및 보고서 인쇄용 주 조작 모니터입니다.
                   </p>
                 </div>
 
                 <div className="rounded-xl border border-amber-500/40 bg-amber-950/15 p-4">
                   <div className="flex items-center justify-between">
                     <span className="rounded bg-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-300">
-                      단자 2: DP (DisplayPort) 포트 (보조 대형 TV)
+                      단자 2: DP 포트 (보조 대형 TV)
                     </span>
                     <span className="font-mono text-xs text-slate-400">--window-position=1920,0</span>
                   </div>
@@ -231,7 +231,25 @@ export default function HardwareGuideModal({
                     접속 주소: http://localhost:3000/?view=wallboard
                   </div>
                   <p className="mt-2 text-xs text-slate-300">
-                    • 대형 TV에 DP 단자가 없을 경우 시중의 <strong>[DP to HDMI 변환 케이블(어댑터)]</strong>을 끼워 연결하시면 완벽히 호환됩니다. 상단 탭이 자동 숨겨지고 원거리 초대형 전광판 뷰로 동작합니다.
+                    • 대형 TV에 DP 단자가 없을 경우 <strong>[DP to HDMI 변환 케이블]</strong>을 끼워 연결하시면 완벽히 호환됩니다.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-rose-500/40 bg-rose-950/15 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="rounded bg-rose-500/20 px-2.5 py-1 text-xs font-bold text-rose-300">
+                      단자 3: USB 포트 (3색 타워램프)
+                    </span>
+                    <span className="font-mono text-xs text-slate-400">LAMP_USB_PORT=AUTO</span>
+                  </div>
+                  <div className="mt-2 text-sm font-bold text-white">
+                    상황실 USB 직결 3색 경광등 + 부저
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-rose-300">
+                    정상(녹색) · 주의/센서고장(황색점멸) · 위험(적색점멸+부저)
+                  </div>
+                  <p className="mt-2 text-xs text-slate-300">
+                    • 미니 PC USB 포트에 꽂기만 하면 자동 탐색(CH340/FTDI/큐라이트)되며, 상단 <strong>[🔕 부저만 끄기]</strong>로 현장 소음을 즉시 제어합니다.
                   </p>
                 </div>
               </div>

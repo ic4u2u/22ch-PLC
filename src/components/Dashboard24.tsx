@@ -20,6 +20,7 @@ import {
   MonthlySummaryItem,
   PressureUnit,
   ReplacementLogItem,
+  TowerLampState,
   playAlarmBeep,
   speakKoreanAlarm,
 } from "./dashboard/types";
@@ -33,6 +34,7 @@ import {
   INITIAL_LEAK_LOGS,
   INITIAL_MONTHLY_SUMMARY,
   INITIAL_REPLACEMENTS,
+  INITIAL_TOWER_LAMP,
 } from "./dashboard/mockPreset";
 import HeaderBar from "./dashboard/HeaderBar";
 import HardwareGuideModal from "./dashboard/HardwareGuideModal";
@@ -89,6 +91,7 @@ export default function Dashboard24() {
   const [banks, setBanks] = useState<BankConfig[]>(INITIAL_BANKS);
   const [diagnostics, setDiagnostics] =
     useState<DiagnosticsData>(INITIAL_DIAGNOSTICS);
+  const [towerLamp, setTowerLamp] = useState<TowerLampState>(INITIAL_TOWER_LAMP);
   const [floorplanBg, setFloorplanBg] = useState<string>("");
   const [faSavedAt, setFaSavedAt] = useState<string | null>(null);
 
@@ -205,6 +208,7 @@ export default function Dashboard24() {
             if (msg.type === "INIT_STATE") {
               const p = msg.payload;
               if (p.diagnostics) setDiagnostics(p.diagnostics);
+              if (p.towerLamp) setTowerLamp(p.towerLamp);
               if (p.channels?.length) setChannels(p.channels);
               if (p.banks?.length) setBanks(p.banks);
               if (p.recentAlerts) setAlerts(p.recentAlerts);
@@ -216,8 +220,9 @@ export default function Dashboard24() {
               }
               if (p.settings?.admin_pin) setAdminPin(p.settings.admin_pin);
             } else if (msg.type === "REALTIME_TICK") {
-              const { diagnostics: diag, channels: chs, banks: bks } = msg.payload;
+              const { diagnostics: diag, towerLamp: lamp, channels: chs, banks: bks } = msg.payload;
               if (diag) setDiagnostics(diag);
+              if (lamp) setTowerLamp(lamp);
               if (bks?.length) setBanks(bks);
               if (chs?.length) {
                 setChannels(chs);
@@ -229,6 +234,8 @@ export default function Dashboard24() {
                   trendMapRef.current[c.id] = arr;
                 });
               }
+            } else if (msg.type === "TOWER_LAMP_SYNC") {
+              if (msg.payload) setTowerLamp(msg.payload);
             } else if (msg.type === "ALERT") {
               const alertItem: AlertItem = msg.payload;
               setAlerts((prev) => [alertItem, ...prev].slice(0, 100));
@@ -334,6 +341,50 @@ export default function Dashboard24() {
     }, 1000);
     return () => clearInterval(simTimer);
   }, [wsConnected]);
+
+  // 클라우드 데모 모드일 때 22채널 상태에 맞춰 USB 3색 타워램프 상태 자동 동기화
+  useEffect(() => {
+    if (wsConnected) return;
+    setTowerLamp((prev) => {
+      if (prev.testing) return prev;
+      const hasCritical = channels.some((c) => c.status === "DANGER");
+      const hasWarnOrFault = channels.some(
+        (c) => c.status === "WARN" || c.status === "SENSOR_FAULT"
+      );
+      const nextMuted = hasCritical ? prev.buzzerMuted : false;
+      if (hasCritical) {
+        return {
+          ...prev,
+          mode: "CRITICAL",
+          red: "BLINK",
+          yellow: hasWarnOrFault ? "BLINK" : "OFF",
+          green: "OFF",
+          buzzer: nextMuted ? "OFF" : "ON",
+          buzzerMuted: nextMuted,
+        };
+      }
+      if (hasWarnOrFault) {
+        return {
+          ...prev,
+          mode: "WARNING",
+          red: "OFF",
+          yellow: "BLINK",
+          green: "OFF",
+          buzzer: "OFF",
+          buzzerMuted: false,
+        };
+      }
+      return {
+        ...prev,
+        mode: "NORMAL",
+        red: "OFF",
+        yellow: "OFF",
+        green: "ON",
+        buzzer: "OFF",
+        buzzerMuted: false,
+      };
+    });
+  }, [channels, wsConnected]);
 
   // 위험(DANGER) 및 센서고장(SENSOR_FAULT) 감지 시 한국어 TTS 음성 방송 + Web Audio 비프음
   useEffect(() => {
@@ -460,6 +511,42 @@ export default function Dashboard24() {
               }
             }}
             diagnostics={diagnostics}
+            towerLamp={towerLamp}
+            onMuteTowerBuzzer={() => {
+              setTowerLamp((prev) => ({
+                ...prev,
+                buzzerMuted: true,
+                buzzer: "OFF",
+              }));
+              sendWsCommand("TOWER_LAMP_MUTE_BUZZER", {
+                mute: true,
+                actor: "ADMIN",
+                target: "USB_TOWER_LAMP",
+                detail: "경광등 적색 점멸 유지 & 내장 부저만 음소거(OFF) 처리",
+              });
+              showToast("🔕 USB 타워램프 부저만 음소거(OFF) 처리되었습니다. (적색 점멸 유지)");
+            }}
+            onTestTowerLamp={() => {
+              playAlarmBeep("DANGER");
+              setTowerLamp((prev) => ({
+                ...prev,
+                testing: true,
+                mode: "TEST",
+                red: "ON",
+                yellow: "ON",
+                green: "ON",
+                buzzer: "ON",
+              }));
+              sendWsCommand("TOWER_LAMP_TEST", {
+                actor: "ADMIN",
+                target: "USB_TOWER_LAMP",
+                detail: "USB 3색 타워램프(적+황+녹+부저) 3초 전체 점등 테스트 실행",
+              });
+              showToast("⚡ USB 3색 타워램프(적+황+녹+부저) 3초 전체 점등 테스트 중...");
+              setTimeout(() => {
+                setTowerLamp((prev) => ({ ...prev, testing: false }));
+              }, 3000);
+            }}
             onOpenHardwareModal={() => setHardwareModalOpen(true)}
             onOpenMobileModal={() => setMobileOrFaModal("MOBILE")}
             onOpenFaModal={() => setMobileOrFaModal("FA")}

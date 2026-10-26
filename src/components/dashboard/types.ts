@@ -50,6 +50,19 @@ export interface BankConfig {
   switchingRemainingSec?: number | null;
 }
 
+export interface TowerLampState {
+  connected: boolean;
+  portPath: string;
+  mode: "NORMAL" | "WARNING" | "CRITICAL" | "TEST";
+  red: "OFF" | "ON" | "BLINK";
+  yellow: "OFF" | "ON" | "BLINK";
+  green: "OFF" | "ON" | "BLINK";
+  buzzer: "OFF" | "ON";
+  buzzerMuted: boolean;
+  testing: boolean;
+  updatedAt?: string;
+}
+
 export interface DiagnosticsData {
   serverTime: string;
   lanInterfaces: { interface: string; address: string; netmask: string }[];

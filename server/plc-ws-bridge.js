@@ -11,6 +11,7 @@ const url = require("url");
 const { WebSocketServer } = require("ws");
 const ModbusRTU = require("modbus-serial");
 const { LsXgtClient } = require("./ls-xgt-client");
+const { usbTowerLamp } = require("./usb-tower-lamp");
 const { db, DB_PATH, CHANNEL_COUNT, getSetting, setSetting, logAudit } = require("./lib/db");
 const { evaluateChannels, evaluateBanksAndSwitch } = require("./lib/smart-ai-engine");
 const {
@@ -238,6 +239,7 @@ wss.on("connection", (ws) => {
       type: "INIT_STATE",
       payload: {
         diagnostics: getNetworkDiagnostics(),
+        towerLamp: usbTowerLamp.getState(),
         channels: runtimeState.channels,
         banks: runtimeState.banks,
         recentAlerts: runtimeState.recentAlerts,
@@ -368,6 +370,29 @@ wss.on("connection", (ws) => {
           `기밀 시험(${payload.durationSec}s) 판정: ${payload.result} (ΔP=${payload.deltaPressure} bar)`
         );
         broadcast({ type: "LEAK_TEST_SAVED", payload: { timestamp: ts, ...payload } });
+      } else if (type === "TOWER_LAMP_MUTE_BUZZER") {
+        const res = usbTowerLamp.muteBuzzer(
+          payload?.mute !== undefined ? Boolean(payload.mute) : true
+        );
+        logAudit(
+          payload?.actor || "ADMIN",
+          "TOWER_LAMP_MUTE",
+          "USB_TOWER_LAMP",
+          "경광등 적색 점멸 유지 & 내장 부저만 음소거(OFF) 처리"
+        );
+        broadcast({ type: "TOWER_LAMP_SYNC", payload: res.state });
+      } else if (type === "TOWER_LAMP_TEST") {
+        const testState = usbTowerLamp.triggerTest(() => {
+          const restored = usbTowerLamp.updateFromChannels(runtimeState.channels);
+          broadcast({ type: "TOWER_LAMP_SYNC", payload: restored.state });
+        });
+        logAudit(
+          payload?.actor || "ADMIN",
+          "TOWER_LAMP_TEST",
+          "USB_TOWER_LAMP",
+          "USB 3색 타워램프(적+황+녹+부저) 3초 전체 점등 테스트 실행"
+        );
+        broadcast({ type: "TOWER_LAMP_SYNC", payload: testState });
       } else if (type === "AUDIT_EVENT") {
         logAudit(
           payload.actor || "ADMIN",
@@ -417,11 +442,18 @@ setInterval(async () => {
   runtimeState.channels = evaluatedChannels;
   runtimeState.banks = evaluatedBanks;
 
+  // 22채널 실시간 상태에 따른 USB 3색 타워램프(경광등) 상태 업데이트 및 동기화
+  const lampRes = usbTowerLamp.updateFromChannels(evaluatedChannels);
+  if (lampRes.changed) {
+    broadcast({ type: "TOWER_LAMP_SYNC", payload: lampRes.state });
+  }
+
   // 0.5초마다 전 클라이언트에 실시간 브로드캐스트
   broadcast({
     type: "REALTIME_TICK",
     payload: {
       diagnostics: getNetworkDiagnostics(),
+      towerLamp: lampRes.state,
       channels: evaluatedChannels,
       banks: evaluatedBanks,
     },
