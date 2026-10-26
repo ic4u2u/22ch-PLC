@@ -91,7 +91,7 @@ export const INITIAL_BANKS: BankConfig[] = Array.from({ length: 11 }, (_, idx) =
 });
 
 export const INITIAL_DIAGNOSTICS: DiagnosticsData = {
-  serverTime: new Date().toISOString(),
+  serverTime: "2026-10-26T12:00:00.000Z",
   lanInterfaces: [
     { interface: "LAN 1 (PLC 1:1 직결)", address: "192.168.0.100", netmask: "255.255.255.0" },
     { interface: "LAN 2 (사내 공유기망)", address: "192.168.1.55", netmask: "255.255.255.0" },
@@ -102,7 +102,7 @@ export const INITIAL_DIAGNOSTICS: DiagnosticsData = {
   plcIp: "192.168.0.50",
   plcPort: 502,
   latencyMs: 1.4,
-  lastPollAt: new Date().toISOString(),
+  lastPollAt: "2026-10-26T12:00:00.000Z",
   lastError: null,
   dbSizeBytes: 184320,
   dbSizeKB: 180.0,

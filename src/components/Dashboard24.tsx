@@ -142,12 +142,16 @@ export default function Dashboard24() {
     return () => clearInterval(timer);
   }, [isUnlocked, showToast]);
 
-  // REST API로 SQLite 이력 데이터 조회
+  // REST API로 SQLite 이력 데이터 조회 (로컬/사내망 HTTP 환경에서만 포트 4000 호출)
   const fetchAllLogs = useCallback(async () => {
-    const baseUrl =
-      typeof window !== "undefined"
-        ? `http://${window.location.hostname}:4000`
-        : "http://localhost:4000";
+    if (typeof window === "undefined") return;
+    if (
+      window.location.protocol === "https:" ||
+      window.location.hostname.endsWith(".vercel.app")
+    ) {
+      return;
+    }
+    const baseUrl = `http://${window.location.hostname}:4000`;
     try {
       const [audRes, repRes, leakRes, histRes] = await Promise.all([
         fetch(`${baseUrl}/api/audit`),
@@ -168,8 +172,17 @@ export default function Dashboard24() {
     }
   }, []);
 
-  // WebSocket 연결 및 실시간 0.5초 패킷 수신
+  // WebSocket 연결 및 실시간 0.5초 패킷 수신 (HTTPS 클라우드 환경에서는 Mixed Content 예외 없이 시뮬레이터로 자동 전환)
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (
+      window.location.protocol === "https:" ||
+      window.location.hostname.endsWith(".vercel.app")
+    ) {
+      setWsConnected(false);
+      return;
+    }
+
     fetchAllLogs();
     const logRefreshInterval = setInterval(fetchAllLogs, 6000);
 
@@ -177,69 +190,76 @@ export default function Dashboard24() {
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
     const connectWs = () => {
-      const wsHost =
-        typeof window !== "undefined" ? window.location.hostname : "localhost";
-      ws = new WebSocket(`ws://${wsHost}:4000`);
-      wsRef.current = ws;
+      try {
+        const wsHost = window.location.hostname || "localhost";
+        ws = new WebSocket(`ws://${wsHost}:4000`);
+        wsRef.current = ws;
 
-      ws.onopen = () => {
-        setWsConnected(true);
-      };
+        ws.onopen = () => {
+          setWsConnected(true);
+        };
 
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === "INIT_STATE") {
-            const p = msg.payload;
-            if (p.diagnostics) setDiagnostics(p.diagnostics);
-            if (p.channels?.length) setChannels(p.channels);
-            if (p.banks?.length) setBanks(p.banks);
-            if (p.recentAlerts) setAlerts(p.recentAlerts);
-            if (p.settings?.floorplan_bg?.dataUrl !== undefined) {
-              setFloorplanBg(p.settings.floorplan_bg.dataUrl);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === "INIT_STATE") {
+              const p = msg.payload;
+              if (p.diagnostics) setDiagnostics(p.diagnostics);
+              if (p.channels?.length) setChannels(p.channels);
+              if (p.banks?.length) setBanks(p.banks);
+              if (p.recentAlerts) setAlerts(p.recentAlerts);
+              if (p.settings?.floorplan_bg?.dataUrl !== undefined) {
+                setFloorplanBg(p.settings.floorplan_bg.dataUrl);
+              }
+              if (p.settings?.fa_preset?.savedAt) {
+                setFaSavedAt(p.settings.fa_preset.savedAt.slice(0, 19).replace("T", " "));
+              }
+              if (p.settings?.admin_pin) setAdminPin(p.settings.admin_pin);
+            } else if (msg.type === "REALTIME_TICK") {
+              const { diagnostics: diag, channels: chs, banks: bks } = msg.payload;
+              if (diag) setDiagnostics(diag);
+              if (bks?.length) setBanks(bks);
+              if (chs?.length) {
+                setChannels(chs);
+                // 1분 트렌드 버퍼 업데이트 (최대 120개 포인트 = 60초)
+                chs.forEach((c: ChannelData) => {
+                  const arr = trendMapRef.current[c.id] || [];
+                  arr.push(c.pressureBar);
+                  if (arr.length > 120) arr.shift();
+                  trendMapRef.current[c.id] = arr;
+                });
+              }
+            } else if (msg.type === "ALERT") {
+              const alertItem: AlertItem = msg.payload;
+              setAlerts((prev) => [alertItem, ...prev].slice(0, 100));
+              showToast(alertItem.message);
+            } else if (msg.type === "SETTINGS_SYNC") {
+              if (msg.payload.floorplan_bg?.dataUrl !== undefined) {
+                setFloorplanBg(msg.payload.floorplan_bg.dataUrl);
+              }
+              if (msg.payload.fa_preset?.savedAt) {
+                setFaSavedAt(
+                  msg.payload.fa_preset.savedAt.slice(0, 19).replace("T", " ")
+                );
+              }
+              fetchAllLogs();
+            } else if (msg.type === "LEAK_TEST_SAVED") {
+              fetchAllLogs();
             }
-            if (p.settings?.fa_preset?.savedAt) {
-              setFaSavedAt(p.settings.fa_preset.savedAt.slice(0, 19).replace("T", " "));
-            }
-            if (p.settings?.admin_pin) setAdminPin(p.settings.admin_pin);
-          } else if (msg.type === "REALTIME_TICK") {
-            const { diagnostics: diag, channels: chs, banks: bks } = msg.payload;
-            if (diag) setDiagnostics(diag);
-            if (bks?.length) setBanks(bks);
-            if (chs?.length) {
-              setChannels(chs);
-              // 1분 트렌드 버퍼 업데이트 (최대 120개 포인트 = 60초)
-              chs.forEach((c: ChannelData) => {
-                const arr = trendMapRef.current[c.id] || [];
-                arr.push(c.pressureBar);
-                if (arr.length > 120) arr.shift();
-                trendMapRef.current[c.id] = arr;
-              });
-            }
-          } else if (msg.type === "ALERT") {
-            const alertItem: AlertItem = msg.payload;
-            setAlerts((prev) => [alertItem, ...prev].slice(0, 100));
-            showToast(alertItem.message);
-          } else if (msg.type === "SETTINGS_SYNC") {
-            if (msg.payload.floorplan_bg?.dataUrl !== undefined) {
-              setFloorplanBg(msg.payload.floorplan_bg.dataUrl);
-            }
-            if (msg.payload.fa_preset?.savedAt) {
-              setFaSavedAt(
-                msg.payload.fa_preset.savedAt.slice(0, 19).replace("T", " ")
-              );
-            }
-            fetchAllLogs();
-          } else if (msg.type === "LEAK_TEST_SAVED") {
-            fetchAllLogs();
-          }
-        } catch {}
-      };
+          } catch {}
+        };
 
-      ws.onclose = () => {
+        ws.onerror = () => {
+          setWsConnected(false);
+        };
+
+        ws.onclose = () => {
+          setWsConnected(false);
+          reconnectTimer = setTimeout(connectWs, 2500);
+        };
+      } catch {
         setWsConnected(false);
-        reconnectTimer = setTimeout(connectWs, 2500);
-      };
+      }
     };
 
     connectWs();

@@ -161,7 +161,7 @@ export default function HistoryReportTab({
               {reportType === "DAILY" ? "일간" : "주간"} 운전 및 안전점검 보고서
             </h2>
             <p className="mt-1 text-xs text-slate-400 print:text-gray-700">
-              기준 일시: {selectedSnapshot?.timestamp || new Date().toISOString().replace("T", " ").slice(0, 19)} | 설비: LS ELECTRIC XGB + XBL-EMTA (22CH / 11BANK)
+              기준 일시: {selectedSnapshot?.timestamp || "2026-10-26 12:00:00"} | 설비: LS ELECTRIC XGB + XBL-EMTA (22CH / 11BANK)
             </p>
           </div>
 
