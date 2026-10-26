@@ -11,7 +11,7 @@ const url = require("url");
 const { WebSocketServer } = require("ws");
 const ModbusRTU = require("modbus-serial");
 const { LsXgtClient } = require("./ls-xgt-client");
-const { db, DB_PATH, getSetting, setSetting, logAudit } = require("./lib/db");
+const { db, DB_PATH, CHANNEL_COUNT, getSetting, setSetting, logAudit } = require("./lib/db");
 const { evaluateChannels, evaluateBanksAndSwitch } = require("./lib/smart-ai-engine");
 const {
   recordChannelSnapshot,
@@ -25,7 +25,7 @@ const PLC_IP = process.env.PLC_IP || "127.0.0.1";
 const PLC_MODBUS_PORT = Number(process.env.PLC_MODBUS_PORT || 8502);
 const PLC_XGT_PORT = Number(process.env.PLC_XGT_PORT || 2004);
 
-// 통신 상태 및 최신 런타임 캐시
+// 통신 상태 및 최신 런타임 캐시 (22채널 / 11뱅크)
 const runtimeState = {
   plcConnected: false,
   protocol: PLC_PROTOCOL,
@@ -34,8 +34,8 @@ const runtimeState = {
   latencyMs: 0,
   lastPollAt: null,
   lastError: null,
-  rawPressures: Array(24).fill(1200),
-  rawValves: Array(24).fill(0),
+  rawPressures: Array(CHANNEL_COUNT).fill(1200),
+  rawValves: Array(CHANNEL_COUNT).fill(0),
   channels: [],
   banks: [],
   recentAlerts: [],
@@ -62,15 +62,15 @@ async function readPlcRegisters() {
   await ensurePlcConnected();
 
   if (PLC_PROTOCOL === "XGT") {
-    // %MW100~%MW123 (24워드 압력), %MW200~%MW223 (24워드 밸브)
-    const pressures = await xgtClient.readWords(100, 24);
-    const valves = await xgtClient.readWords(200, 24);
+    // %MW100~%MW121 (22워드 압력), %MW200~%MW221 (22워드 밸브)
+    const pressures = await xgtClient.readWords(100, CHANNEL_COUNT);
+    const valves = await xgtClient.readWords(200, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
     return { pressures, valves, latencyMs: Number(elapsedMs.toFixed(2)) };
   } else {
-    // Modbus Holding Register Offset 0~23 (압력), Offset 100~123 (밸브)
-    const pRes = await modbusClient.readHoldingRegisters(0, 24);
-    const vRes = await modbusClient.readHoldingRegisters(100, 24);
+    // Modbus Holding Register Offset 0~21 (22채널 압력), Offset 100~121 (22채널 밸브)
+    const pRes = await modbusClient.readHoldingRegisters(0, CHANNEL_COUNT);
+    const vRes = await modbusClient.readHoldingRegisters(100, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
     return {
       pressures: pRes.data,

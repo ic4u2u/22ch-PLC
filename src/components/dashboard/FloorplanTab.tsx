@@ -189,7 +189,7 @@ export default function FloorplanTab({
               strokeWidth="2"
             />
             <text x="530" y="75" fill="#38bdf8" fontSize="15" fontWeight="bold">
-              ZONE B : 특수가스 실린더 캐비닛 룸 #2 (BANK 07 ~ 12)
+              ZONE B : 특수가스 실린더 캐비닛 룸 #2 (BANK 07 ~ 11)
             </text>
 
             <rect

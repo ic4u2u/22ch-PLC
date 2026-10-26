@@ -148,18 +148,18 @@ class LsXgtClient {
 
   /**
    * 연속 워드 읽기: Command 0x0054, DataType 0x0014 (연속 바이트 %MB 읽기)
-   * %MW100은 바이트 오프셋 %MB200에 해당하며, wordCount * 2 바이트(48B)를 읽어
+   * %MW100은 바이트 오프셋 %MB200에 해당하며, wordCount * 2 바이트(22워드 = 44B)를 읽어
    * 16비트 부호 없는 정수 배열로 변환합니다.
    *
    * @param {number} startWordAddr 시작 워드 주소 (예: 100 -> %MW100 = %MB200)
-   * @param {number} wordCount 읽을 워드 개수 (예: 24 -> 48 Bytes)
+   * @param {number} wordCount 읽을 워드 개수 (기본: 22 -> 44 Bytes)
    * @returns {Promise<number[]>}
    */
-  async readWords(startWordAddr = 100, wordCount = 24) {
+  async readWords(startWordAddr = 100, wordCount = 22) {
     const byteAddr = startWordAddr * 2; // %MW100 === %MB200
     const varName = `%MB${byteAddr}`;
     const varBuf = Buffer.from(varName, "ascii");
-    const byteCount = wordCount * 2; // 24 words = 48 bytes
+    const byteCount = wordCount * 2; // 22 words = 44 bytes
 
     // Instruction Body:
     // Command(2B: 0x0054) + DataType(2B: 0x0014 Continuous Byte) + Reserved(2B: 0x0000)

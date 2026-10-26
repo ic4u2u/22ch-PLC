@@ -57,10 +57,10 @@ export default function HistoryReportTab({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-base font-extrabold text-cyan-300">
-              ⏪ SQLite 24채널 과거 압력 타임머신 되감기 (5초 단위 스냅샷)
+              ⏪ SQLite 22채널 과거 압력 타임머신 되감기 (5초 단위 스냅샷)
             </h3>
             <p className="text-xs text-slate-400">
-              슬라이더를 좌우로 움직여 과거 특정 시점의 24채널 압력과 밸브 상태를 즉시 복기할 수 있습니다.
+              슬라이더를 좌우로 움직여 과거 특정 시점의 22채널 압력과 밸브 상태를 즉시 복기할 수 있습니다.
             </p>
           </div>
 
@@ -76,7 +76,7 @@ export default function HistoryReportTab({
               type="button"
               onClick={() =>
                 downloadUtf8BomCsv(
-                  `ACSC_24CH_압력이력_${new Date().toISOString().slice(0, 10)}.csv`,
+                  `ACSC_22CH_압력이력_${new Date().toISOString().slice(0, 10)}.csv`,
                   [
                     "Timestamp",
                     ...channels.map((c) => `CH${String(c.id).padStart(2, "0")}_${c.gasCode}(bar)`),
@@ -86,7 +86,7 @@ export default function HistoryReportTab({
                     try {
                       p = JSON.parse(h.pressures_json);
                     } catch {}
-                    return [h.timestamp, ...Array.from({ length: 24 }, (_, i) => p[i] ?? 0)];
+                    return [h.timestamp, ...Array.from({ length: channels.length }, (_, i) => p[i] ?? 0)];
                   })
                 )
               }
@@ -157,11 +157,11 @@ export default function HistoryReportTab({
               </button>
             </div>
             <h2 className="text-xl font-black">
-              [ACSC 24채널 특수가스 스마트 관제]{" "}
+              [ACSC 22채널 특수가스 스마트 관제]{" "}
               {reportType === "DAILY" ? "일간" : "주간"} 운전 및 안전점검 보고서
             </h2>
             <p className="mt-1 text-xs text-slate-400 print:text-gray-700">
-              기준 일시: {selectedSnapshot?.timestamp || new Date().toISOString().replace("T", " ").slice(0, 19)} | 설비: LS ELECTRIC XGB + XBL-EMTA (24CH / 12BANK)
+              기준 일시: {selectedSnapshot?.timestamp || new Date().toISOString().replace("T", " ").slice(0, 19)} | 설비: LS ELECTRIC XGB + XBL-EMTA (22CH / 11BANK)
             </p>
           </div>
 
@@ -185,9 +185,9 @@ export default function HistoryReportTab({
           </table>
         </div>
 
-        {/* 1. 선택 시점 24채널 압력 및 밸브 상태 요약 표 */}
+        {/* 1. 선택 시점 22채널 압력 및 밸브 상태 요약 표 */}
         <h4 className="mt-5 text-sm font-extrabold">
-          1. 24채널 특수가스 공급 압력 및 밸브 상태 현황
+          1. 22채널 특수가스 공급 압력 및 밸브 상태 현황
         </h4>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-6">
           {channels.map((ch, idx) => {

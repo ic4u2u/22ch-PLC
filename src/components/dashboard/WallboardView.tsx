@@ -47,7 +47,7 @@ export default function WallboardView({
             MONITOR 2 · WALLBOARD
           </span>
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-            ACSC 24채널 특수가스 실시간 통합 전광판
+            ACSC 22채널 특수가스 실시간 통합 전광판
           </h2>
         </div>
 
@@ -146,10 +146,10 @@ export default function WallboardView({
       ) : (
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-emerald-500/30 bg-emerald-950/20 px-5 py-3">
           <span className="text-sm font-extrabold text-emerald-300">
-            ✅ 전 채널(CH01~CH24) 특수가스 공급 압력 및 센서 루프 정상 가동 중
+            ✅ 전 채널(CH01~CH22) 특수가스 공급 압력 및 센서 루프 정상 가동 중
           </span>
           <span className="font-mono text-xs text-emerald-400">
-            12뱅크 Smart AI 자동 절체 대기 정상
+            11뱅크 Smart AI 자동 절체 대기 정상
           </span>
         </div>
       )}

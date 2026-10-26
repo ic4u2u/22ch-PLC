@@ -37,15 +37,16 @@ function recordChannelSnapshot(evaluatedChannels) {
     JSON.stringify(valves)
   );
 
-  // 2. 일자별 CSV (logs/acsc_24ch_YYYY-MM-DD.csv, UTF-8 BOM) 기록
-  const csvPath = path.join(LOGS_DIR, `acsc_24ch_${dateStr}.csv`);
+  // 2. 일자별 CSV (logs/acsc_22ch_YYYY-MM-DD.csv, UTF-8 BOM) 기록
+  const chLen = evaluatedChannels.length || 22;
+  const csvPath = path.join(LOGS_DIR, `acsc_22ch_${dateStr}.csv`);
   const exists = fs.existsSync(csvPath);
 
   if (!exists) {
     const headers = [
       "Timestamp",
-      ...Array.from({ length: 24 }, (_, i) => `CH${String(i + 1).padStart(2, "0")}_Bar`),
-      ...Array.from({ length: 24 }, (_, i) => `CH${String(i + 1).padStart(2, "0")}_Valve`),
+      ...Array.from({ length: chLen }, (_, i) => `CH${String(i + 1).padStart(2, "0")}_Bar`),
+      ...Array.from({ length: chLen }, (_, i) => `CH${String(i + 1).padStart(2, "0")}_Valve`),
     ];
     // 엑셀 한글/숫자 깨짐 방지를 위한 UTF-8 BOM (\uFEFF) 추가
     fs.writeFileSync(csvPath, "\uFEFF" + headers.join(",") + "\r\n", "utf8");

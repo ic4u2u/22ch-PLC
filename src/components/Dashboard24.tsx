@@ -24,9 +24,15 @@ import {
   speakKoreanAlarm,
 } from "./dashboard/types";
 import {
+  INITIAL_ALERTS,
+  INITIAL_AUDIT_LOGS,
   INITIAL_BANKS,
   INITIAL_CHANNELS,
   INITIAL_DIAGNOSTICS,
+  INITIAL_HISTORY_LOGS,
+  INITIAL_LEAK_LOGS,
+  INITIAL_MONTHLY_SUMMARY,
+  INITIAL_REPLACEMENTS,
 } from "./dashboard/mockPreset";
 import HeaderBar from "./dashboard/HeaderBar";
 import HardwareGuideModal from "./dashboard/HardwareGuideModal";
@@ -89,15 +95,18 @@ export default function Dashboard24() {
   // 채널별 최근 1분(120포인트, 0.5초 주기) 트렌드 버퍼
   const trendMapRef = useRef<Record<number, number[]>>({});
 
-  // 하단 3대 로그 & 성적서 & 타임머신 이력
-  const [alerts, setAlerts] = useState<AlertItem[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
-  const [replacements, setReplacements] = useState<ReplacementLogItem[]>([]);
+  // 하단 3대 로그 & 성적서 & 타임머신 이력 (초기 시연 프리셋 탑재)
+  const [alerts, setAlerts] = useState<AlertItem[]>(INITIAL_ALERTS);
+  const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(INITIAL_AUDIT_LOGS);
+  const [replacements, setReplacements] =
+    useState<ReplacementLogItem[]>(INITIAL_REPLACEMENTS);
   const [monthlySummary, setMonthlySummary] = useState<MonthlySummaryItem[]>(
-    []
+    INITIAL_MONTHLY_SUMMARY
   );
-  const [leakLogs, setLeakLogs] = useState<LeakTestLogItem[]>([]);
-  const [historyLogs, setHistoryLogs] = useState<HistoryLogItem[]>([]);
+  const [leakLogs, setLeakLogs] = useState<LeakTestLogItem[]>(INITIAL_LEAK_LOGS);
+  const [historyLogs, setHistoryLogs] =
+    useState<HistoryLogItem[]>(INITIAL_HISTORY_LOGS);
+  const [wsConnected, setWsConnected] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -173,6 +182,10 @@ export default function Dashboard24() {
       ws = new WebSocket(`ws://${wsHost}:4000`);
       wsRef.current = ws;
 
+      ws.onopen = () => {
+        setWsConnected(true);
+      };
+
       ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
@@ -224,6 +237,7 @@ export default function Dashboard24() {
       };
 
       ws.onclose = () => {
+        setWsConnected(false);
         reconnectTimer = setTimeout(connectWs, 2500);
       };
     };
@@ -236,6 +250,70 @@ export default function Dashboard24() {
       if (ws) ws.close();
     };
   }, [fetchAllLogs, showToast]);
+
+  // Vercel 클라우드 배포 시(로컬 브릿지 서버 미연결 시) 의뢰자 시연용 실시간 가상 PLC 시뮬레이터 자동 구동
+  useEffect(() => {
+    if (wsConnected) return;
+    let demoTick = 0;
+    const simTimer = setInterval(() => {
+      demoTick += 1;
+      setChannels((prev) =>
+        prev.map((ch, idx) => {
+          // 22번 채널(마지막 채널) 20초 주기 SENSOR_FAULT 시뮬레이션
+          if (idx === prev.length - 1 && ch.valveState === 0) {
+            const cycle = demoTick % 20;
+            if (cycle >= 0 && cycle < 3) {
+              const isSpike = cycle % 2 === 1;
+              return {
+                ...ch,
+                rawBar: isSpike ? 195.0 : 0.0,
+                pressureBar: isSpike ? 195.0 : 0.0,
+                status: "SENSOR_FAULT",
+                faultReason: isSpike
+                  ? "측정 한계 115% 초과 스파이크 (195.0 bar)"
+                  : "4~20mA 전류 루프 단선 (0.0 bar 급락)",
+                remainingText: "센서 점검 필요",
+              };
+            }
+          }
+
+          if (ch.valveState === 1) {
+            return { ...ch, pressureBar: 0, status: "SHUTOFF", remainingText: "밸브 차단됨" };
+          }
+
+          const isOdd = ch.id % 2 === 1;
+          let nextRaw = ch.rawBar;
+          if (isOdd) {
+            const drop = ch.id === 1 ? 1.8 : ch.id === 3 ? 1.1 : 0.3;
+            nextRaw = Number((ch.rawBar - drop).toFixed(1));
+            if (nextRaw <= 7.0) nextRaw = 150.0; // 실린더 자동 리필 시뮬레이션
+          } else if (idx === prev.length - 1 && nextRaw !== 120.0) {
+            nextRaw = 120.0;
+          }
+
+          const calBar = Number(Math.max(0, nextRaw + (ch.calibrationOffset || 0)).toFixed(1));
+          let status: ChannelData["status"] = "NORMAL";
+          if (calBar <= ch.dangerBar) status = "DANGER";
+          else if (calBar <= ch.warnBar) status = "WARN";
+
+          // 트렌드 버퍼 적재
+          const arr = trendMapRef.current[ch.id] || [];
+          arr.push(calBar);
+          if (arr.length > 120) arr.shift();
+          trendMapRef.current[ch.id] = arr;
+
+          return {
+            ...ch,
+            rawBar: nextRaw,
+            pressureBar: calBar,
+            status,
+            faultReason: null,
+          };
+        })
+      );
+    }, 1000);
+    return () => clearInterval(simTimer);
+  }, [wsConnected]);
 
   // 위험(DANGER) 및 센서고장(SENSOR_FAULT) 감지 시 한국어 TTS 음성 방송 + Web Audio 비프음
   useEffect(() => {
@@ -265,9 +343,50 @@ export default function Dashboard24() {
   const sendWsCommand = (type: string, payload: Record<string, unknown>) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type, payload }));
-    } else {
-      showToast("⚠️ 브릿지 서버와 오프라인 상태여서 로컬 화면에만 즉시 반영됩니다.");
+      return;
     }
+    // Vercel 클라우드 시연 모드일 때 로컬 이력(감사로그/성적서/FA복원)에 즉시 반영
+    const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+    if (type === "SAVE_LEAK_TEST") {
+      setLeakLogs((prev) => [
+        {
+          id: Date.now(),
+          timestamp: ts,
+          channel_id: Number(payload.channelId || 1),
+          gas_name: String(payload.gasName || "특수가스"),
+          duration_sec: Number(payload.durationSec || 30),
+          start_pressure: Number(payload.startPressure || 120),
+          end_pressure: Number(payload.endPressure || 120),
+          delta_pressure: Number(payload.deltaPressure || 0),
+          threshold_bar: Number(payload.thresholdBar || 0.2),
+          result: (payload.result as "PASS" | "FAIL") || "PASS",
+          inspector: String(payload.inspector || "ADMIN"),
+        },
+        ...prev,
+      ]);
+    } else if (type === "RESTORE_FA_PRESET") {
+      // 17번: 영점 보정값(calibrationOffset)은 보존하고 운전 설정만 FA 표준값으로 복원
+      setChannels((prev) =>
+        INITIAL_CHANNELS.map((faCh, idx) => ({
+          ...faCh,
+          calibrationOffset: prev[idx]?.calibrationOffset ?? 0.0,
+        }))
+      );
+      setBanks(INITIAL_BANKS);
+    } else if (type === "SAVE_FA_PRESET") {
+      setFaSavedAt(ts);
+    }
+    setAuditLogs((prev) => [
+      {
+        id: Date.now(),
+        timestamp: ts,
+        actor: String(payload.actor || "ADMIN"),
+        action_type: type,
+        target: String(payload.target || payload.id || `CH-${payload.channelId || "ALL"}`),
+        detail: String(payload.detail || payload.reason || `${type} 실행 완료`),
+      },
+      ...prev,
+    ]);
   };
 
   const dangerCount = channels.filter((c) => c.status === "DANGER").length;
@@ -332,8 +451,8 @@ export default function Dashboard24() {
             {/* 2. 6대 메인 탭 네비게이션 */}
             <nav className="no-print mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
               {[
-                { id: "GRID", label: "🟢 24채널 그리드" },
-                { id: "MANIFOLD", label: "🔀 12뱅크 A/B 매니폴드 뷰" },
+                { id: "GRID", label: "🟢 22채널 그리드" },
+                { id: "MANIFOLD", label: "🔀 11뱅크 A/B 매니폴드 뷰" },
                 { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
                 { id: "WALLBOARD", label: "📺 대형 전광판 TV 뷰" },
                 { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },

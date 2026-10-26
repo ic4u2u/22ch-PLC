@@ -1,6 +1,6 @@
 /**
  * 파일명: server/lib/db.js
- * 역할: SQLite (logs/acsc_history.db, WAL 모드) 5대 테이블 초기화 및 설정/이력 관리 모듈
+ * 역할: SQLite (logs/acsc_history.db, WAL 모드) 5대 테이블 초기화 및 22채널(11뱅크) 설정/이력 관리 모듈
  */
 
 const fs = require("fs");
@@ -11,6 +11,9 @@ const LOGS_DIR = path.join(process.cwd(), "logs");
 const BACKUP_DIR = path.join(LOGS_DIR, "backups");
 const DB_PATH = path.join(LOGS_DIR, "acsc_history.db");
 
+const CHANNEL_COUNT = 22;
+const BANK_COUNT = 11;
+
 if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
@@ -19,7 +22,7 @@ const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 db.pragma("synchronous = NORMAL");
 
-// 12뱅크(24채널) 특수가스 기본 구성 프리셋 생성 함수
+// 11뱅크(22채널) 특수가스 기본 구성 프리셋 생성 함수
 const GAS_LIST = [
   { name: "H2 (수소)", code: "H2", color: "#ef4444" },
   { name: "SiH4 (모노실란)", code: "SiH4", color: "#f97316" },
@@ -32,11 +35,10 @@ const GAS_LIST = [
   { name: "N2O (아산화질소)", code: "N2O", color: "#3b82f6" },
   { name: "PH3 (포스핀)", code: "PH3", color: "#6366f1" },
   { name: "Ar (고순도 아르곤)", code: "Ar", color: "#8b5cf6" },
-  { name: "N2 (초고순도 질소)", code: "N2", color: "#ec4899" },
 ];
 
 function createDefaultChannelConfigs() {
-  return Array.from({ length: 24 }, (_, idx) => {
+  return Array.from({ length: CHANNEL_COUNT }, (_, idx) => {
     const chId = idx + 1;
     const bankIdx = Math.floor(idx / 2);
     const side = idx % 2 === 0 ? "A" : "B";
@@ -62,7 +64,7 @@ function createDefaultChannelConfigs() {
 }
 
 function createDefaultBankConfigs() {
-  return Array.from({ length: 12 }, (_, idx) => {
+  return Array.from({ length: BANK_COUNT }, (_, idx) => {
     const bankNum = idx + 1;
     const gas = GAS_LIST[idx];
     return {
@@ -85,7 +87,7 @@ function createDefaultBankConfigs() {
   });
 }
 
-// 마이그레이션 SQL 실행 및 초기 데이터 시딩
+// 마이그레이션 SQL 실행 및 22채널(11뱅크) 자동 마이그레이션/시딩
 function initDatabase() {
   const migrationFile = path.join(
     process.cwd(),
@@ -113,14 +115,22 @@ function initDatabase() {
       is_deleted = 0
   `);
 
-  if (!getSettingStmt.get("channel_configs")) {
+  const existingChRow = getSettingStmt.get("channel_configs");
+  let needResetTo22 = !existingChRow;
+  if (existingChRow) {
+    try {
+      const parsed = JSON.parse(existingChRow.value);
+      if (!Array.isArray(parsed) || parsed.length !== CHANNEL_COUNT) {
+        needResetTo22 = true;
+      }
+    } catch {
+      needResetTo22 = true;
+    }
+  }
+
+  if (needResetTo22) {
     upsertSettingStmt.run("channel_configs", JSON.stringify(defaultChannels));
-  }
-  if (!getSettingStmt.get("bank_configs")) {
     upsertSettingStmt.run("bank_configs", JSON.stringify(defaultBanks));
-  }
-  if (!getSettingStmt.get("fa_preset")) {
-    // 16) FA 표준값 프리셋 (초기 공장 출하 표준 설정본)
     upsertSettingStmt.run(
       "fa_preset",
       JSON.stringify({
@@ -129,7 +139,22 @@ function initDatabase() {
         bankConfigs: defaultBanks,
       })
     );
+  } else {
+    if (!getSettingStmt.get("bank_configs")) {
+      upsertSettingStmt.run("bank_configs", JSON.stringify(defaultBanks));
+    }
+    if (!getSettingStmt.get("fa_preset")) {
+      upsertSettingStmt.run(
+        "fa_preset",
+        JSON.stringify({
+          savedAt: new Date().toISOString(),
+          channelConfigs: defaultChannels,
+          bankConfigs: defaultBanks,
+        })
+      );
+    }
   }
+
   if (!getSettingStmt.get("floorplan_bg")) {
     upsertSettingStmt.run("floorplan_bg", JSON.stringify({ dataUrl: "" }));
   }
@@ -148,8 +173,8 @@ function initDatabase() {
       INSERT INTO audit_logs (timestamp, actor, action_type, target, detail)
       VALUES (?, ?, ?, ?, ?)
     `);
-    insertAudit.run(ts, "SYSTEM", "BOOT", "ACSC-SERVER", "ACSC 24채널 스마트 관제 브릿지 서버 및 SQLite WAL 엔진 기동 완료");
-    insertAudit.run(ts, "SMART-AI", "MODE_INIT", "BANK-01~12", "12뱅크 Smart AI 밸브 스위칭 엔진 활성화 (Hysteresis: 3.0 bar)");
+    insertAudit.run(ts, "SYSTEM", "BOOT", "ACSC-SERVER", "ACSC 22채널 스마트 관제 브릿지 서버 및 SQLite WAL 엔진 기동 완료");
+    insertAudit.run(ts, "SMART-AI", "MODE_INIT", "BANK-01~11", "11뱅크 Smart AI 밸브 스위칭 엔진 활성화 (Hysteresis: 3.0 bar)");
 
     const insertRep = db.prepare(`
       INSERT INTO cylinder_replacements (timestamp, year_month, channel_id, gas_name, prev_pressure, new_pressure, delta_pressure)
@@ -197,7 +222,7 @@ function logAudit(actor, actionType, target, detail) {
   db.prepare(`
     INSERT INTO audit_logs (timestamp, actor, action_type, target, detail)
     VALUES (?, ?, ?, ?, ?)
-  `).run(ts, actor, actionType, target, detail);
+  `).run(ts, actor, actionType, detail ? target : "SYSTEM", detail || "");
 }
 
 module.exports = {
@@ -205,6 +230,8 @@ module.exports = {
   DB_PATH,
   LOGS_DIR,
   BACKUP_DIR,
+  CHANNEL_COUNT,
+  BANK_COUNT,
   getSetting,
   setSetting,
   logAudit,

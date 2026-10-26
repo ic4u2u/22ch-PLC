@@ -68,10 +68,10 @@ export default function HeaderBar({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
-                ACSC 24채널 특수가스 스마트 관제 시스템
+                ACSC 22채널 특수가스 스마트 관제 시스템
               </h1>
               <span className="hidden md:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
-                QOOTEC Dual-LAN · LS XBL-EMTA
+                QOOTEC Dual-LAN · LS XBL-EMTA (22CH / 11BANK)
               </span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400">

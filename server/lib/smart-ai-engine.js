@@ -7,10 +7,10 @@
  *  4) 12뱅크 Smart AI 밸브 스위칭 엔진 (0:Auto, 1:Smart AI, 2:Dual, 3:Moni) 및 STANDBY_EMPTY_WARN 감지
  */
 
-const { db, logAudit, setSetting } = require("./db");
+const { db, logAudit, setSetting, CHANNEL_COUNT } = require("./db");
 
-// 채널별 이전 폴링 상태 저장 (0.5초 주기 비교용)
-const prevChannelState = Array.from({ length: 24 }, () => ({
+// 채널별 이전 폴링 상태 저장 (0.5초 주기 비교용, 22채널)
+const prevChannelState = Array.from({ length: CHANNEL_COUNT }, () => ({
   rawBar: null,
   calibratedBar: null,
   lastValidBar: 120.0,
@@ -56,8 +56,8 @@ function evaluateChannels(rawRegisters, valveRegisters, channelConfigs) {
       } else if (suddenDrop) {
         isSensorFault = true;
         faultReason = `0.5초 내 급락 단선 감지 (-${(prev.rawBar - rawBar).toFixed(1)} bar)`;
-      } else if (idx === 23 && rawBar === 0) {
-        // 24번 채널 4~20mA 단선 급락(0 반환) 유지 구간
+      } else if (idx === CHANNEL_COUNT - 1 && rawBar === 0) {
+        // 22번 채널(마지막 채널) 4~20mA 단선 급락(0 반환) 유지 구간
         isSensorFault = true;
         faultReason = "4~20mA 전류 루프 단선 (0.0 bar 급락)";
       }
