@@ -487,6 +487,34 @@ export default function Dashboard24() {
             unit={unit}
             diagnostics={diagnostics}
             isStandaloneWallboard={true}
+            isUnlocked={isUnlocked}
+            onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
+            onRequestPin={() => setPinModalOpen(true)}
+            onToggleValve={(channelId, nextValveState) => {
+              setChannels((prev) =>
+                prev.map((c) =>
+                  c.id === channelId
+                    ? {
+                        ...c,
+                        valveState: nextValveState,
+                        pressureBar: nextValveState === 1 ? 0 : c.rawBar,
+                        status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
+                      }
+                    : c
+                )
+              );
+              sendWsCommand("SET_VALVE", {
+                channelId,
+                valveState: nextValveState,
+                actor: "ADMIN",
+                reason: "전광판 원격 밸브 제어",
+              });
+              showToast(
+                `🛠️ CH-${String(channelId).padStart(2, "0")} 밸브 ${
+                  nextValveState === 0 ? "개방(OPEN)" : "차단(SHUTOFF)"
+                } 명령 전송 완료`
+              );
+            }}
             onExitWallboard={() => setIsStandaloneWallboard(false)}
           />
         </main>
@@ -676,6 +704,34 @@ export default function Dashboard24() {
                 unit={unit}
                 diagnostics={diagnostics}
                 isStandaloneWallboard={false}
+                isUnlocked={isUnlocked}
+                onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
+                onRequestPin={() => setPinModalOpen(true)}
+                onToggleValve={(channelId, nextValveState) => {
+                  setChannels((prev) =>
+                    prev.map((c) =>
+                      c.id === channelId
+                        ? {
+                            ...c,
+                            valveState: nextValveState,
+                            pressureBar: nextValveState === 1 ? 0 : c.rawBar,
+                            status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
+                          }
+                        : c
+                    )
+                  );
+                  sendWsCommand("SET_VALVE", {
+                    channelId,
+                    valveState: nextValveState,
+                    actor: "ADMIN",
+                    reason: "전광판 원격 밸브 제어",
+                  });
+                  showToast(
+                    `🛠️ CH-${String(channelId).padStart(2, "0")} 밸브 ${
+                      nextValveState === 0 ? "개방(OPEN)" : "차단(SHUTOFF)"
+                    } 명령 전송 완료`
+                  );
+                }}
               />
             )}
 
