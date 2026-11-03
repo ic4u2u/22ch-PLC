@@ -485,6 +485,7 @@ export default function Dashboard24() {
           <WallboardView
             channels={channels}
             unit={unit}
+            onChangeUnit={setUnit}
             diagnostics={diagnostics}
             isStandaloneWallboard={true}
             isUnlocked={isUnlocked}
@@ -702,6 +703,7 @@ export default function Dashboard24() {
               <WallboardView
                 channels={channels}
                 unit={unit}
+                onChangeUnit={setUnit}
                 diagnostics={diagnostics}
                 isStandaloneWallboard={false}
                 isUnlocked={isUnlocked}
