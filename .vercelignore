@@ -1,0 +1,5 @@
+docs/
+logs/
+*.db
+*.db-shm
+*.db-wal

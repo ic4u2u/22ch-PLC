@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>[실전 세팅 마스터북] LS XBC-DR30SU + 5단 모듈 조립·결선·XG5000 세팅 완벽 가이드</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-sub: #334155;
+      --text-muted: #64748b;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --emerald: #059669;
+      --emerald-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --rose: #e11d48;
+      --rose-light: #ffe4e6;
+      --purple: #7c3aed;
+      --purple-light: #ede9fe;
+      --border: #e2e8f0;
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 15px;
+      padding-bottom: 64px;
+      word-break: keep-all;
+    }
+
+    /* 상단 고정 다운로드 바 */
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .sticky-brand {
+      color: #38bdf8;
+      font-weight: 900;
+      font-size: 13.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sticky-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 42px;
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 800;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-print { background: #334155; color: #f8fafc; }
+    .btn-demo { background: #0284c7; color: #fff; }
+
+    .container {
+      width: 100%;
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 16px 14px;
+    }
+
+    /* 히어로 카드 */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 24px 18px;
+      margin-bottom: 18px;
+      border: 1px solid #334155;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 {
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1.35;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+    }
+
+    /* 구입 완료 6개 장비 인벤토리 칩 */
+    .inv-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 12px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .inv-item {
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 8px;
+      padding: 8px 10px;
+      border-left: 3px solid #38bdf8;
+    }
+
+    .inv-item.green { border-left-color: #10b981; }
+    .inv-item.amber { border-left-color: #f59e0b; }
+    .inv-item.purple { border-left-color: #a855f7; }
+
+    .inv-title { font-size: 12.5px; font-weight: 900; color: #fff; }
+    .inv-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    /* 공통 단계 카드 */
+    .step-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: 20px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+    }
+
+    .step-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .step-num {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 900;
+      padding: 5px 11px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .step-num.warn { background: linear-gradient(135deg, #e11d48, #be123c); }
+    .step-num.green { background: linear-gradient(135deg, #059669, #047857); }
+    .step-num.purple { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+
+    .step-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    /* SVG 다이어그램 박스 */
+    .svg-box {
+      width: 100%;
+      background: #0f172a;
+      border-radius: var(--radius-lg);
+      padding: 14px 10px;
+      margin: 12px 0;
+      border: 1px solid #334155;
+      overflow-x: auto;
+    }
+
+    .svg-box svg {
+      width: 100%;
+      height: auto;
+      min-width: 310px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* 주의/핵심 알림 박스 */
+    .alert-box {
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin: 12px 0;
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .alert-box.danger {
+      background: var(--rose-light);
+      border: 1.5px solid #fda4af;
+      color: #881337;
+    }
+
+    .alert-box.info {
+      background: var(--primary-light);
+      border: 1.5px solid #7dd3fc;
+      color: #0c4a6e;
+    }
+
+    .alert-box.success {
+      background: var(--emerald-light);
+      border: 1.5px solid #6ee7b7;
+      color: #064e3b;
+    }
+
+    /* 따라하기 순서 리스트 */
+    .guide-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .guide-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 13.5px;
+    }
+
+    .guide-badge {
+      background: #0f172a;
+      color: #38bdf8;
+      font-size: 11.5px;
+      font-weight: 900;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* XG5000 가상 화면 UI */
+    .xg-window {
+      border: 2px solid #475569;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: #1e293b;
+      color: #f8fafc;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+
+    .xg-titlebar {
+      background: #0f172a;
+      padding: 8px 14px;
+      font-weight: 800;
+      font-size: 12.5px;
+      color: #38bdf8;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .xg-body {
+      padding: 14px;
+    }
+
+    .xg-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .xg-table th {
+      background: #334155;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      text-align: left;
+      border: 1px solid #475569;
+    }
+
+    .xg-table td {
+      padding: 8px 10px;
+      border: 1px solid #475569;
+      color: #f1f5f9;
+    }
+
+    .xg-table tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* 래더(Ladder) 코드 블록 */
+    .ladder-box {
+      background: #090d16;
+      border: 1.5px solid #38bdf8;
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: #e2e8f0;
+      font-size: 12.5px;
+      overflow-x: auto;
+      line-height: 1.7;
+      margin: 10px 0;
+    }
+
+    .ladder-comment { color: #34d399; font-weight: bold; }
+    .ladder-cmd { color: #fde047; font-weight: bold; }
+    .ladder-addr { color: #38bdf8; font-weight: bold; }
+
+    /* 단자대 핀맵 2열 그리드 */
+    .pin-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .pin-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .pin-card-head {
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 900;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pin-card-body {
+      padding: 12px 14px;
+      background: #f8fafc;
+      font-size: 12.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .pin-row {
+      display: flex;
+      justify-content: space-between;
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 24px 14px;
+    }
+
+    @media (min-width: 768px) {
+      .container { padding: 28px 24px; }
+      .hero { padding: 32px 28px; }
+      .hero h1 { font-size: 26px; }
+      .inv-grid { grid-template-columns: repeat(4, 1fr); }
+      .pin-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; font-size: 11.5px; }
+      .sticky-bar { display: none !important; }
+      .step-card, .hero { box-shadow: none; break-inside: avoid; margin-bottom: 12px; }
+      .inv-grid { grid-template-columns: repeat(4, 1fr); }
+      .pin-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 고정 액션 바 -->
+  <div class="sticky-bar">
+    <div class="sticky-brand">🛠️ XBC-DR30SU + 5단 모듈 실전 세팅 마스터북</div>
+    <div class="sticky-actions">
+      <button type="button" class="btn btn-download" onclick="downloadSetupHtml()">📥 가이드 HTML 다운</button>
+      <button type="button" class="btn btn-print" onclick="window.print()">🖨️ PDF/인쇄</button>
+      <a href="https://22ch-plc.vercel.app" target="_blank" class="btn btn-demo">🔗 데모</a>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- 헤더 -->
+    <header class="hero">
+      <span class="hero-badge">✅ 장비 총 6개 모듈 구매 완비 확인!</span>
+      <h1>[ACSC 22채널 관제] 장비 개봉부터 조립·결선·XG5000 입력까지<br/>그대로 따라 하는 실전 세팅 마스터 가이드</h1>
+      <p>구입하신 본체 1대 + 확장 모듈 5개(아날로그 3개, 릴레이 1개, 이더넷 1개)가 도착했을 때, 초보자도 순서대로 따라 하면 15분 만에 개통할 수 있는 전 과정 매뉴얼입니다.</p>
+
+      <div class="inv-grid">
+        <div class="inv-item">
+          <div class="inv-title">① XBC-DR30SU (×1개)</div>
+          <div class="inv-sub">메인 CPU + 밸브 1~12번</div>
+        </div>
+        <div class="inv-item green">
+          <div class="inv-title">② XBF-AD08A (×3개)</div>
+          <div class="inv-sub">1~3단: 압력센서 22채널</div>
+        </div>
+        <div class="inv-item amber">
+          <div class="inv-title">③ XBE-RY16A (×1개)</div>
+          <div class="inv-sub">4단: 밸브 13~22번</div>
+        </div>
+        <div class="inv-item purple">
+          <div class="inv-title">④ XBL-EMTA (×1개)</div>
+          <div class="inv-sub">5단: 미니PC 랜선 통신</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- STEP 1: 합체 전 가장 중요한 딥스위치 세팅 -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num warn">STEP 1 (필수)</span>
+        <h2 class="step-title">합체하기 전에! [XBF-AD08A × 3개] 옆면 스위치를 '전류(I)'로 올리세요</h2>
+      </div>
+
+      <div class="alert-box danger">
+        ⚠️ <strong>조립 전 무조건 1순위 작업! (안 하면 압력값이 0으로 나옵니다)</strong><br/>
+        <code>XBF-AD08A</code> 모듈 3개를 박스에서 꺼내면, 본체 옆면에 <strong>하얀색 작은 스위치 8개(CH0~CH7)</strong>가 있습니다.<br/>
+        공장 출고 시에는 <strong>전압(V, 아래쪽)</strong>으로 내려가 있으니, 레고처럼 합체하기 전에 작은 드라이버나 볼펜 끝으로 <strong>3개 모듈 모두 스위치 8개를 전부 [I (전류, 위쪽)] 방향으로 딸깍 올려주세요!</strong>
+      </div>
+
+      <!-- 딥스위치 일러스트 SVG -->
+      <div class="svg-box">
+        <svg viewBox="0 0 800 175" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="800" height="175" rx="10" fill="#0f172a"/>
+          <text x="400" y="28" fill="#fde047" font-size="14" font-weight="900" text-anchor="middle">🔍 XBF-AD08A 모듈 측면 딥스위치 (3개 모듈 모두 동일하게 위로 ON!)</text>
+
+          <!-- 스위치 박스 -->
+          <rect x="110" y="45" width="580" height="110" rx="8" fill="#1e293b" stroke="#34d399" stroke-width="2"/>
+          <text x="155" y="75" fill="#34d399" font-size="13" font-weight="900" text-anchor="middle">▲ I (전류 4~20mA)</text>
+          <text x="155" y="135" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">▼ V (전압 0~10V)</text>
+
+          <!-- 8개 채널 스위치 (전부 위로 올라간 모습) -->
+          <g transform="translate(235, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH0</text>
+          </g>
+          <g transform="translate(295, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH1</text>
+          </g>
+          <g transform="translate(355, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH2</text>
+          </g>
+          <g transform="translate(415, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH3</text>
+          </g>
+          <g transform="translate(475, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH4</text>
+          </g>
+          <g transform="translate(535, 55)">
+            <rect x="0" y="0" width="48" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="8" y="8" width="32" height="32" rx="3" fill="#10b981"/>
+            <text x="24" y="28" fill="#fff" font-size="11" font-weight="900" text-anchor="middle">ON</text>
+            <text x="24" y="76" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="middle">CH5</text>
+          </g>
+          <g transform="translate(595, 55)">
+            <rect x="0" y="0" width="42" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="6" y="8" width="30" height="32" rx="3" fill="#10b981"/>
+            <text x="21" y="28" fill="#fff" font-size="10" font-weight="900" text-anchor="middle">ON</text>
+            <text x="21" y="76" fill="#cbd5e1" font-size="10" font-weight="bold" text-anchor="middle">CH6</text>
+          </g>
+          <g transform="translate(643, 55)">
+            <rect x="0" y="0" width="42" height="86" rx="4" fill="#0f172a" stroke="#64748b"/>
+            <rect x="6" y="8" width="30" height="32" rx="3" fill="#10b981"/>
+            <text x="21" y="28" fill="#fff" font-size="10" font-weight="900" text-anchor="middle">ON</text>
+            <text x="21" y="76" fill="#cbd5e1" font-size="10" font-weight="bold" text-anchor="middle">CH7</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- STEP 2: 6개 블록 물리적 합체 순서 -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num">STEP 2</span>
+        <h2 class="step-title">6개 블록 레고 합체 순서 (왼쪽 0번 본체 ➔ 오른쪽 1~5번 슬롯)</h2>
+      </div>
+
+      <div class="guide-steps">
+        <div class="guide-row">
+          <span class="guide-badge">1</span>
+          <div><strong>측면 작은 뚜껑 열기</strong>: 각 모듈의 오른쪽 옆면에 있는 작은 플라스틱 덮개(증설 커버)를 손톱이나 일자 드라이버로 톡 떼어냅니다. (맨 마지막 5단 <code>XBL-EMTA</code>의 오른쪽은 그대로 막아둡니다.)</div>
+        </div>
+        <div class="guide-row">
+          <span class="guide-badge">2</span>
+          <div><strong>순서대로 끼우기</strong>: 왼쪽부터 <strong>[본체 XBC-DR30SU] ➔ [1단 AD08A] ➔ [2단 AD08A] ➔ [3단 AD08A] ➔ [4단 RY16A] ➔ [5단 XBL-EMTA]</strong> 순서로 핀을 맞춰 수평으로 밀어 넣습니다.</div>
+        </div>
+        <div class="guide-row">
+          <span class="guide-badge">3</span>
+          <div><strong>위·아래 잠금 후크 딸깍 잠그기</strong>: 모듈 위쪽과 아래쪽에 있는 회색 고정 레버(후크)를 본체 쪽으로 딸깍 소리가 나게 밀어 완전히 잠급니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: 단자대 전선 연결 핀맵 -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num green">STEP 3</span>
+        <h2 class="step-title">단자대 전선 연결 도면 (어느 나사에 어떤 선을 물리나요?)</h2>
+      </div>
+
+      <div class="pin-grid">
+        <!-- 카드 1: 아날로그 입력 모듈 1~3단 -->
+        <div class="pin-card">
+          <div class="pin-card-head">
+            <span>📊 [1~3단] XBF-AD08A (11칸 나사 단자대)</span>
+            <span style="color:#34d399;">× 3개 동일</span>
+          </div>
+          <div class="pin-card-body">
+            <div class="pin-row"><span>1번 나사 (<code>CH0</code>)</span><strong>1번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row"><span>2번 나사 (<code>CH1</code>)</span><strong>2번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row"><span>3번 나사 (<code>CH2</code>)</span><strong>3번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row"><span>4번 나사 (<code>CH3</code>)</span><strong>4번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row" style="background:#fef3c7;"><span>5번 나사 (<code>COM</code>)</span><strong>센서 공통 마이너스 (- / 0V)</strong></div>
+            <div class="pin-row"><span>6번 나사 (<code>CH4</code>)</span><strong>5번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row"><span>7번 나사 (<code>CH5</code>)</span><strong>6번 압력센서 신호선 (+)</strong></div>
+            <div class="pin-row"><span>8번 나사 (<code>CH6</code>)</span><strong>7번 압력센서 신호선 (+) *(3단은 비움)*</strong></div>
+            <div class="pin-row"><span>9번 나사 (<code>CH7</code>)</span><strong>8번 압력센서 신호선 (+) *(3단은 비움)*</strong></div>
+            <div class="pin-row" style="background:#dcfce7;"><span>10번 나사 (<code>24V</code>)</span><strong>⚡ 외부 DC 24V 파워 (+) 필수 연결!</strong></div>
+            <div class="pin-row" style="background:#dcfce7;"><span>11번 나사 (<code>G</code>)</span><strong>⚡ 외부 DC 24V 파워 (- / 0V) 필수 연결!</strong></div>
+          </div>
+        </div>
+
+        <!-- 카드 2: 본체 & 4단 릴레이 출력 -->
+        <div class="pin-card">
+          <div class="pin-card-head">
+            <span>⚡ [본체 + 4단] 22개 솔레노이드 밸브 결선</span>
+            <span style="color:#fde047;">총 22개 밸브</span>
+          </div>
+          <div class="pin-card-body">
+            <div class="pin-row" style="background:#e0f2fe;"><span><strong>[본체 상단]</strong> <code>AC100-240V (L, N)</code></span><strong>🔌 220V 콘센트 전원선 연결</strong></div>
+            <div class="pin-row"><span><strong>[본체 하단]</strong> <code>P40 ~ P43</code> (4개)</span><strong>밸브 CH01 ~ CH04 (+)선 연결</strong></div>
+            <div class="pin-row"><span><strong>[본체 하단]</strong> <code>P44 ~ P47</code> (4개)</span><strong>밸브 CH05 ~ CH08 (+)선 연결</strong></div>
+            <div class="pin-row"><span><strong>[본체 하단]</strong> <code>P48 ~ P4B</code> (4개)</span><strong>밸브 CH09 ~ CH12 (+)선 연결</strong></div>
+            <div class="pin-row" style="background:#fffbeb;"><span><strong>[4단 RY16A]</strong> <code>00 ~ 09</code> (10개)</span><strong>밸브 CH13 ~ CH22 (+)선 연결</strong></div>
+            <div class="pin-row"><span><strong>[4단 RY16A]</strong> <code>0A ~ 0F</code> (6개)</span><strong>예비 출력 (비워둠)</strong></div>
+            <div class="pin-row" style="background:#dcfce7;"><span><strong>[모든 출력 공통]</strong> <code>COM0, COM1...</code></span><strong>⚡ 외부 DC 24V 파워 (+) 공통 연결</strong></div>
+            <div class="pin-row"><span><strong>[밸브 반대쪽 선]</strong> 밸브 (-)선</span><strong>⚡ 외부 DC 24V 파워 (- / 0V) 공통 연결</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: XG5000 소프트웨어 세팅 (클릭 순서 그대로 따라하기) -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num purple">STEP 4</span>
+        <h2 class="step-title">XG5000 프로그램 세팅 (클릭 순서 그대로 따라 하기)</h2>
+      </div>
+
+      <div class="alert-box info">
+        💻 <strong>준비물</strong>: LS ELECTRIC 공식 홈페이지(<code>ls-electric.com</code>) 자료실에서 무료 <strong>XG5000 (한국어판)</strong>을 미니 PC(또는 노트북)에 설치하고, <code>XBC-DR30SU</code> 왼쪽 아래 뚜껑을 열어 <strong>Mini-USB 5핀 케이블</strong>로 PC와 연결한 뒤 전원을 켭니다.
+      </div>
+
+      <div class="guide-steps">
+        <div class="guide-row">
+          <span class="guide-badge">1</span>
+          <div>
+            <strong>새 프로젝트 만들기</strong>: XG5000 실행 ➔ 상단 <code>[프로젝트]</code> → <code>[새 프로젝트]</code> 클릭 ➔<br/>
+            • 프로젝트 이름: <code>ACSC_22CH</code><br/>
+            • CPU 시리즈: <code>XGB</code> / CPU 종류: <strong><code>XGB-XBCU (또는 XBC-SU 표준형 / XBC-DR30SU)</code></strong> 선택 후 <code>[확인]</code>
+          </div>
+        </div>
+
+        <div class="guide-row">
+          <span class="guide-badge">2</span>
+          <div>
+            <strong>5단 모듈 1초 만에 자동 인식시키기 (I/O 동기화)</strong>:<br/>
+            • 상단 메뉴 <code>[온라인]</code> → <code>[접속]</code> 클릭 (USB로 바로 연결됨)<br/>
+            • 상단 메뉴 <code>[온라인]</code> → <code>[진단]</code> → <strong><code>[I/O 정보]</code></strong> 클릭 ➔ 팝업창에서 <strong><code>[I/O 동기화]</code></strong> 버튼 클릭!<br/>
+            • 그러면 옆에 끼운 1~5단 모듈(<code>AD08A</code>×3, <code>RY16A</code>×1, <code>EMTA</code>×1)이 자동으로 촤르륵 등록됩니다!
+          </div>
+        </div>
+
+        <div class="guide-row">
+          <span class="guide-badge">3</span>
+          <div>
+            <strong>1~3단 압력센서 모듈(XBF-AD08A) 스케일 설정 (<code>0 ~ 1500</code> = <code>0.0 ~ 150.0 bar</code>)</strong>:<br/>
+            • 왼쪽 트리에서 <code>[I/O 파라미터]</code> 더블클릭 ➔ 1번, 2번, 3번 슬롯의 <code>XBF-AD08A</code>를 각각 클릭하고 아래 표처럼 똑같이 맞춥니다:
+          </div>
+        </div>
+      </div>
+
+      <!-- XG5000 파라미터 설정 표 -->
+      <div class="xg-window">
+        <div class="xg-titlebar">
+          <span>⚙️ XG5000 - [I/O 파라미터] ➔ 슬롯 1, 2, 3 (XBF-AD08A) 채널 설정값</span>
+          <span>CH0 ~ CH7 전체 체크</span>
+        </div>
+        <div class="xg-body">
+          <table class="xg-table">
+            <thead>
+              <tr>
+                <th>파라미터 항목</th>
+                <th>선택할 설정값</th>
+                <th>왜 이렇게 설정하나요?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>채널 운전 상태 (CH0~CH7)</strong></td>
+                <td><strong style="color:#34d399;">사용 (Enable)</strong></td>
+                <td>슬롯1(CH0~7), 슬롯2(CH0~7), 슬롯3(CH0~5) 사용 켜기</td>
+              </tr>
+              <tr>
+                <td><strong>입력 범위 (Input Range)</strong></td>
+                <td><strong style="color:#fde047;">4 ~ 20 mA</strong></td>
+                <td>4mA 미만의 단선(0mA) 감지를 위해 반드시 <code>4~20mA</code> 선택</td>
+              </tr>
+              <tr>
+                <td><strong>출력 데이터 타입</strong></td>
+                <td><strong style="color:#38bdf8;">사용자 정의 스케일 (또는 0~16000 기본값)</strong></td>
+                <td>스케일 하한값: <code>0</code> / 스케일 상한값: <code>1500</code> (= 150.0 bar) 설정</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="guide-steps">
+        <div class="guide-row">
+          <span class="guide-badge">4</span>
+          <div>
+            <strong>5단 이더넷 모듈(<code>XBL-EMTA</code>) 고정 IP 설정 (<code>192.168.0.50</code>)</strong>:<br/>
+            • 왼쪽 프로젝트 트리에서 <code>[내장/외장 통신 파라미터]</code> → 슬롯 5번 <strong><code>[XBL-EMTA (FEnet)]</code></strong> 더블클릭<br/>
+            • <strong>IP 주소</strong>: <code>192.168.0.50</code> / <strong>서브넷 마스크</strong>: <code>255.255.255.0</code> / <strong>게이트웨이</strong>: <code>192.168.0.1</code> 입력<br/>
+            • <strong>전용 서비스 / 모드버스(Modbus TCP) 서버 설정</strong>: 활성화 체크 (모드버스 워드 읽기/쓰기 기본 영역을 <code>M</code> 영역 <code>M0000</code>으로 지정)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: 22채널 래더(Ladder) 프로그램 5줄 입력 -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num">STEP 5</span>
+        <h2 class="step-title">XG5000 래더(Ladder) 프로그램 입력 — 딱 이대로 넣으세요!</h2>
+      </div>
+
+      <p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 10px;">
+        왼쪽 프로젝트 창에서 <code>[NewProgram] → [프로그램]</code>을 더블클릭한 뒤, <strong>1~3단 압력센서 22개 값을 <code>%MW100 ~ %MW121</code>(<code>M0100 ~ M0121</code>)에 담아두고, 미니 PC가 보낸 <code>%MW200 ~ %MW221</code>(<code>M0200 ~ M0221</code>) 밸브 차단 신호로 실제 릴레이를 켜고 끄는 코드</strong>입니다.
+      </p>
+
+      <div class="ladder-box">
+<span class="ladder-comment">// [1] 상시 ON 접점(F00099)으로 매 스캔마다 22채널 압력값을 M0100~M0121 (%MW100~%MW121)로 복사</span>
+|--[ <span class="ladder-addr">F00099</span> ]------------------------------------------------[ <span class="ladder-cmd">BMOV</span>  <span class="ladder-addr">U01.02</span>   <span class="ladder-addr">M0100</span>   <span class="ladder-cmd">8</span> ]--|  <span class="ladder-comment">// 1단 AD08A (CH01~CH08) ➔ %MW100~%MW107</span>
+|                                                            [ <span class="ladder-cmd">BMOV</span>  <span class="ladder-addr">U02.02</span>   <span class="ladder-addr">M0108</span>   <span class="ladder-cmd">8</span> ]--|  <span class="ladder-comment">// 2단 AD08A (CH09~CH16) ➔ %MW108~%MW115</span>
+|                                                            [ <span class="ladder-cmd">BMOV</span>  <span class="ladder-addr">U03.02</span>   <span class="ladder-addr">M0116</span>   <span class="ladder-cmd">6</span> ]--|  <span class="ladder-comment">// 3단 AD08A (CH17~CH22) ➔ %MW116~%MW121</span>
+
+<span class="ladder-comment">// [2] 미니 PC 밸브 제어 명령(%MW200~%MW221 : 1이면 차단 코일 구동) ➔ 본체 12점(P0040~P004B) &amp; 4단 모듈(P0080~P0089) 출력</span>
+|--[ <span class="ladder-cmd">&gt;</span> <span class="ladder-addr">M0200</span>  0 ]--------------------------------------------( <span class="ladder-addr">P0040</span> )--|  <span class="ladder-comment">// CH01 밸브 (본체 출력 1번)</span>
+|--[ <span class="ladder-cmd">&gt;</span> <span class="ladder-addr">M0201</span>  0 ]--------------------------------------------( <span class="ladder-addr">P0041</span> )--|  <span class="ladder-comment">// CH02 밸브 (본체 출력 2번)</span>
+<span class="ladder-comment">// ... (동일 패턴으로 M0202~M0211 ➔ P0042~P004B 본체 12점 연결) ...</span>
+|--[ <span class="ladder-cmd">&gt;</span> <span class="ladder-addr">M0212</span>  0 ]--------------------------------------------( <span class="ladder-addr">P0080</span> )--|  <span class="ladder-comment">// CH13 밸브 (4단 RY16A 출력 1번)</span>
+<span class="ladder-comment">// ... (동일 패턴으로 M0213~M0221 ➔ P0081~P0089 4단 모듈 10점 연결) ...</span>
+|------------------------------------------------------------[ <span class="ladder-cmd">END</span> ]----|
+      </div>
+
+      <div class="alert-box success">
+        💡 <strong>마지막 저장(PLC 쓰기) 방법</strong>:<br/>
+        입력 완료 후 XG5000 상단 메뉴 <strong><code>[온라인]</code> → <code>[쓰기]</code></strong> 클릭 ➔ <code>[프로그램 + 파라미터]</code> 모두 체크 후 <strong><code>[확인]</code></strong>을 누르고, PLC 상태를 <strong><code>[RUN 모드]</code></strong>로 바꾸면 PLC 세팅이 100% 끝납니다! (이제 USB 케이블은 뽑으셔도 됩니다!)
+      </div>
+    </section>
+
+    <!-- STEP 6: 상황실 미니 PC 랜선 연결 & 원클릭 가동 -->
+    <section class="step-card">
+      <div class="step-head">
+        <span class="step-num green">STEP 6</span>
+        <h2 class="step-title">상황실 미니 PC 랜선 연결 및 원클릭 실행 (3분 완성)</h2>
+      </div>
+
+      <div class="guide-steps">
+        <div class="guide-row">
+          <span class="guide-badge">1</span>
+          <div><strong>랜선 &amp; USB 경광등 연결</strong>: 5단 <code>XBL-EMTA</code>의 랜포트와 상황실 미니 PC 랜포트를 <strong>CAT.6 랜선</strong>으로 연결하고, 미니 PC의 USB 포트에 <strong>USB 3색 타워램프</strong>를 꽂습니다.</div>
+        </div>
+        <div class="guide-row">
+          <span class="guide-badge">2</span>
+          <div><strong>미니 PC 고정 IP 자동 세팅</strong>: 프로젝트 폴더의 <strong><code>set-plc-ip.bat</code></strong>와 <strong><code>allow-firewall.bat</code></strong>를 마우스 우클릭 → <code>[관리자 권한으로 실행]</code> 합니다. (미니 PC IP가 자동으로 <code>192.168.0.100</code>으로 세팅됩니다.)</div>
+        </div>
+        <div class="guide-row">
+          <span class="guide-badge">3</span>
+          <div><strong>관제 시스템 가동!</strong>: <strong><code>start-dual-kiosk.bat</code></strong>를 더블클릭하면 1번 모니터(조작 대시보드)와 2번 대형 TV(22채널 전광판)가 켜지며 실시간 22채널 압력과 밸브 제어가 즉시 작동합니다!</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      본 세팅 마스터북은 상단 <strong>[📥 가이드 HTML 다운]</strong> 버튼으로 저장해 두셨다가 장비 도착 날 펼쳐보시면 됩니다.<br/>
+      장비 조립 중 궁금한 점이 생기면 언제든 편하게 질문해 주세요!
+    </footer>
+
+  </main>
+
+  <script>
+    function downloadSetupHtml() {
+      const htmlSource = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ACSC_22CH_장비조립_및_XG5000_실전세팅가이드.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

@@ -95,27 +95,56 @@ export default function HardwareGuideModal({
           </div>
         </div>
 
-        {/* 서브 탭 선택 */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {[
-            { id: "ALL", label: "📋 전체 한눈에 보기" },
-            { id: "LAN", label: "🔌 1. 듀얼 랜선 연결 (2 LAN)" },
-            { id: "MONITOR", label: "🖥️ 2. 듀얼 모니터 연결 (HDMI+DP)" },
-            { id: "LED", label: "💡 3. XBL-EMTA LED 상태 진단표" },
-          ].map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setSubTab(t.id as "ALL" | "LAN" | "MONITOR" | "LED")}
-              className={`min-h-[40px] rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                subTab === t.id
-                  ? "bg-cyan-500 text-slate-950"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-              }`}
+        {/* 서브 탭 선택 & 3대 현장 가이드 HTML 바로가기 */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "ALL", label: "📋 전체 한눈에 보기" },
+              { id: "LAN", label: "🔌 1. 듀얼 랜선 연결 (2 LAN)" },
+              { id: "MONITOR", label: "🖥️ 2. 듀얼 모니터 연결 (HDMI+DP)" },
+              { id: "LED", label: "💡 3. XBL-EMTA LED 상태 진단표" },
+            ].map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setSubTab(t.id as "ALL" | "LAN" | "MONITOR" | "LED")}
+                className={`min-h-[40px] rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+                  subTab === t.id
+                    ? "bg-cyan-500 text-slate-950"
+                    : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/gas-map.html"
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[38px] inline-flex items-center rounded-xl border border-emerald-500/50 bg-emerald-500/15 px-3 py-1.5 text-xs font-extrabold text-emerald-300 hover:bg-emerald-500/25"
             >
-              {t.label}
-            </button>
-          ))}
+              🧪 11뱅크/22채널 가스 매칭표 HTML
+            </a>
+            <a
+              href="/plc-guide.html"
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[38px] inline-flex items-center rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3 py-1.5 text-xs font-extrabold text-cyan-300 hover:bg-cyan-500/25"
+            >
+              🔌 XBC-DR30SU 실물 결선가이드 HTML
+            </a>
+            <a
+              href="/setup-guide.html"
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[38px] inline-flex items-center rounded-xl border border-purple-500/50 bg-purple-500/15 px-3 py-1.5 text-xs font-extrabold text-purple-300 hover:bg-purple-500/25"
+            >
+              🛠️ XG5000 세팅 마스터북 HTML
+            </a>
+          </div>
         </div>
 
         <div className="mt-4 space-y-5">

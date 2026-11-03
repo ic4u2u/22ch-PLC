@@ -1,6 +1,7 @@
 /**
  * 파일명: server/lib/db.js
  * 역할: SQLite (logs/acsc_history.db, WAL 모드) 5대 테이블 초기화 및 22채널(11뱅크) 설정/이력 관리 모듈
+ *       (현장 도면 반영: 가스캐비넷 5뱅크[10통] + 오토체인지 6뱅크[12통] = 총 11뱅크/22실린더)
  */
 
 const fs = require("fs");
@@ -22,19 +23,110 @@ const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 db.pragma("synchronous = NORMAL");
 
-// 11뱅크(22채널) 특수가스 기본 구성 프리셋 생성 함수
+// 11뱅크(22채널) 특수가스 실제 현장 구성 프리셋 (가스캐비넷 5CH + 오토체인지 6CH)
 const GAS_LIST = [
-  { name: "H2 (수소)", code: "H2", color: "#ef4444" },
-  { name: "SiH4 (모노실란)", code: "SiH4", color: "#f97316" },
-  { name: "NH3 (암모니아)", code: "NH3", color: "#eab308" },
-  { name: "NF3 (삼불화질소)", code: "NF3", color: "#84cc16" },
-  { name: "Cl2 (염소)", code: "Cl2", color: "#10b981" },
-  { name: "BCl3 (삼염화붕소)", code: "BCl3", color: "#14b8a6" },
-  { name: "CF4 (사불화탄소)", code: "CF4", color: "#06b6d4" },
-  { name: "SF6 (육불화황)", code: "SF6", color: "#0ea5e9" },
-  { name: "N2O (아산화질소)", code: "N2O", color: "#3b82f6" },
-  { name: "PH3 (포스핀)", code: "PH3", color: "#6366f1" },
-  { name: "Ar (고순도 아르곤)", code: "Ar", color: "#8b5cf6" },
+  // [구역 1] 하단 가스저장소 (CABINET 5CH = 10 실린더)
+  {
+    name: "P-CH4 [CH4(N5)] 고순도메탄",
+    code: "P-CH4(N5)",
+    color: "#ef4444",
+    pinAX: 15,
+    pinAY: 78,
+    pinBX: 22,
+    pinBY: 78,
+  },
+  {
+    name: "G-CH4 [CH4(N35)] 일반메탄",
+    code: "G-CH4(N35)",
+    color: "#f97316",
+    pinAX: 30,
+    pinAY: 78,
+    pinBX: 37,
+    pinBY: 78,
+  },
+  {
+    name: "P-H2 [H2(N5)] 고순도수소",
+    code: "P-H2(N5)",
+    color: "#eab308",
+    pinAX: 45,
+    pinAY: 78,
+    pinBX: 52,
+    pinBY: 78,
+  },
+  {
+    name: "MIX(Ar+H2) 혼합가스",
+    code: "MIX(Ar+H2)",
+    color: "#84cc16",
+    pinAX: 60,
+    pinAY: 78,
+    pinBX: 67,
+    pinBY: 78,
+  },
+  {
+    name: "C2H2 [C2H2(N5)] 아세틸렌",
+    code: "C2H2(N5)",
+    color: "#ec4899",
+    pinAX: 75,
+    pinAY: 78,
+    pinBX: 82,
+    pinBY: 78,
+  },
+  // [구역 2] 상단 벽면 오토체인지 (자동절체기 5세트 = 10 실린더)
+  {
+    name: "P-N2 [N2(N5)] 고순도질소",
+    code: "P-N2(N5)",
+    color: "#10b981",
+    pinAX: 27,
+    pinAY: 43,
+    pinBX: 34,
+    pinBY: 43,
+  },
+  {
+    name: "G-N2 [N2(N35)] 일반질소",
+    code: "G-N2(N35)",
+    color: "#14b8a6",
+    pinAX: 41,
+    pinAY: 43,
+    pinBX: 48,
+    pinBY: 43,
+  },
+  {
+    name: "He [He(N5)] 고순도헬륨",
+    code: "He(N5)",
+    color: "#06b6d4",
+    pinAX: 55,
+    pinAY: 43,
+    pinBX: 62,
+    pinBY: 43,
+  },
+  {
+    name: "Ar [Ar(N5)] 고순도아르곤",
+    code: "Ar(N5)",
+    color: "#3b82f6",
+    pinAX: 69,
+    pinAY: 43,
+    pinBX: 76,
+    pinBY: 43,
+  },
+  {
+    name: "O2 [O2(N5)] 고순도산소",
+    code: "O2(N5)",
+    color: "#6366f1",
+    pinAX: 83,
+    pinAY: 43,
+    pinBX: 90,
+    pinBY: 43,
+  },
+  // [구역 3] 좌상단 별도 H2 저장소 (오토체인지 6번째 세트 = 2 실린더)
+  {
+    name: "G-H2 [H2(N35)] 일반수소",
+    code: "G-H2(N35)",
+    color: "#a855f7",
+    pinAX: 20,
+    pinAY: 16,
+    pinBX: 30,
+    pinBY: 16,
+  },
 ];
 
 function createDefaultChannelConfigs() {
@@ -43,8 +135,6 @@ function createDefaultChannelConfigs() {
     const bankIdx = Math.floor(idx / 2);
     const side = idx % 2 === 0 ? "A" : "B";
     const gas = GAS_LIST[bankIdx];
-    const col = idx % 6;
-    const row = Math.floor(idx / 6);
     return {
       id: chId,
       bankId: `BANK-${String(bankIdx + 1).padStart(2, "0")}`,
@@ -57,8 +147,8 @@ function createDefaultChannelConfigs() {
       warnBar: 35.0,
       dangerBar: 15.0,
       calibrationOffset: 0.0,
-      pinX: 12 + col * 15,
-      pinY: 20 + row * 20,
+      pinX: side === "A" ? gas.pinAX : gas.pinBX,
+      pinY: side === "A" ? gas.pinAY : gas.pinBY,
     };
   });
 }
@@ -120,7 +210,12 @@ function initDatabase() {
   if (existingChRow) {
     try {
       const parsed = JSON.parse(existingChRow.value);
-      if (!Array.isArray(parsed) || parsed.length !== CHANNEL_COUNT) {
+      // 22채널이 아니거나 이전 임시 가스명(SiH4 등)으로 되어 있으면 현장 도면 가스명으로 자동 업데이트
+      if (
+        !Array.isArray(parsed) ||
+        parsed.length !== CHANNEL_COUNT ||
+        (parsed[0] && parsed[0].gasCode === "H2")
+      ) {
         needResetTo22 = true;
       }
     } catch {
@@ -174,20 +269,20 @@ function initDatabase() {
       VALUES (?, ?, ?, ?, ?)
     `);
     insertAudit.run(ts, "SYSTEM", "BOOT", "ACSC-SERVER", "ACSC 22채널 스마트 관제 브릿지 서버 및 SQLite WAL 엔진 기동 완료");
-    insertAudit.run(ts, "SMART-AI", "MODE_INIT", "BANK-01~11", "11뱅크 Smart AI 밸브 스위칭 엔진 활성화 (Hysteresis: 3.0 bar)");
+    insertAudit.run(ts, "SMART-AI", "MODE_INIT", "BANK-01~11", "11뱅크(가스캐비넷 5CH + 오토체인지 6CH) Smart AI 스위칭 엔진 활성화");
 
     const insertRep = db.prepare(`
       INSERT INTO cylinder_replacements (timestamp, year_month, channel_id, gas_name, prev_pressure, new_pressure, delta_pressure)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
-    insertRep.run(ts, ym, 1, "H2 (수소)", 7.2, 149.8, 142.6);
-    insertRep.run(ts, ym, 3, "SiH4 (모노실란)", 9.5, 148.0, 138.5);
+    insertRep.run(ts, ym, 1, "P-CH4 [CH4(N5)] 고순도메탄", 7.2, 149.8, 142.6);
+    insertRep.run(ts, ym, 11, "P-N2 [N2(N5)] 고순도질소", 9.5, 148.0, 138.5);
 
     const insertLeak = db.prepare(`
       INSERT INTO leak_test_logs (timestamp, channel_id, gas_name, duration_sec, start_pressure, end_pressure, delta_pressure, threshold_bar, result, inspector)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    insertLeak.run(ts, 1, "H2 (수소)", 60, 120.0, 119.9, 0.1, 0.2, "PASS", "ADMIN");
+    insertLeak.run(ts, 1, "P-CH4 [CH4(N5)] 고순도메탄", 60, 120.0, 119.9, 0.1, 0.2, "PASS", "ADMIN");
   }
 }
 

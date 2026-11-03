@@ -3,8 +3,8 @@
 /**
  * 파일명: src/components/dashboard/FloorplanTab.tsx
  * 역할: [탭 5] 🗺️ 공장 도면 뷰
- *  - 클린룸/가스실 기본 SVG 도면 및 사용자 도면 이미지 업로드 지원
- *  - 마우스 드래그 앤 드롭으로 24채널 핀 배치 및 다중 PC 실시간 SQLite 동기화
+ *  - 실제 현장 CAD 도면(H2 저장소 + 자동절체기 5세트 + 가스저장소 캐비넷 5칸) 기본 SVG 내장
+ *  - 마우스 드래그 앤 드롭으로 22채널 핀 배치 및 다중 PC 실시간 SQLite 동기화
  */
 
 import React, { useRef, useState } from "react";
@@ -87,7 +87,7 @@ export default function FloorplanTab({
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
         <div>
           <h3 className="text-base font-extrabold text-cyan-300">
-            🗺️ 클린룸 & 특수가스 공급실(Gas Cabinet Room) 실시간 배치도
+            🗺️ 현장 특수가스 저장소(CABINET 5CH) & 오토체인지(자동절체기 6CH) 실시간 도면
           </h3>
           <p className="text-xs text-slate-400">
             {isUnlocked
@@ -98,7 +98,7 @@ export default function FloorplanTab({
 
         <div className="flex items-center gap-2">
           <label className="min-h-[40px] cursor-pointer inline-flex items-center rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3.5 py-2 text-xs font-extrabold text-cyan-200 hover:bg-cyan-500/25">
-            <span>🖼️ 도면 이미지 업로드</span>
+            <span>🖼️ 원본 도면 이미지 업로드</span>
             <input
               type="file"
               accept="image/*"
@@ -113,12 +113,12 @@ export default function FloorplanTab({
                 if (!isUnlocked) return onRequestPin();
                 onSyncFloorplan({
                   floorplan_bg: "",
-                  detail: "기본 클린룸/가스실 SVG 도면으로 초기화",
+                  detail: "현장 CAD 기반 기본 SVG 도면으로 복원",
                 });
               }}
               className="min-h-[40px] rounded-xl bg-slate-800 px-3 text-xs font-bold text-slate-300 hover:bg-slate-700"
             >
-              기본 SVG 도면 복원
+              기본 CAD 도면 복원
             </button>
           )}
         </div>
@@ -130,7 +130,7 @@ export default function FloorplanTab({
         onMouseMove={handleMouseMove}
         onMouseUp={() => setDraggingId(null)}
         onMouseLeave={() => setDraggingId(null)}
-        className="relative h-[540px] w-full select-none overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-inner"
+        className="relative h-[560px] w-full select-none overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-inner"
       >
         {floorplanBg ? (
           <img
@@ -139,76 +139,162 @@ export default function FloorplanTab({
             className="h-full w-full object-cover opacity-80"
           />
         ) : (
-          /* 기본 클린룸 / 특수가스 캐비닛 룸 SVG 설계도면 */
-          <svg viewBox="0 0 1000 540" className="h-full w-full">
+          /* 실제 현장 CAD 도면 1:1 재현 SVG (H2 저장소 + 자동절체기 5세트 + 가스저장소 CABINET 5칸) */
+          <svg viewBox="0 0 1000 560" className="h-full w-full">
             <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <pattern id="cad-grid" width="35" height="35" patternUnits="userSpaceOnUse">
                 <path
-                  d="M 40 0 L 0 0 0 40"
+                  d="M 35 0 L 0 0 0 35"
                   fill="none"
                   stroke="#1e293b"
                   strokeWidth="1"
                 />
               </pattern>
             </defs>
-            <rect width="1000" height="540" fill="url(#grid)" />
-            {/* 구역 외곽선 */}
-            <rect
-              x="25"
-              y="25"
-              width="950"
-              height="490"
-              rx="12"
-              fill="none"
-              stroke="#0ea5e9"
-              strokeWidth="2"
-              strokeDasharray="8 4"
-            />
-            <rect
-              x="40"
-              y="45"
-              width="450"
-              height="220"
-              rx="8"
-              fill="#0f172a"
-              stroke="#334155"
-              strokeWidth="2"
-            />
-            <text x="60" y="75" fill="#38bdf8" fontSize="15" fontWeight="bold">
-              ZONE A : 특수가스 실린더 캐비닛 룸 #1 (BANK 01 ~ 06)
+            <rect width="1000" height="560" fill="url(#cad-grid)" />
+
+            {/* 상단 PIPE RACK & H2 저장소 (BANK-11 : G-H2 CH21/CH22) */}
+            <line x1="180" y1="0" x2="180" y2="55" stroke="#38bdf8" strokeWidth="3" />
+            <line x1="192" y1="0" x2="192" y2="55" stroke="#38bdf8" strokeWidth="3" />
+            <text x="208" y="24" fill="#94a3b8" fontSize="12" fontWeight="bold">
+              PIPE RACK (PIPE : STS304 x 15A)
             </text>
 
             <rect
-              x="510"
-              y="45"
-              width="450"
-              height="220"
-              rx="8"
+              x="110"
+              y="55"
+              width="310"
+              height="85"
+              rx="6"
               fill="#0f172a"
-              stroke="#334155"
-              strokeWidth="2"
+              stroke="#a855f7"
+              strokeWidth="2.5"
             />
-            <text x="530" y="75" fill="#38bdf8" fontSize="15" fontWeight="bold">
-              ZONE B : 특수가스 실린더 캐비닛 룸 #2 (BANK 07 ~ 11)
+            <text x="265" y="78" fill="#d8b4fe" fontSize="14" fontWeight="bold" textAnchor="middle">
+              🏠 H2 저장소 [오토체인지 6번: G-H2 (일반수소 A/B)]
             </text>
 
+            {/* 중단 구역: 오토체인지 (자동절체기 5세트 = 10 실린더, 폭 5,500mm) */}
             <rect
               x="40"
-              y="285"
+              y="165"
               width="920"
-              height="210"
+              height="160"
               rx="8"
               fill="#0f172a"
-              stroke="#334155"
+              stroke="#10b981"
               strokeWidth="2"
             />
-            <text x="60" y="315" fill="#a855f7" fontSize="15" fontWeight="bold">
-              ZONE C : FAB 클린룸 VMB (Valve Manifold Box) & POU 공정 장비 라인
+            <text x="60" y="192" fill="#34d399" fontSize="14" fontWeight="bold">
+              🔄 오토체인지 구역 (자동절체기 A/B 매니폴드 5세트 + H2저장소 1세트 = 총 6CH / 12실린더, 5,500mm)
             </text>
+
+            {/* 자동절체기 5세트 실린더 원형 A/B 마크 */}
+            {[
+              { x: 305, label: "BANK-06 : P-N2 [N2(N5)]" },
+              { x: 445, label: "BANK-07 : G-N2 [N2(N35)]" },
+              { x: 585, label: "BANK-08 : He(N5)" },
+              { x: 725, label: "BANK-09 : Ar(N5)" },
+              { x: 865, label: "BANK-10 : O2(N5)" },
+            ].map((item, idx) => (
+              <g key={idx}>
+                <rect
+                  x={item.x - 45}
+                  y={202}
+                  width={90}
+                  height={16}
+                  rx={3}
+                  fill="#1e293b"
+                  stroke="#64748b"
+                />
+                <circle
+                  cx={item.x - 28}
+                  cy={245}
+                  r={22}
+                  fill="#090d16"
+                  stroke="#334155"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx={item.x + 28}
+                  cy={245}
+                  r={22}
+                  fill="#090d16"
+                  stroke="#334155"
+                  strokeWidth="2"
+                />
+                <text
+                  x={item.x}
+                  y={298}
+                  fill="#cbd5e1"
+                  fontSize="11.5"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  {item.label}
+                </text>
+              </g>
+            ))}
+
+            {/* 하단 구역: 가스저장소 CABINET 5칸 (800 x 550mm x 5칸 = 10 실린더, 폭 7,700mm) */}
+            <rect
+              x="70"
+              y="350"
+              width="860"
+              height="185"
+              rx="8"
+              fill="#0f172a"
+              stroke="#0ea5e9"
+              strokeWidth="2.5"
+            />
+            <text x="92" y="378" fill="#38bdf8" fontSize="14" fontWeight="bold">
+              🗄️ 가스저장소 (CABINET : 방폭 캐비넷 5CH × A/B 2통 = 10실린더, 800×550mm, 총 폭 7,700mm)
+            </text>
+
+            {[
+              { x: 115, title: "CABINET 1 (BANK-01)", sub: "P-CH4 / CH4(N5)" },
+              { x: 265, title: "CABINET 2 (BANK-02)", sub: "G-CH4 / CH4(N35)" },
+              { x: 415, title: "CABINET 3 (BANK-03)", sub: "P-H2 / H2(N5)" },
+              { x: 565, title: "CABINET 4 (BANK-04)", sub: "MIX (Ar + H2)" },
+              { x: 715, title: "CABINET 5 (BANK-05)", sub: "C2H2 (N5)" },
+            ].map((cab, idx) => (
+              <g key={idx}>
+                <rect
+                  x={cab.x}
+                  y={392}
+                  width={145}
+                  height={120}
+                  rx={6}
+                  fill="#1e293b"
+                  stroke="#475569"
+                  strokeWidth="2"
+                />
+                <text
+                  x={cab.x + 72}
+                  y={412}
+                  fill="#fde047"
+                  fontSize="11"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  {cab.title}
+                </text>
+                <text
+                  x={cab.x + 72}
+                  y={498}
+                  fill="#e2e8f0"
+                  fontSize="12"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                >
+                  {cab.sub}
+                </text>
+              </g>
+            ))}
           </svg>
         )}
 
-        {/* 24채널 드래그 앤 드롭 핀 렌더링 */}
+        {/* 22채널 드래그 앤 드롭 핀 렌더링 */}
         {channels.map((ch) => {
           let pinBg = "bg-emerald-500 border-emerald-200 text-slate-950";
           if (ch.status === "SENSOR_FAULT") {
@@ -237,13 +323,15 @@ export default function FloorplanTab({
               onClick={() => {
                 if (draggingId === null) onSelectChannel(ch);
               }}
-              className={`absolute z-10 cursor-pointer rounded-xl border-2 px-2.5 py-1.5 shadow-xl transition-transform hover:scale-110 ${pinBg}`}
+              className={`absolute z-10 cursor-pointer rounded-xl border-2 px-2 py-1 shadow-xl transition-transform hover:scale-110 ${pinBg}`}
             >
               <div className="flex items-center gap-1 text-[10px] font-black leading-none">
-                <span>CH{String(ch.id).padStart(2, "0")}</span>
-                <span>({ch.gasCode})</span>
+                <span>CH{String(ch.id).padStart(2, "0")}[{ch.side}]</span>
               </div>
-              <div className="mt-0.5 font-mono text-xs font-black">
+              <div className="text-[9px] font-extrabold opacity-90 leading-tight">
+                {ch.gasCode}
+              </div>
+              <div className="mt-0.5 font-mono text-[11px] font-black">
                 {ch.status === "SENSOR_FAULT"
                   ? "FAULT"
                   : `${formatPressureByUnit(ch.pressureBar, unit, ch.maxBar)} ${unitLabel}`}
