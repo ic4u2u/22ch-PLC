@@ -21,6 +21,7 @@ import {
   PressureUnit,
   ReplacementLogItem,
   TowerLampState,
+  getBankFacilityMeta,
   playAlarmBeep,
   speakKoreanAlarm,
 } from "./dashboard/types";
@@ -386,27 +387,31 @@ export default function Dashboard24() {
     });
   }, [channels, wsConnected]);
 
-  // 위험(DANGER) 및 센서고장(SENSOR_FAULT) 감지 시 한국어 TTS 음성 방송 + Web Audio 비프음
+  // 위험(DANGER) 및 센서고장(SENSOR_FAULT) 감지 시 Qwen3-TTS 인간형 한국어 아나운서 음성 방송 + 소프트 차임벨
   useEffect(() => {
     if (!ttsEnabled) return;
     const now = Date.now();
-    // 과도한 반복 방송 방지를 위해 12초 간격 쿨다운 적용
-    if (now - lastSpokenRef.current < 12000) return;
+    // 과도한 반복 방송 방지를 위해 15초 간격 쿨다운 적용
+    if (now - lastSpokenRef.current < 15000) return;
 
     const dangerCh = channels.find((c) => c.status === "DANGER");
     const faultCh = channels.find((c) => c.status === "SENSOR_FAULT");
 
     if (dangerCh) {
       lastSpokenRef.current = now;
+      const bankNum = Math.ceil(dangerCh.id / 2);
+      const meta = getBankFacilityMeta(bankNum);
       playAlarmBeep("DANGER");
       speakKoreanAlarm(
-        `경고! ${dangerCh.id}번 채널 ${dangerCh.gasName} 압력이 위험 기준 이하입니다.`
+        `상황실 긴급 안내 말씀 드립니다. ${meta.zoneLabel} ${bankNum <= 5 ? bankNum : bankNum - 5}번, ${dangerCh.gasName} ${dangerCh.side}통의 압력이 ${dangerCh.pressureBar} 바 로 위험 기준 이하입니다. 예비 실린더 절체 상태를 확인해 주시기 바랍니다.`
       );
     } else if (faultCh) {
       lastSpokenRef.current = now;
+      const bankNum = Math.ceil(faultCh.id / 2);
+      const meta = getBankFacilityMeta(bankNum);
       playAlarmBeep("FAULT");
       speakKoreanAlarm(
-        `점검 요망! ${faultCh.id}번 채널 압력 센서 신호 이상이 감지되었습니다.`
+        `상황실 안내 말씀 드립니다. ${meta.zoneLabel} ${bankNum <= 5 ? bankNum : bankNum - 5}번, ${faultCh.gasName} ${faultCh.side}통 압력 센서 신호 이상이 감지되어 밸브 오차단 방지 모드가 작동 중입니다.`
       );
     }
   }, [channels, ttsEnabled]);
@@ -507,8 +512,18 @@ export default function Dashboard24() {
               const next = !ttsEnabled;
               setTtsEnabled(next);
               if (next) {
-                speakKoreanAlarm("한국어 음성 경보 안내가 활성화되었습니다.");
+                playAlarmBeep("FAULT");
+                speakKoreanAlarm(
+                  "상황실 안내 말씀 드립니다. 큐웬 쓰리 자연스러운 한국어 AI 음성 경보 방송이 활성화되었습니다."
+                );
               }
+            }}
+            onTestVoice={() => {
+              playAlarmBeep("DANGER");
+              speakKoreanAlarm(
+                "상황실 안내 말씀 드립니다. 현재 가스캐비넷 다섯 개 라인과 오토체인지 여섯 개 라인, 총 스물두 개 가스 실린더의 스마트 관제 시스템이 정상 작동 중입니다."
+              );
+              showToast("🎙️ Qwen3-TTS 한국어 AI 아나운서 음성 방송 테스트 중...");
             }}
             diagnostics={diagnostics}
             towerLamp={towerLamp}

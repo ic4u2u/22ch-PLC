@@ -22,6 +22,7 @@ interface HeaderBarProps {
   onClickPinToggle: () => void;
   ttsEnabled: boolean;
   onToggleTts: () => void;
+  onTestVoice?: () => void;
   diagnostics: DiagnosticsData;
   towerLamp: TowerLampState;
   onMuteTowerBuzzer: () => void;
@@ -48,6 +49,7 @@ export default function HeaderBar({
   onClickPinToggle,
   ttsEnabled,
   onToggleTts,
+  onTestVoice,
   diagnostics,
   towerLamp,
   onMuteTowerBuzzer,
@@ -220,18 +222,32 @@ export default function HeaderBar({
             )}
           </button>
 
-          {/* 3. 한국어 TTS 음성안내 토글 */}
-          <button
-            type="button"
-            onClick={onToggleTts}
-            className={`min-h-[42px] flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all ${
-              ttsEnabled
-                ? "border-emerald-500/60 bg-emerald-500/20 text-emerald-200"
-                : "border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800"
-            }`}
-          >
-            <span>{ttsEnabled ? "🔊 한국어 TTS 켜짐" : "🔇 한국어 TTS 꺼짐"}</span>
-          </button>
+          {/* 3. Qwen3-TTS 인간형 한국어 음성안내 토글 & 즉시 들어보기 */}
+          <div className="flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-900 p-1">
+            <button
+              type="button"
+              onClick={onToggleTts}
+              className={`min-h-[36px] flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                ttsEnabled
+                  ? "bg-emerald-500/25 text-emerald-200 border border-emerald-500/50"
+                  : "text-slate-400 hover:bg-slate-800"
+              }`}
+            >
+              <span>
+                {ttsEnabled ? "🔊 Qwen3-TTS 음성 켜짐" : "🔇 AI 음성 꺼짐"}
+              </span>
+            </button>
+            {onTestVoice && (
+              <button
+                type="button"
+                onClick={onTestVoice}
+                title="자연스러운 인간형 한국어 경보 음성을 즉시 테스트합니다"
+                className="min-h-[36px] rounded-lg border border-purple-500/40 bg-purple-500/20 px-2.5 py-1 text-xs font-extrabold text-purple-200 hover:bg-purple-500/30 transition-all"
+              >
+                🎙️ AI 음성 들어보기
+              </button>
+            )}
+          </div>
 
           {/* 4. [📡 RJ-45(XBL-EMTA) 통신진단 & 하드웨어 결선 가이드] 버튼 */}
           <button

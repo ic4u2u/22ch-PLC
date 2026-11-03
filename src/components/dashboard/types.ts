@@ -1,9 +1,13 @@
 /**
  * 파일명: src/components/dashboard/types.ts
- * 역할: ACSC 24채널 특수가스 관제 시스템 공통 타입 정의, 단위 변환기, 음성/비프음 및 CSV 유틸리티
+ * 역할: ACSC 22채널(11뱅크) 특수가스 관제 시스템 공통 타입 정의,
+ *       가스캐비넷(5CH)/오토체인지(6CH) 설비 구분 유틸리티,
+ *       Qwen3-TTS 기반 인간형 한국어 음성 안내 & 소프트 차임벨, CSV 유틸리티
  */
 
 export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: %
+
+export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
 export interface ChannelData {
   id: number;
@@ -138,6 +142,38 @@ export interface HistoryLogItem {
 }
 
 /**
+ * 뱅크 번호(1~11) 또는 채널 번호(1~22)로 [가스캐비넷 5CH] vs [오토체인지 6CH] 설비 메타데이터 반환
+ */
+export function getBankFacilityMeta(bankNumber: number) {
+  if (bankNumber <= 5) {
+    return {
+      zone: "CABINET" as FacilityZone,
+      zoneLabel: "가스캐비넷",
+      facilityBadge: `🗄️ 가스캐비넷 #${bankNumber}`,
+      subLocation: "하단 방폭 캐비넷 룸 (800×550)",
+      purityType: bankNumber === 2 ? "General (N35 · 99.95%)" : bankNumber === 4 ? "혼합가스 (Ar+H2)" : "Pure (N5 · 99.999%)",
+    };
+  }
+  const autoNum = bankNumber - 5;
+  return {
+    zone: "AUTO_CHANGE" as FacilityZone,
+    zoneLabel: "오토체인지",
+    facilityBadge:
+      bankNumber === 11
+        ? `🏠 오토체인지 #${autoNum} (H2저장소)`
+        : `🔄 오토체인지 #${autoNum}`,
+    subLocation:
+      bankNumber === 11
+        ? "좌상단 별도 H2 저장소"
+        : "상단 벽면 자동절체기 매니폴드",
+    purityType:
+      bankNumber === 7 || bankNumber === 11
+        ? "General (N35 · 99.95%)"
+        : "Pure (N5 · 99.999%)",
+  };
+}
+
+/**
  * 10번 스펙: FND 4단위 원클릭 변환기 (0: PSI, 1: Bar, 2: MPa, 3: %)
  */
 export function formatPressureByUnit(
@@ -147,18 +183,14 @@ export function formatPressureByUnit(
 ): string {
   const safeBar = Number(barValue || 0);
   if (unit === 0) {
-    // 0: PSI (x 14.5)
     return (safeBar * 14.5).toFixed(0);
   }
   if (unit === 1) {
-    // 1: Bar (기본)
     return safeBar.toFixed(1);
   }
   if (unit === 2) {
-    // 2: MPa (x 0.1)
     return (safeBar * 0.1).toFixed(2);
   }
-  // 3: % (잔량%)
   const pct = Math.max(0, Math.min(100, (safeBar / (maxBar || 150)) * 100));
   return pct.toFixed(0);
 }
@@ -177,44 +209,127 @@ export function getUnitLabel(unit: PressureUnit): string {
 }
 
 /**
- * Web Audio API 경고 비프음 출력
+ * 고급 관제실 소프트 차임벨 (귀에 거슬리는 전자 톱니파 대신 부드러운 2단 화음 차임벨)
  */
 export function playAlarmBeep(type: "DANGER" | "FAULT" = "DANGER") {
   if (typeof window === "undefined") return;
   try {
     const AudioCtx =
-      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type === "DANGER" ? "sawtooth" : "square";
-    osc.frequency.setValueAtTime(type === "DANGER" ? 880 : 620, ctx.currentTime);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.45);
+    const now = ctx.currentTime;
+
+    const notes = type === "DANGER" ? [587.33, 880.0] : [523.25, 659.25];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, now + idx * 0.16);
+      gain.gain.setValueAtTime(0.001, now + idx * 0.16);
+      gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.16 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + idx * 0.16 + 0.38);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.16);
+      osc.stop(now + idx * 0.16 + 0.4);
+    });
   } catch {
     // 브라우저 오디오 자동재생 정책 차단 시 무시
   }
 }
 
+// 화학식 및 영문 기호를 실제 방송실 아나운서가 발음하듯 자연스러운 한국어 문장으로 변환
+export function humanizeKoreanSpeech(raw: string): string {
+  return raw
+    .replace(/P-CH4\s*\[CH4\(N5\)\]/gi, "고순도 메탄")
+    .replace(/G-CH4\s*\[CH4\(N35\)\]/gi, "일반 메탄")
+    .replace(/P-H2\s*\[H2\(N5\)\]/gi, "고순도 수소")
+    .replace(/G-H2\s*\[H2\(N35\)\]/gi, "일반 수소")
+    .replace(/MIX\(Ar\+H2\)/gi, "아르곤 수소 혼합가스")
+    .replace(/C2H2\s*\[C2H2\(N5\)\]/gi, "고순도 아세틸렌")
+    .replace(/P-N2\s*\[N2\(N5\)\]/gi, "고순도 질소")
+    .replace(/G-N2\s*\[N2\(N35\)\]/gi, "일반 질소")
+    .replace(/He\s*\[He\(N5\)\]/gi, "고순도 헬륨")
+    .replace(/Ar\s*\[Ar\(N5\)\]/gi, "고순도 아르곤")
+    .replace(/O2\s*\[O2\(N5\)\]/gi, "고순도 산소")
+    .replace(/P-CH4/gi, "고순도 메탄")
+    .replace(/G-CH4/gi, "일반 메탄")
+    .replace(/P-H2/gi, "고순도 수소")
+    .replace(/G-H2/gi, "일반 수소")
+    .replace(/P-N2/gi, "고순도 질소")
+    .replace(/G-N2/gi, "일반 질소")
+    .replace(/C2H2/gi, "아세틸렌")
+    .replace(/CH-(\d+)/gi, "$1번 채널")
+    .replace(/BANK-(\d+)/gi, "$1번 뱅크")
+    .replace(/SENSOR_FAULT/gi, "센서 신호 이상")
+    .replace(/4~20mA/gi, "사 에서 이십 밀리암페어")
+    .replace(/(\d+)\.(\d+)\s*bar/gi, "$1점 $2 바")
+    .replace(/(\d+)\s*bar/gi, "$1 바");
+}
+
+let activeTtsAudio: HTMLAudioElement | null = null;
+
 /**
- * Web Speech API 한국어 TTS 음성 안내
+ * Qwen3-TTS (`/api/tts`) 기반 인간형 한국어 아나운서 음성 방송 (폐쇄망 오프라인 시 Natural Neural Voice 자동 폴백)
  */
-export function speakKoreanAlarm(text: string) {
+export function speakKoreanAlarm(text: string, voice: "Cherry" | "Ethan" = "Cherry") {
+  if (typeof window === "undefined") return;
+  const cleanText = humanizeKoreanSpeech(text);
+
+  try {
+    if (activeTtsAudio) {
+      activeTtsAudio.pause();
+      activeTtsAudio = null;
+    }
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    const audio = new Audio(
+      `/api/tts?text=${encodeURIComponent(cleanText)}&voice=${voice}`
+    );
+    audio.playbackRate = 1.03;
+    activeTtsAudio = audio;
+
+    audio.play().catch(() => {
+      // 오프라인 폐쇄망 환경이거나 브라우저 정책으로 실패 시 로컬 신경망(Natural) 한국어 음성 우선 선택
+      speakLocalNaturalKorean(cleanText);
+    });
+  } catch {
+    speakLocalNaturalKorean(cleanText);
+  }
+}
+
+function speakLocalNaturalKorean(cleanText: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   try {
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = "ko-KR";
-    utter.rate = 1.05;
-    utter.pitch = 1.0;
+
+    // Edge/Chrome에 내장된 Microsoft SunHi Online (Natural) 또는 Google 한국어 신경망 음성을 최우선 선택
+    const voices = window.speechSynthesis.getVoices();
+    const naturalKoVoice =
+      voices.find(
+        (v) =>
+          v.lang.includes("ko") &&
+          (v.name.includes("Natural") ||
+            v.name.includes("SunHi") ||
+            v.name.includes("InJoon") ||
+            v.name.includes("Google"))
+      ) || voices.find((v) => v.lang.includes("ko"));
+
+    if (naturalKoVoice) {
+      utter.voice = naturalKoVoice;
+    }
+    utter.rate = 0.98;
+    utter.pitch = 1.02;
     window.speechSynthesis.speak(utter);
   } catch {
-    // TTS 미지원 환경 예외 방지
+    // 무시
   }
 }
 
