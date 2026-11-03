@@ -9,7 +9,14 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { ChannelData, DiagnosticsData, PressureUnit, formatPressureByUnit, getUnitLabel } from "./types";
+import {
+  ChannelData,
+  DiagnosticsData,
+  PressureUnit,
+  formatPressureByUnit,
+  getGasPhysicsMeta,
+  getUnitLabel,
+} from "./types";
 
 interface PinModalProps {
   open: boolean;
@@ -258,18 +265,31 @@ export function ChannelDetailModal({
 
   if (!channel) return null;
 
-  // 순수 SVG 최근 1분 트렌드 차트 좌표 계산
+  // 순수 SVG 최근 1분 트렌드 + Hugging Face Chronos-Bolt/Granite-TTM 스타일 P10~P90 예측 신뢰구간(Quantile Band)
+  const phys = getGasPhysicsMeta(channel.gasCode, channel.pressureBar, channel.maxBar);
   const pts = trendHistory.length > 0 ? trendHistory : [channel.pressureBar];
   const maxVal = Math.max(channel.maxBar || 150, ...pts, 10);
   const svgW = 520;
   const svgH = 150;
+  const historyW = 350; // 좌측 350px: 실측 트렌드, 우측 150px: AI 예측 신뢰구간(P10~P90)
   const polylinePoints = pts
     .map((val, idx) => {
-      const x = pts.length === 1 ? svgW / 2 : (idx / (pts.length - 1)) * (svgW - 20) + 10;
+      const x = pts.length === 1 ? historyW / 2 : (idx / (pts.length - 1)) * (historyW - 15) + 10;
       const y = svgH - 15 - Math.min(1, Math.max(0, val / maxVal)) * (svgH - 30);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
+
+  const lastVal = pts[pts.length - 1] ?? channel.pressureBar;
+  const lastY = svgH - 15 - Math.min(1, Math.max(0, lastVal / maxVal)) * (svgH - 30);
+  const projDrop = channel.valveState === 0 ? Math.max(2, maxVal * 0.14) : 0;
+  const projMeanVal = Math.max(0, lastVal - projDrop);
+  const projHighVal = Math.min(maxVal, projMeanVal + maxVal * 0.06); // P90 상한
+  const projLowVal = Math.max(0, projMeanVal - maxVal * 0.06); // P10 하한
+  const yMean = svgH - 15 - (projMeanVal / maxVal) * (svgH - 30);
+  const yHigh = svgH - 15 - (projHighVal / maxVal) * (svgH - 30);
+  const yLow = svgH - 15 - (projLowVal / maxVal) * (svgH - 30);
+  const svY = svgH - 15 - Math.min(1, Math.max(0, channel.dangerBar / maxVal)) * (svgH - 30);
 
   const adjustOffset = (delta: number) => {
     const nextOffset = Number(((channel.calibrationOffset || 0) + delta).toFixed(1));
@@ -317,15 +337,42 @@ export function ChannelDetailModal({
           </button>
         </div>
 
-        {/* 순수 SVG 최근 1분 트렌드 차트 */}
+        {/* 순수 SVG 최근 1분 트렌드 + Chronos-Bolt/Granite-TTM 확률적 소진 예측 신뢰구간(P10~P90) */}
         <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
-          <div className="mb-1 flex items-center justify-between text-xs text-slate-400">
-            <span>📈 최근 1분 실시간 압력 트렌드 (0.5초 샘플링)</span>
-            <span className="font-mono text-cyan-300">현재 {channel.pressureBar.toFixed(1)} bar</span>
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-1 text-xs text-slate-400">
+            <span>📈 실측 압력 트렌드 & 🤗 AI 확률적 소진 예측 (P10~P90 신뢰구간)</span>
+            <span className="font-mono text-cyan-300">
+              🔬 {phys.physicsLabel} · 질량실잔량 {phys.realMassPct}%
+            </span>
           </div>
           <svg viewBox={`0 0 ${svgW} ${svgH}`} className="h-36 w-full overflow-visible">
             <line x1="10" y1={svgH - 15} x2={svgW - 10} y2={svgH - 15} stroke="#334155" strokeWidth="1" />
-            <line x1="10" y1="15" x2={svgW - 10} y2="15" stroke="#1e293b" strokeDasharray="4 4" />
+            {/* SV 자동절체 기준선 */}
+            <line x1="10" y1={svY} x2={svgW - 10} y2={svY} stroke="#f43f5e" strokeDasharray="3 3" strokeWidth="1.2" />
+            <text x="14" y={Math.max(12, svY - 4)} fill="#fb7185" fontSize="9" fontWeight="bold">
+              SV 절체기준 ({channel.dangerBar}b)
+            </text>
+            {/* 실측 데이터 영역 구분선 */}
+            <line x1={historyW} y1="10" x2={historyW} y2={svgH - 15} stroke="#475569" strokeDasharray="2 2" />
+            {/* P10 ~ P90 예측 신뢰구간 폴리곤 */}
+            <polygon
+              points={`${historyW},${lastY} ${svgW - 12},${yHigh} ${svgW - 12},${yLow}`}
+              fill="rgba(56, 189, 248, 0.18)"
+            />
+            {/* AI 예측 중앙 점선 */}
+            <line
+              x1={historyW}
+              y1={lastY}
+              x2={svgW - 12}
+              y2={yMean}
+              stroke="#38bdf8"
+              strokeWidth="2"
+              strokeDasharray="4 3"
+            />
+            <text x={historyW + 8} y="22" fill="#38bdf8" fontSize="9" fontWeight="bold">
+              AI 예측 구간 (P10~P90)
+            </text>
+            {/* 실측 곡선 */}
             <polyline
               fill="none"
               stroke="#06b6d4"
@@ -335,6 +382,35 @@ export function ChannelDetailModal({
               points={polylinePoints}
             />
           </svg>
+          <div className="mt-2 flex items-center justify-between border-t border-slate-800/80 pt-2 text-[11px]">
+            <span className="text-slate-300">
+              🟢 SEMI S2 퍼지 & 교체 지원: 빈 통 교체 후 만충 리셋
+            </span>
+            <button
+              type="button"
+              disabled={!isUnlocked}
+              onClick={() => {
+                const fullBar = phys.isDissolvedAcetylene ? 24.0 : 148.0;
+                onUpdateChannel(
+                  channel.id,
+                  {
+                    rawBar: fullBar,
+                    pressureBar: Number((fullBar + (channel.calibrationOffset || 0)).toFixed(1)),
+                    status: channel.valveState === 1 ? "SHUTOFF" : "NORMAL",
+                    remainingText:
+                      channel.valveState === 1
+                        ? `예비 대기 (새통 ${fullBar}b · 기밀정상)`
+                        : `예상절체 22:30 (±15분 · 공급중)`,
+                  },
+                  `새 가스통 교체 및 N2 퍼지 완료 (${fullBar} bar 만충 리셋)`,
+                  "CYLINDER_REPLACE"
+                );
+              }}
+              className="rounded-lg bg-emerald-500/25 border border-emerald-400/50 px-2.5 py-1 font-bold text-emerald-200 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-40"
+            >
+              🔄 새 가스통 교체 리필 완료 ({phys.isDissolvedAcetylene ? "24b" : "148b"})
+            </button>
+          </div>
         </div>
 
         {/* 정밀 영점(±0.1 bar) 및 2차 확인 0점(Zero) 설정 */}

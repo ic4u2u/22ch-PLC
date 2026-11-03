@@ -14,6 +14,7 @@ import {
   PressureUnit,
   formatPressureByUnit,
   getBankFacilityMeta,
+  getGasPhysicsMeta,
   getUnitLabel,
 } from "./types";
 
@@ -31,13 +32,13 @@ interface CardCommonProps {
 }
 
 function getCylinderVisual(ch: ChannelData) {
-  const pct = Math.max(
-    0,
-    Math.min(100, Math.round((ch.pressureBar / (ch.maxBar || 150)) * 100))
-  );
+  const phys = getGasPhysicsMeta(ch.gasCode, ch.pressureBar, ch.maxBar);
+  const pct = phys.realMassPct;
   if (ch.status === "SENSOR_FAULT") {
     return {
       pct,
+      zFactor: phys.zFactor,
+      physicsLabel: phys.physicsLabel,
       top: "#c084fc",
       bottom: "#6b21a8",
       stroke: "#a855f7",
@@ -46,18 +47,23 @@ function getCylinderVisual(ch: ChannelData) {
     };
   }
   if (ch.valveState === 1 || ch.status === "SHUTOFF") {
+    const isDepleted = ch.pressureBar <= ch.dangerBar * 1.35;
     return {
       pct,
+      zFactor: phys.zFactor,
+      physicsLabel: phys.physicsLabel,
       top: "#475569",
       bottom: "#1e293b",
-      stroke: "#64748b",
-      text: "text-slate-400",
-      badge: "CLOSE",
+      stroke: isDepleted ? "#ef4444" : "#64748b",
+      text: isDepleted ? "text-rose-300" : "text-slate-300",
+      badge: isDepleted ? "교체가능" : "CLOSE",
     };
   }
   if (ch.status === "DANGER") {
     return {
       pct,
+      zFactor: phys.zFactor,
+      physicsLabel: phys.physicsLabel,
       top: "#fb7185",
       bottom: "#be123c",
       stroke: "#f43f5e",
@@ -68,6 +74,8 @@ function getCylinderVisual(ch: ChannelData) {
   if (ch.status === "WARN") {
     return {
       pct,
+      zFactor: phys.zFactor,
+      physicsLabel: phys.physicsLabel,
       top: "#fbbf24",
       bottom: "#b45309",
       stroke: "#f59e0b",
@@ -77,6 +85,8 @@ function getCylinderVisual(ch: ChannelData) {
   }
   return {
     pct,
+    zFactor: phys.zFactor,
+    physicsLabel: phys.physicsLabel,
     top: "#38bdf8",
     bottom: "#0284c7",
     stroke: "#0ea5e9",

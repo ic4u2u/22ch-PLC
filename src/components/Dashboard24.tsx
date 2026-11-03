@@ -304,9 +304,13 @@ export default function Dashboard24() {
 
           const openCh = chA.valveState === 0 ? chA : chB;
           const closeCh = chA.valveState === 0 ? chB : chA;
+          const isAcetylene = bIdx === 4; // 5번 캐비넷: C2H2(아세틸렌) 만충 25bar 규격
+          const fullRefillBar = isAcetylene ? 24.0 : 148.0;
+          const emptyThreshold = openCh.dangerBar * 1.35;
 
           // 1) 현재 OPEN(주공급) 통만 가스 압력 소모
-          const drop = bIdx === 0 ? 1.4 : bIdx === 1 ? 0.7 : 0.15;
+          const drop =
+            bIdx === 0 ? 1.4 : bIdx === 1 ? 0.7 : isAcetylene ? 0.04 : 0.15;
           const nextOpenRaw = Number(Math.max(0, openCh.rawBar - drop).toFixed(1));
           const nextOpenCal = Number(
             Math.max(0, nextOpenRaw + (openCh.calibrationOffset || 0)).toFixed(1)
@@ -314,39 +318,42 @@ export default function Dashboard24() {
           openCh.rawBar = nextOpenRaw;
           openCh.pressureBar = nextOpenCal;
 
-          // 2) 현재 CLOSE(예비대기) 통은 압력을 그대로 유지하되, 만약 방금 다 써서 절체된 빈 통(<=20bar)이면 12초 뒤 새 가스통(148bar)으로 자동 교체 리필
-          if (closeCh.rawBar <= 20.0 && demoTick % 12 === 0) {
-            closeCh.rawBar = 148.0;
+          // 2) 현재 CLOSE(예비대기) 통은 압력을 그대로 유지하되, 만약 방금 다 써서 절체된 빈 통이면 N2 퍼지 후 12초 뒤 새 가스통으로 자동 교체 리필
+          if (closeCh.rawBar <= emptyThreshold && demoTick % 12 === 0) {
+            closeCh.rawBar = fullRefillBar;
             closeCh.pressureBar = Number(
-              (148.0 + (closeCh.calibrationOffset || 0)).toFixed(1)
+              (fullRefillBar + (closeCh.calibrationOffset || 0)).toFixed(1)
             );
-            closeCh.remainingText = "예비 대기 (새통 만충 148b)";
+            closeCh.remainingText = `예비 대기 (새통 ${fullRefillBar}b · 기밀정상)`;
           } else {
             closeCh.pressureBar = Number(
               Math.max(0, closeCh.rawBar + (closeCh.calibrationOffset || 0)).toFixed(1)
             );
             closeCh.remainingText =
-              closeCh.pressureBar <= 20.0
-                ? "절체됨 · 빈통 교체대기"
-                : `예비 대기 (만충 ${closeCh.pressureBar}b)`;
+              closeCh.pressureBar <= emptyThreshold
+                ? "🟢 N2퍼지완료 · 안전교체가능"
+                : `예비 대기 (${closeCh.pressureBar}b · 기밀정상)`;
           }
           closeCh.status = "SHUTOFF";
           closeCh.faultReason = null;
 
-          // 3) [핵심] OPEN된 통이 설정 기준압력(SV = dangerBar, 기본 15bar) 이하로 떨어지면 콘트롤러가 자동으로 A ⇄ B 토글(절체)!
-          if (nextOpenCal <= openCh.dangerBar && closeCh.pressureBar > 30.0) {
+          // 3) [핵심] OPEN된 통이 설정 기준압력(SV = dangerBar) 이하로 떨어지면 콘트롤러가 자동으로 A ⇄ B 토글(절체)!
+          if (
+            nextOpenCal <= openCh.dangerBar &&
+            closeCh.pressureBar > openCh.dangerBar * 2.0
+          ) {
             const fromSide = openCh.side;
             const toSide = closeCh.side;
 
-            // 다 쓴 통은 CLOSE(차단)로 토글
+            // 다 쓴 통은 CLOSE(차단)로 토글 & SEMI S2 퍼지 완료 표시
             openCh.valveState = 1;
             openCh.status = "SHUTOFF";
-            openCh.remainingText = `자동절체 완료 (${fromSide}통 교체요망)`;
+            openCh.remainingText = `🟢 N2퍼지완료 (${fromSide}통 안전교체가능)`;
 
             // 대기 중이던 만충 예비통을 OPEN(주공급)으로 즉시 토글!
             closeCh.valveState = 0;
             closeCh.status = "NORMAL";
-            closeCh.remainingText = `약 5시간 20분 (${toSide}통 자동절체 공급중)`;
+            closeCh.remainingText = `예상절체 22:30 (±15분 · ${toSide}통 공급중)`;
 
             setBanks((prevBanks) =>
               prevBanks.map((b, i) =>
@@ -368,8 +375,8 @@ export default function Dashboard24() {
             openCh.faultReason = null;
             openCh.remainingText =
               openCh.status === "WARN"
-                ? `약 0시간 15분 (곧 ${closeCh.side}통 자동절체)`
-                : `약 4시간 30분 (${openCh.side}통 공급중)`;
+                ? `예상절체 17:20 (±5분 · 곧 ${closeCh.side}통 절체)`
+                : `예상절체 21:45 (±15분 · ${openCh.side}통 공급중)`;
           }
 
           // 22번 채널(마지막 채널) 25초 주기 4~20mA 센서 이상(SENSOR_FAULT) 시연
@@ -636,10 +643,13 @@ export default function Dashboard24() {
             }}
             onTestVoice={() => {
               playAlarmBeep("DANGER");
-              speakKoreanAlarm(
-                "상황실 안내 말씀 드립니다. 현재 가스캐비넷 다섯 개 라인과 오토체인지 여섯 개 라인, 총 스물두 개 가스 실린더의 스마트 관제 시스템이 정상 작동 중입니다."
+              const warnList = channels.filter(
+                (c) => c.status === "WARN" || c.status === "DANGER"
               );
-              showToast("🎙️ Qwen3-TTS 한국어 AI 아나운서 음성 방송 테스트 중...");
+              speakKoreanAlarm(
+                `상황실 일일 교대 종합 브리핑입니다. 현재 가스캐비넷 다섯 개 라인과 오토체인지 여섯 개 라인 중, 열한 개 예비 대기통의 미세 기밀 상태는 모두 정상이며, 아세틸렌 용해가스 압력도 안전 범위입니다. 현재 압력 주의 채널은 총 ${warnList.length}건 이며, 설정 압력 도달 시 예비 실린더로 무중단 자동 토글됩니다.`
+              );
+              showToast("🎙️ Qwen3-TTS 교대 근무자용 AI 종합 음성 브리핑 방송 중...");
             }}
             diagnostics={diagnostics}
             towerLamp={towerLamp}

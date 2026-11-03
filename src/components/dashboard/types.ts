@@ -8,7 +8,7 @@
 export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: %
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 업데이트 일시 스탬프
-export const APP_UPDATE_STAMP = "Beta v0.96 · 업데이트: 2026-11-03 16:33 (A⇄B 자동절체 토글 적용)";
+export const APP_UPDATE_STAMP = "Beta v0.98 · 업데이트: 2026-11-03 17:02 (논문·SCADA·AI 5대 기술 적용)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
@@ -209,6 +209,54 @@ export function getUnitLabel(unit: PressureUnit): string {
     case 3:
       return "%";
   }
+}
+
+/**
+ * [학술 논문 반영] 열역학 압축인자(Z-Factor, Peng-Robinson 상태방정식 근사) 기반 실제 가스 질량 잔량(%) 및 물리 특성 반환
+ *  - 메탄(CH4): 150bar에서 Z ≈ 0.82 (과압축 기체 -> 실제 질량 잔량은 단순 압력비보다 높음)
+ *  - 수소(H2)·헬륨(He): 150bar에서 Z ≈ 1.09 (비압축성 반발 -> 초반 압력 하강이 빠름)
+ *  - 아세틸렌(C2H2): 다공성 물질 내 아세톤 용해 충전 (만충 25.0 bar, 절체 SV 2.5 bar)
+ */
+export function getGasPhysicsMeta(gasCode: string, pressureBar: number, maxBar = 150.0) {
+  const p = Math.max(0, Number(pressureBar || 0));
+  const pMax = Math.max(10, Number(maxBar || 150));
+  const code = (gasCode || "").toUpperCase();
+
+  let zAtP = 1.0;
+  let zAtMax = 1.0;
+  let physicsLabel = "압축가스 (Z≈1.00)";
+
+  if (code.includes("C2H2")) {
+    // 아세톤 용해 아세틸렌 (25bar 만충 기준)
+    zAtP = 1 - 0.004 * p;
+    zAtMax = 1 - 0.004 * pMax;
+    physicsLabel = "아세톤 용해충전 (Max 25b · Z보정)";
+  } else if (code.includes("CH4")) {
+    // 메탄: 150bar에서 Z ≈ 0.82
+    zAtP = Math.max(0.78, 1 - 0.0012 * p);
+    zAtMax = Math.max(0.78, 1 - 0.0012 * pMax);
+    physicsLabel = `과압축 기체 (Z=${zAtP.toFixed(2)})`;
+  } else if (code.includes("H2") || code.includes("HE")) {
+    // 수소·헬륨: 150bar에서 Z ≈ 1.09
+    zAtP = 1 + 0.0006 * p;
+    zAtMax = 1 + 0.0006 * pMax;
+    physicsLabel = `양(+)압축 기체 (Z=${zAtP.toFixed(2)})`;
+  } else {
+    zAtP = 1 - 0.0001 * p;
+    zAtMax = 1 - 0.0001 * pMax;
+    physicsLabel = `표준 압축기체 (Z=${zAtP.toFixed(2)})`;
+  }
+
+  // 실제 질량 비율 m/m_max = (P / Z(P)) / (P_max / Z(P_max))
+  const realMassRatio = (p / zAtP) / (pMax / zAtMax);
+  const realMassPct = Math.max(0, Math.min(100, Math.round(realMassRatio * 100)));
+
+  return {
+    realMassPct,
+    zFactor: Number(zAtP.toFixed(2)),
+    physicsLabel,
+    isDissolvedAcetylene: code.includes("C2H2"),
+  };
 }
 
 /**

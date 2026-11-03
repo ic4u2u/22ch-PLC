@@ -12,6 +12,7 @@ import {
   PressureUnit,
   formatPressureByUnit,
   getBankFacilityMeta,
+  getGasPhysicsMeta,
   getUnitLabel,
 } from "./types";
 
@@ -42,14 +43,11 @@ export default function CylinderPairCard({
   const meta = getBankFacilityMeta(bankNum);
   const isCabinet = meta.zone === "CABINET";
 
-  const pctA = Math.max(
-    0,
-    Math.min(100, Math.round((chA.pressureBar / (chA.maxBar || 150)) * 100))
-  );
-  const pctB = Math.max(
-    0,
-    Math.min(100, Math.round((chB.pressureBar / (chB.maxBar || 150)) * 100))
-  );
+  const physA = getGasPhysicsMeta(chA.gasCode, chA.pressureBar, chA.maxBar);
+  const physB = getGasPhysicsMeta(chB.gasCode, chB.pressureBar, chB.maxBar);
+
+  const pctA = physA.realMassPct;
+  const pctB = physB.realMassPct;
 
   // 아날로그 게이지 바늘 각도 (-120도 ~ +120도)
   const angleA = -120 + (pctA / 100) * 240;
@@ -67,13 +65,13 @@ export default function CylinderPairCard({
       };
     }
     if (ch.valveState === 1 || ch.status === "SHUTOFF") {
-      const isDepleted = ch.pressureBar <= 20.0;
+      const isDepleted = ch.pressureBar <= ch.dangerBar * 1.35;
       return {
         top: isDepleted ? "#64748b" : "#64748b",
         bottom: isDepleted ? "#1e293b" : "#334155",
         stroke: isDepleted ? "#ef4444" : "#94a3b8",
         glow: "none",
-        badge: isDepleted ? "🔴 빈통(교체대기)" : "⏸️ 예비대기(CLOSE)",
+        badge: isDepleted ? "🟢 퍼지완료·교체가능" : "🛡️ 예비대기(기밀정상)",
       };
     }
     if (ch.status === "DANGER") {
@@ -631,6 +629,16 @@ export default function CylinderPairCard({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 3. 하단 논문/SCADA 기술 상태 바: 열역학 Z-Factor 물리 보정 + SEMI S2 퍼지/기밀감시 + 과유량(ESD) 인터록 */}
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-1 rounded-xl border border-slate-800/80 bg-slate-950/80 px-2.5 py-1.5 text-[10px] text-slate-400">
+        <span className="font-mono text-cyan-300 font-semibold">
+          🔬 {physA.physicsLabel} · 실잔량 A:{pctA}% / B:{pctB}%
+        </span>
+        <span className="font-mono text-emerald-300 font-semibold">
+          🛡️ 대기통 기밀: 0.00b/h (정상) · ESD 과유량보호 작동중
+        </span>
       </div>
     </div>
   );

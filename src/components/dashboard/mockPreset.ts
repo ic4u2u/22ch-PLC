@@ -146,11 +146,23 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
   const gas = GAS_PRESET[bankIdx];
   const activeSide = INITIAL_ACTIVE_SIDE_BY_BANK[bankIdx] || "A";
   const isOpenSide = side === activeSide;
+  const isAcetylene = bankIdx === 4; // 5번 캐비넷: C2H2(아세틸렌) 용해가스 (만충 25.0 bar)
+
+  const maxBar = isAcetylene ? 25.0 : 150.0;
+  const warnBar = isAcetylene ? 6.0 : 35.0;
+  const dangerBar = isAcetylene ? 2.5 : 15.0;
 
   // 실제 오토체인지 현장처럼:
-  // - OPEN(주공급) 통은 사용 중이므로 잔량이 22.5 ~ 115 bar
-  // - CLOSE(예비대기) 통은 밸브만 닫혀 있고 통 내부에는 148 bar 만충 압력이 대기 중!
-  let initBar = isOpenSide ? 112.0 : 148.0;
+  // - OPEN(주공급) 통은 사용 중이므로 잔량이 감소 중
+  // - CLOSE(예비대기) 통은 밸브만 닫혀 있고 통 내부에는 만충 압력(148bar / C2H2는 24bar)이 대기 중!
+  let initBar = isAcetylene
+    ? isOpenSide
+      ? 18.5
+      : 24.0
+    : isOpenSide
+    ? 112.0
+    : 148.0;
+
   if (id === 1) initBar = 22.5; // CH-01(A): 곧 15bar 이하로 떨어져 B통으로 자동 토글 시연
   else if (id === 3) initBar = 33.8; // CH-03(A): 교체 주의(WARN) 시연
   else if (id === 8) initBar = 96.0; // CH-08(B): MIX B통 공급 중
@@ -158,9 +170,9 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
 
   const initStatus: ChannelData["status"] = !isOpenSide
     ? "SHUTOFF"
-    : initBar <= 15.0
+    : initBar <= dangerBar
     ? "DANGER"
-    : initBar <= 35.0
+    : initBar <= warnBar
     ? "WARN"
     : "NORMAL";
 
@@ -172,9 +184,9 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
     gasName: gas.name,
     gasCode: gas.code,
     color: gas.color,
-    maxBar: 150.0,
-    warnBar: 35.0,
-    dangerBar: 15.0,
+    maxBar,
+    warnBar,
+    dangerBar,
     calibrationOffset: 0.0,
     pinX: side === "A" ? gas.pinAX : gas.pinBX,
     pinY: side === "A" ? gas.pinAY : gas.pinBY,
@@ -183,12 +195,18 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
     valveState: isOpenSide ? 0 : 1, // 0: OPEN(공급중), 1: CLOSE(예비대기)
     status: initStatus,
     faultReason: null,
-    dropRateBarPerSec: isOpenSide ? (id === 1 ? 1.4 : 0.15) : 0.0,
+    dropRateBarPerSec: isOpenSide
+      ? id === 1
+        ? 1.4
+        : isAcetylene
+        ? 0.04
+        : 0.15
+      : 0.0,
     remainingText: !isOpenSide
-      ? "예비 대기 (만충 148b)"
+      ? `예비 대기 (만충 ${initBar}b · 기밀정상)`
       : id === 1
-      ? "약 0시간 12분 (절체임박)"
-      : "약 4시간 30분 (공급중)",
+      ? "예상절체 17:15 (±3분 · 절체임박)"
+      : "예상절체 21:40 (±15분 · 공급중)",
     remainingMinutesTotal: isOpenSide ? (id === 1 ? 12 : 270) : 480,
   };
 });
@@ -197,6 +215,7 @@ export const INITIAL_BANKS: BankConfig[] = Array.from({ length: 11 }, (_, idx) =
   const bankNum = idx + 1;
   const gas = GAS_PRESET[idx];
   const activeSide = INITIAL_ACTIVE_SIDE_BY_BANK[idx] || "A";
+  const isAcetylene = idx === 4;
   return {
     id: `BANK-${String(bankNum).padStart(2, "0")}`,
     bankNumber: bankNum,
@@ -206,9 +225,9 @@ export const INITIAL_BANKS: BankConfig[] = Array.from({ length: 11 }, (_, idx) =
     chB: idx * 2 + 2,
     activeSide,
     mode: 1,
-    switchPressureBar: 15.0,
-    hysteresisBar: 3.0,
-    warnPressureBar: 35.0,
+    switchPressureBar: isAcetylene ? 2.5 : 15.0,
+    hysteresisBar: isAcetylene ? 0.5 : 3.0,
+    warnPressureBar: isAcetylene ? 6.0 : 35.0,
     runTimeSec: 5.0,
     mxFixedSec: 2.5,
     computedAiN: 1.8,
