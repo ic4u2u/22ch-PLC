@@ -10,6 +10,7 @@
 
 import React, { useState, useEffect } from "react";
 import {
+  APP_UPDATE_STAMP,
   ChannelData,
   DiagnosticsData,
   PressureUnit,
@@ -190,6 +191,9 @@ export default function WallboardView({
           <h2 className="text-sm sm:text-base font-black text-white">
             ACSC 22CH 마스터 알람 (캐비넷 5CH · 오토체인지 6CH)
           </h2>
+          <span className="rounded-md bg-amber-400/20 border border-amber-400/50 px-2 py-0.5 font-mono text-[10px] font-extrabold text-amber-300">
+            🕒 {APP_UPDATE_STAMP}
+          </span>
           {spotlightChannels.length > 0 ? (
             <span className="rounded-lg bg-rose-500/25 border border-rose-500/50 px-2.5 py-0.5 text-xs font-extrabold text-rose-300 animate-pulse">
               🚨 경보/점검 {spotlightChannels.length}건

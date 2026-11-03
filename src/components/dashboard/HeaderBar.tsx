@@ -12,7 +12,12 @@
  */
 
 import React from "react";
-import { DiagnosticsData, PressureUnit, TowerLampState } from "./types";
+import {
+  APP_UPDATE_STAMP,
+  DiagnosticsData,
+  PressureUnit,
+  TowerLampState,
+} from "./types";
 
 interface HeaderBarProps {
   unit: PressureUnit;
@@ -75,11 +80,14 @@ export default function HeaderBar({
             ACSC
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
                 ACSC 22채널 특수가스 스마트 관제 시스템
               </h1>
-              <span className="hidden xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
+              <span className="inline-flex items-center rounded-md bg-amber-400/20 px-2 py-0.5 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-400/50">
+                🕒 {APP_UPDATE_STAMP}
+              </span>
+              <span className="hidden 2xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
                 QOOTEC 미니PC · LS XBL-EMTA · USB 경광등 (22CH / 11BANK)
               </span>
             </div>

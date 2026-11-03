@@ -279,69 +279,119 @@ export default function Dashboard24() {
     };
   }, [fetchAllLogs, showToast]);
 
-  // Vercel 클라우드 배포 시(로컬 브릿지 서버 미연결 시) 의뢰자 시연용 실시간 가상 PLC 시뮬레이터 자동 구동
+  // Vercel 클라우드 배포 시(로컬 브릿지 서버 미연결 시) 실제 현장과 동일한 A ⇄ B 오토체인지(자동절체) 컨트롤러 시뮬레이터 구동
   useEffect(() => {
     if (wsConnected) return;
     let demoTick = 0;
     const simTimer = setInterval(() => {
       demoTick += 1;
-      setChannels((prev) =>
-        prev.map((ch, idx) => {
-          // 22번 채널(마지막 채널) 20초 주기 SENSOR_FAULT 시뮬레이션
-          if (idx === prev.length - 1 && ch.valveState === 0) {
-            const cycle = demoTick % 20;
-            if (cycle >= 0 && cycle < 3) {
-              const isSpike = cycle % 2 === 1;
-              return {
-                ...ch,
-                rawBar: isSpike ? 195.0 : 0.0,
-                pressureBar: isSpike ? 195.0 : 0.0,
-                status: "SENSOR_FAULT",
-                faultReason: isSpike
-                  ? "측정 한계 115% 초과 스파이크 (195.0 bar)"
-                  : "4~20mA 전류 루프 단선 (0.0 bar 급락)",
-                remainingText: "센서 점검 필요",
-              };
-            }
+      setChannels((prev) => {
+        const next = prev.map((c) => ({ ...c }));
+
+        // 11개 뱅크(A/B 2통씩 짝지어) 순회하며 "열린 통(OPEN)만 소모 -> SV 이하 도달 시 반대통으로 자동 토글" 수행
+        for (let bIdx = 0; bIdx < 11; bIdx++) {
+          const idxA = bIdx * 2;
+          const idxB = bIdx * 2 + 1;
+          const chA = next[idxA];
+          const chB = next[idxB];
+          if (!chA || !chB) continue;
+
+          // 만약 두 통 다 열려있거나 두 통 다 닫혀있다면 기본 A=OPEN, B=CLOSE로 정규화
+          if (chA.valveState === chB.valveState) {
+            chA.valveState = 0;
+            chB.valveState = 1;
           }
 
-          if (ch.valveState === 1) {
-            return { ...ch, pressureBar: 0, status: "SHUTOFF", remainingText: "밸브 차단됨" };
+          const openCh = chA.valveState === 0 ? chA : chB;
+          const closeCh = chA.valveState === 0 ? chB : chA;
+
+          // 1) 현재 OPEN(주공급) 통만 가스 압력 소모
+          const drop = bIdx === 0 ? 1.4 : bIdx === 1 ? 0.7 : 0.15;
+          const nextOpenRaw = Number(Math.max(0, openCh.rawBar - drop).toFixed(1));
+          const nextOpenCal = Number(
+            Math.max(0, nextOpenRaw + (openCh.calibrationOffset || 0)).toFixed(1)
+          );
+          openCh.rawBar = nextOpenRaw;
+          openCh.pressureBar = nextOpenCal;
+
+          // 2) 현재 CLOSE(예비대기) 통은 압력을 그대로 유지하되, 만약 방금 다 써서 절체된 빈 통(<=20bar)이면 12초 뒤 새 가스통(148bar)으로 자동 교체 리필
+          if (closeCh.rawBar <= 20.0 && demoTick % 12 === 0) {
+            closeCh.rawBar = 148.0;
+            closeCh.pressureBar = Number(
+              (148.0 + (closeCh.calibrationOffset || 0)).toFixed(1)
+            );
+            closeCh.remainingText = "예비 대기 (새통 만충 148b)";
+          } else {
+            closeCh.pressureBar = Number(
+              Math.max(0, closeCh.rawBar + (closeCh.calibrationOffset || 0)).toFixed(1)
+            );
+            closeCh.remainingText =
+              closeCh.pressureBar <= 20.0
+                ? "절체됨 · 빈통 교체대기"
+                : `예비 대기 (만충 ${closeCh.pressureBar}b)`;
+          }
+          closeCh.status = "SHUTOFF";
+          closeCh.faultReason = null;
+
+          // 3) [핵심] OPEN된 통이 설정 기준압력(SV = dangerBar, 기본 15bar) 이하로 떨어지면 콘트롤러가 자동으로 A ⇄ B 토글(절체)!
+          if (nextOpenCal <= openCh.dangerBar && closeCh.pressureBar > 30.0) {
+            const fromSide = openCh.side;
+            const toSide = closeCh.side;
+
+            // 다 쓴 통은 CLOSE(차단)로 토글
+            openCh.valveState = 1;
+            openCh.status = "SHUTOFF";
+            openCh.remainingText = `자동절체 완료 (${fromSide}통 교체요망)`;
+
+            // 대기 중이던 만충 예비통을 OPEN(주공급)으로 즉시 토글!
+            closeCh.valveState = 0;
+            closeCh.status = "NORMAL";
+            closeCh.remainingText = `약 5시간 20분 (${toSide}통 자동절체 공급중)`;
+
+            setBanks((prevBanks) =>
+              prevBanks.map((b, i) =>
+                i === bIdx ? { ...b, activeSide: toSide } : b
+              )
+            );
+
+            showToast(
+              `🔄 [오토체인지 자동 토글] ${openCh.gasName}: ${fromSide}통(${nextOpenCal}bar 저압) CLOSE ➔ 예비 ${toSide}통(${closeCh.pressureBar}bar) OPEN 자동 절체 완료!`
+            );
+          } else {
+            // 아직 SV 기준압력 이상이면 정상/주의 상태 판정
+            openCh.status =
+              nextOpenCal <= openCh.dangerBar
+                ? "DANGER"
+                : nextOpenCal <= openCh.warnBar
+                ? "WARN"
+                : "NORMAL";
+            openCh.faultReason = null;
+            openCh.remainingText =
+              openCh.status === "WARN"
+                ? `약 0시간 15분 (곧 ${closeCh.side}통 자동절체)`
+                : `약 4시간 30분 (${openCh.side}통 공급중)`;
           }
 
-          const isOdd = ch.id % 2 === 1;
-          let nextRaw = ch.rawBar;
-          if (isOdd) {
-            const drop = ch.id === 1 ? 1.8 : ch.id === 3 ? 1.1 : 0.3;
-            nextRaw = Number((ch.rawBar - drop).toFixed(1));
-            if (nextRaw <= 7.0) nextRaw = 150.0; // 실린더 자동 리필 시뮬레이션
-          } else if (idx === prev.length - 1 && nextRaw !== 120.0) {
-            nextRaw = 120.0;
+          // 22번 채널(마지막 채널) 25초 주기 4~20mA 센서 이상(SENSOR_FAULT) 시연
+          if (bIdx === 10 && demoTick % 25 >= 20 && demoTick % 25 < 23) {
+            chB.status = "SENSOR_FAULT";
+            chB.faultReason = "4~20mA 전류 루프 단선 감지 (오차단 방지 작동)";
           }
-
-          const calBar = Number(Math.max(0, nextRaw + (ch.calibrationOffset || 0)).toFixed(1));
-          let status: ChannelData["status"] = "NORMAL";
-          if (calBar <= ch.dangerBar) status = "DANGER";
-          else if (calBar <= ch.warnBar) status = "WARN";
 
           // 트렌드 버퍼 적재
-          const arr = trendMapRef.current[ch.id] || [];
-          arr.push(calBar);
-          if (arr.length > 120) arr.shift();
-          trendMapRef.current[ch.id] = arr;
+          [chA, chB].forEach((c) => {
+            const arr = trendMapRef.current[c.id] || [];
+            arr.push(c.pressureBar);
+            if (arr.length > 120) arr.shift();
+            trendMapRef.current[c.id] = arr;
+          });
+        }
 
-          return {
-            ...ch,
-            rawBar: nextRaw,
-            pressureBar: calBar,
-            status,
-            faultReason: null,
-          };
-        })
-      );
+        return next;
+      });
     }, 1000);
     return () => clearInterval(simTimer);
-  }, [wsConnected]);
+  }, [wsConnected, showToast]);
 
   // 클라우드 데모 모드일 때 22채널 상태에 맞춰 USB 3색 타워램프 상태 자동 동기화
   useEffect(() => {
@@ -470,6 +520,67 @@ export default function Dashboard24() {
   const selectedChannel =
     channels.find((c) => c.id === selectedChannelId) || null;
 
+  // A ⇄ B 상호 토글(오토체인지) 밸브 제어 핸들러 (한쪽을 OPEN하면 같은 뱅크의 반대쪽은 자동으로 CLOSE 대기 상태로 전환하며 실제 압력은 보존)
+  const handleToggleValve = (channelId: number, nextValveState: number) => {
+    const bankIdx = Math.floor((channelId - 1) / 2);
+    const pairChAId = bankIdx * 2 + 1;
+    const pairChBId = bankIdx * 2 + 2;
+    const companionId = channelId === pairChAId ? pairChBId : pairChAId;
+    const companionNextState = nextValveState === 0 ? 1 : 0;
+
+    setChannels((prev) =>
+      prev.map((c) => {
+        if (c.id === channelId) {
+          return {
+            ...c,
+            valveState: nextValveState,
+            status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
+            remainingText:
+              nextValveState === 1
+                ? `예비 대기 (${c.pressureBar}b)`
+                : `약 4시간 30분 (${c.side}통 공급중)`,
+          };
+        }
+        if (c.id === companionId) {
+          return {
+            ...c,
+            valveState: companionNextState,
+            status: companionNextState === 1 ? "SHUTOFF" : "NORMAL",
+            remainingText:
+              companionNextState === 1
+                ? `예비 대기 (${c.pressureBar}b)`
+                : `약 4시간 30분 (${c.side}통 공급중)`,
+          };
+        }
+        return c;
+      })
+    );
+
+    const newActiveSide: "A" | "B" =
+      (channelId === pairChAId && nextValveState === 0) ||
+      (channelId === pairChBId && nextValveState === 1)
+        ? "A"
+        : "B";
+
+    setBanks((prev) =>
+      prev.map((b, idx) =>
+        idx === bankIdx ? { ...b, activeSide: newActiveSide } : b
+      )
+    );
+
+    sendWsCommand("SET_VALVE", {
+      channelId,
+      valveState: nextValveState,
+      actor: "ADMIN",
+      reason: `A⇄B 토글 절체 제어 (${newActiveSide}통 OPEN / 반대통 CLOSE 대기)`,
+    });
+    showToast(
+      `🔄 BANK-${String(bankIdx + 1).padStart(2, "0")} 토글 완료: ${newActiveSide}통 [OPEN 공급중] ⇄ ${
+        newActiveSide === "A" ? "B" : "A"
+      }통 [CLOSE 예비대기]`
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
       {/* 토스트 알림 팝업 */}
@@ -491,31 +602,7 @@ export default function Dashboard24() {
             isUnlocked={isUnlocked}
             onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
             onRequestPin={() => setPinModalOpen(true)}
-            onToggleValve={(channelId, nextValveState) => {
-              setChannels((prev) =>
-                prev.map((c) =>
-                  c.id === channelId
-                    ? {
-                        ...c,
-                        valveState: nextValveState,
-                        pressureBar: nextValveState === 1 ? 0 : c.rawBar,
-                        status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
-                      }
-                    : c
-                )
-              );
-              sendWsCommand("SET_VALVE", {
-                channelId,
-                valveState: nextValveState,
-                actor: "ADMIN",
-                reason: "전광판 원격 밸브 제어",
-              });
-              showToast(
-                `🛠️ CH-${String(channelId).padStart(2, "0")} 밸브 ${
-                  nextValveState === 0 ? "개방(OPEN)" : "차단(SHUTOFF)"
-                } 명령 전송 완료`
-              );
-            }}
+            onToggleValve={handleToggleValve}
             onExitWallboard={() => setIsStandaloneWallboard(false)}
           />
         </main>
@@ -632,31 +719,7 @@ export default function Dashboard24() {
                 isUnlocked={isUnlocked}
                 onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
                 onRequestPin={() => setPinModalOpen(true)}
-                onToggleValve={(channelId, nextValveState) => {
-                  setChannels((prev) =>
-                    prev.map((c) =>
-                      c.id === channelId
-                        ? {
-                            ...c,
-                            valveState: nextValveState,
-                            pressureBar: nextValveState === 1 ? 0 : c.rawBar,
-                            status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
-                          }
-                        : c
-                    )
-                  );
-                  sendWsCommand("SET_VALVE", {
-                    channelId,
-                    valveState: nextValveState,
-                    actor: "ADMIN",
-                    reason: "대시보드 원격 밸브 제어",
-                  });
-                  showToast(
-                    `🛠️ CH-${String(channelId).padStart(2, "0")} 밸브 ${
-                      nextValveState === 0 ? "개방(OPEN)" : "차단(SHUTOFF)"
-                    } 명령 전송 완료`
-                  );
-                }}
+                onToggleValve={handleToggleValve}
               />
             )}
 
@@ -709,31 +772,7 @@ export default function Dashboard24() {
                 isUnlocked={isUnlocked}
                 onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
                 onRequestPin={() => setPinModalOpen(true)}
-                onToggleValve={(channelId, nextValveState) => {
-                  setChannels((prev) =>
-                    prev.map((c) =>
-                      c.id === channelId
-                        ? {
-                            ...c,
-                            valveState: nextValveState,
-                            pressureBar: nextValveState === 1 ? 0 : c.rawBar,
-                            status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
-                          }
-                        : c
-                    )
-                  );
-                  sendWsCommand("SET_VALVE", {
-                    channelId,
-                    valveState: nextValveState,
-                    actor: "ADMIN",
-                    reason: "전광판 원격 밸브 제어",
-                  });
-                  showToast(
-                    `🛠️ CH-${String(channelId).padStart(2, "0")} 밸브 ${
-                      nextValveState === 0 ? "개방(OPEN)" : "차단(SHUTOFF)"
-                    } 명령 전송 완료`
-                  );
-                }}
+                onToggleValve={handleToggleValve}
               />
             )}
 

@@ -124,14 +124,46 @@ export const GAS_PRESET = [
   },
 ];
 
+// 뱅크별 초기 주공급(OPEN) 방향 설정 (대부분 A통 OPEN / B통 CLOSE 대기, 4번·9번 뱅크는 B통 OPEN / A통 CLOSE 대기)
+const INITIAL_ACTIVE_SIDE_BY_BANK: ("A" | "B")[] = [
+  "A", // BANK-01: P-CH4 (A통 OPEN 22.5bar -> 곧 15bar 도달 시 B통으로 자동절체 시연!)
+  "A", // BANK-02: G-CH4 (A통 OPEN 33.8bar WARN / B통 CLOSE 148bar 대기)
+  "A", // BANK-03: P-H2
+  "B", // BANK-04: MIX(Ar+H2) (B통이 현재 OPEN 공급중, A통은 CLOSE 만충 대기)
+  "A", // BANK-05: C2H2
+  "A", // BANK-06: P-N2
+  "A", // BANK-07: G-N2
+  "A", // BANK-08: He
+  "B", // BANK-09: Ar (B통이 현재 OPEN 공급중, A통은 CLOSE 만충 대기)
+  "A", // BANK-10: O2
+  "A", // BANK-11: G-H2 (A통 OPEN 공급중, B통(CH-22) CLOSE 대기)
+];
+
 export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, idx) => {
   const id = idx + 1;
   const bankIdx = Math.floor(idx / 2);
-  const side = idx % 2 === 0 ? "A" : "B";
+  const side: "A" | "B" = idx % 2 === 0 ? "A" : "B";
   const gas = GAS_PRESET[bankIdx];
-  // 의뢰자 시연 시 다양한 상태가 한눈에 보이도록 초기 압력 구성
-  const initBar = id === 1 ? 26.5 : id === 3 ? 33.8 : 120.0;
-  const initStatus = id === 3 ? "WARN" : "NORMAL";
+  const activeSide = INITIAL_ACTIVE_SIDE_BY_BANK[bankIdx] || "A";
+  const isOpenSide = side === activeSide;
+
+  // 실제 오토체인지 현장처럼:
+  // - OPEN(주공급) 통은 사용 중이므로 잔량이 22.5 ~ 115 bar
+  // - CLOSE(예비대기) 통은 밸브만 닫혀 있고 통 내부에는 148 bar 만충 압력이 대기 중!
+  let initBar = isOpenSide ? 112.0 : 148.0;
+  if (id === 1) initBar = 22.5; // CH-01(A): 곧 15bar 이하로 떨어져 B통으로 자동 토글 시연
+  else if (id === 3) initBar = 33.8; // CH-03(A): 교체 주의(WARN) 시연
+  else if (id === 8) initBar = 96.0; // CH-08(B): MIX B통 공급 중
+  else if (id === 18) initBar = 88.5; // CH-18(B): Ar B통 공급 중
+
+  const initStatus: ChannelData["status"] = !isOpenSide
+    ? "SHUTOFF"
+    : initBar <= 15.0
+    ? "DANGER"
+    : initBar <= 35.0
+    ? "WARN"
+    : "NORMAL";
+
   return {
     id,
     bankId: `BANK-${String(bankIdx + 1).padStart(2, "0")}`,
@@ -148,18 +180,23 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
     pinY: side === "A" ? gas.pinAY : gas.pinBY,
     rawBar: initBar,
     pressureBar: initBar,
-    valveState: 0,
+    valveState: isOpenSide ? 0 : 1, // 0: OPEN(공급중), 1: CLOSE(예비대기)
     status: initStatus,
     faultReason: null,
-    dropRateBarPerSec: id === 1 ? 1.8 : 0.15,
-    remainingText: id === 1 ? "약 0시간 18분 남음" : "약 4시간 30분 남음",
-    remainingMinutesTotal: id === 1 ? 18 : 270,
+    dropRateBarPerSec: isOpenSide ? (id === 1 ? 1.4 : 0.15) : 0.0,
+    remainingText: !isOpenSide
+      ? "예비 대기 (만충 148b)"
+      : id === 1
+      ? "약 0시간 12분 (절체임박)"
+      : "약 4시간 30분 (공급중)",
+    remainingMinutesTotal: isOpenSide ? (id === 1 ? 12 : 270) : 480,
   };
 });
 
 export const INITIAL_BANKS: BankConfig[] = Array.from({ length: 11 }, (_, idx) => {
   const bankNum = idx + 1;
   const gas = GAS_PRESET[idx];
+  const activeSide = INITIAL_ACTIVE_SIDE_BY_BANK[idx] || "A";
   return {
     id: `BANK-${String(bankNum).padStart(2, "0")}`,
     bankNumber: bankNum,
@@ -167,9 +204,9 @@ export const INITIAL_BANKS: BankConfig[] = Array.from({ length: 11 }, (_, idx) =
     gasCode: gas.code,
     chA: idx * 2 + 1,
     chB: idx * 2 + 2,
-    activeSide: "A",
+    activeSide,
     mode: 1,
-    switchPressureBar: 20.0,
+    switchPressureBar: 15.0,
     hysteresisBar: 3.0,
     warnPressureBar: 35.0,
     runTimeSec: 5.0,

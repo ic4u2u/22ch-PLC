@@ -67,12 +67,13 @@ export default function CylinderPairCard({
       };
     }
     if (ch.valveState === 1 || ch.status === "SHUTOFF") {
+      const isDepleted = ch.pressureBar <= 20.0;
       return {
-        top: "#475569",
-        bottom: "#1e293b",
-        stroke: "#64748b",
+        top: isDepleted ? "#64748b" : "#64748b",
+        bottom: isDepleted ? "#1e293b" : "#334155",
+        stroke: isDepleted ? "#ef4444" : "#94a3b8",
         glow: "none",
-        badge: "CLOSE (차단)",
+        badge: isDepleted ? "🔴 빈통(교체대기)" : "⏸️ 예비대기(CLOSE)",
       };
     }
     if (ch.status === "DANGER") {
@@ -143,8 +144,17 @@ export default function CylinderPairCard({
           </span>
         </div>
         <div className="flex items-center gap-1.5 font-mono text-[11px]">
+          <span
+            className={`rounded px-2 py-0.5 font-extrabold ${
+              isAOpen
+                ? "bg-sky-500/25 text-sky-300 border border-sky-400/50"
+                : "bg-teal-500/25 text-teal-300 border border-teal-400/50"
+            }`}
+          >
+            {isAOpen ? "◀ A통 공급중 (B대기)" : "B통 공급중 (A대기) ▶"}
+          </span>
           <span className="rounded bg-slate-800 px-2 py-0.5 text-slate-300 font-bold">
-            SV(경보):{" "}
+            절체SV:{" "}
             <strong className="text-amber-300">
               {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)} {unitLabel}
             </strong>

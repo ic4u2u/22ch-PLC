@@ -151,7 +151,8 @@ export function OneScreenCylinderCard({
           </span>
         </div>
         <span className="shrink-0 font-mono text-[10px] font-bold text-amber-300">
-          SV {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)}
+          {isAOpen ? "◀A공급" : "B공급▶"} · SV{" "}
+          {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)}
           {unitLabel}
         </span>
       </div>

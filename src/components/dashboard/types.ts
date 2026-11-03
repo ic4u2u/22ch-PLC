@@ -7,6 +7,9 @@
 
 export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: %
 
+// 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 업데이트 일시 스탬프
+export const APP_UPDATE_STAMP = "Beta v0.96 · 업데이트: 2026-11-03 16:33 (A⇄B 자동절체 토글 적용)";
+
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
 export interface ChannelData {
