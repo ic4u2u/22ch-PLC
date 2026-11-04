@@ -128,48 +128,60 @@ export default function FloorplanTab({
       const isWarn = ch.status === "WARN";
 
       let boxClass = isOpen
-        ? "border-emerald-400 bg-emerald-950/70 text-white shadow-md shadow-emerald-500/15"
-        : "border-slate-600 bg-slate-900/90 text-slate-300";
+        ? "border-emerald-400 bg-gradient-to-b from-emerald-950/90 to-slate-950 text-white shadow-[0_0_18px_rgba(16,185,129,0.45)] ring-2 ring-emerald-400/80"
+        : "border-slate-700/80 bg-slate-900/65 text-slate-400 opacity-75";
 
       if (isFault) {
-        boxClass = "border-purple-400 bg-purple-950/80 text-white animate-pulse";
+        boxClass = "border-purple-400 bg-purple-950/85 text-white animate-pulse ring-2 ring-purple-400";
       } else if (isDanger) {
-        boxClass = "border-rose-400 bg-rose-950/80 text-white animate-pulse";
+        boxClass = "border-rose-400 bg-rose-950/85 text-white animate-pulse ring-2 ring-rose-400";
       } else if (isWarn && isOpen) {
-        boxClass = "border-amber-400 bg-amber-950/75 text-white";
+        boxClass = "border-amber-400 bg-gradient-to-b from-amber-950/90 to-slate-950 text-white shadow-[0_0_18px_rgba(245,158,11,0.45)] ring-2 ring-amber-400/80";
       }
 
       return (
         <div
           key={ch.id}
           onClick={() => onSelectChannel(ch)}
-          className={`flex flex-col justify-between rounded-xl border-2 p-2 cursor-pointer transition-all hover:scale-[1.03] ${boxClass}`}
+          className={`relative flex flex-col justify-between rounded-xl border-2 p-2 cursor-pointer transition-all hover:scale-[1.03] ${boxClass}`}
         >
-          {/* 상단: A실린더/B실린더 배지 + 채널번호(CH-01) + 공급중/예비대기 상태 */}
+          {/* 상단: A실린더/B실린더 배지 + 채널번호(CH-01) + 공급중일 때만 고휘도 블링크 LED 램프 (공급중/예비대기 텍스트 배지 제거) */}
           <div className="flex items-center justify-between gap-1">
             <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-black whitespace-nowrap ${
-                ch.side === "A"
-                  ? "bg-amber-400 text-slate-950"
-                  : "bg-cyan-400 text-slate-950"
-              }`}
-            >
-              {ch.side}실린더 [{formatChannelCode(ch.id)}]
-            </span>
-            <span
-              className={`rounded px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${
+              className={`rounded px-1.5 py-0.5 text-[10.5px] font-black whitespace-nowrap ${
                 isOpen
-                  ? "bg-emerald-400 text-slate-950"
-                  : "bg-slate-800 text-slate-400 border border-slate-600"
+                  ? ch.side === "A"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "bg-cyan-400 text-slate-950 shadow-sm"
+                  : "bg-slate-800 text-slate-300"
               }`}
             >
-              {isOpen ? "공급중" : "예비대기"}
+              {ch.side}실린더
             </span>
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <span
+                className={`font-mono text-[10px] font-black ${
+                  isOpen ? "text-emerald-300" : "text-slate-400"
+                }`}
+              >
+                {formatChannelCode(ch.id)}
+              </span>
+              {isOpen && (
+                <span className="relative flex h-2.5 w-2.5 shrink-0" title="현재 공급중">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                </span>
+              )}
+            </div>
           </div>
 
           {/* 중단: 큼직한 압력 수치 */}
           <div className="my-1.5 flex items-baseline justify-between gap-1 font-mono">
-            <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+            <span
+              className={`text-[10px] font-bold whitespace-nowrap ${
+                isOpen ? "text-emerald-300" : "text-slate-500"
+              }`}
+            >
               {phys.realMassPct}%
             </span>
             {isFault ? (
@@ -177,30 +189,30 @@ export default function FloorplanTab({
             ) : (
               <span
                 className={`text-base sm:text-lg font-black tracking-tighter whitespace-nowrap ${
-                  isOpen ? "text-white" : "text-slate-300"
+                  isOpen ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]" : "text-slate-400"
                 }`}
               >
                 {formatPressureByUnit(ch.pressureBar, unit, ch.maxBar)}
-                <span className="ml-0.5 text-[10px] font-bold text-cyan-300">
+                <span className={`ml-0.5 text-[10px] font-bold ${isOpen ? "text-cyan-300" : "text-slate-500"}`}>
                   {unitLabel}
                 </span>
               </span>
             )}
           </div>
 
-          {/* 하단: 미니 잔량 게이지 바 */}
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+          {/* 하단: 미니 잔량 게이지 바 (공급중 실린더는 밝은 네온 애니메이션) */}
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
             <div
               className={`h-full transition-all duration-300 ${
                 isFault
-                  ? "bg-purple-400"
+                  ? "bg-purple-400 animate-pulse"
                   : isDanger
-                  ? "bg-rose-500"
+                  ? "bg-rose-500 animate-pulse"
                   : isWarn && isOpen
-                  ? "bg-amber-400"
+                  ? "bg-amber-400 animate-pulse"
                   : isOpen
-                  ? "bg-emerald-400"
-                  : "bg-slate-500"
+                  ? "bg-gradient-to-r from-emerald-400 to-cyan-300 animate-pulse"
+                  : "bg-slate-600"
               }`}
               style={{ width: `${phys.realMassPct}%` }}
             />
@@ -220,23 +232,27 @@ export default function FloorplanTab({
           borderTopWidth: "5px",
         }}
       >
-        {/* 상단: 가스 종류 고유 색상 헤더 바 (같은 가스 2개씩 한눈에 구분!) */}
-        <div className="mb-2 border-b border-slate-800 pb-1.5">
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-[10px] font-black text-slate-300 whitespace-nowrap">
+        {/* 상단: 가스 종류 고유 색상 헤더 바 + 초대형 하이라이트 [◀ A공급 / B공급 ▶] 배지 */}
+        <div className="mb-2.5 border-b border-slate-800 pb-2">
+          <div className="flex items-center justify-between gap-1.5">
+            <span className="text-[11px] font-black text-slate-300 whitespace-nowrap">
               {stationPrefix} ({bankNum}번 뱅크)
             </span>
             <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs sm:text-sm font-black whitespace-nowrap transition-all ${
                 isAOpen
-                  ? "bg-sky-500/25 text-sky-300 border border-sky-400/40"
-                  : "bg-teal-500/25 text-teal-300 border border-teal-400/40"
+                  ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.65)] ring-2 ring-amber-200"
+                  : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(52,211,153,0.65)] ring-2 ring-cyan-200"
               }`}
             >
-              {isAOpen ? "◀A공급" : "B공급▶"}
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-950" />
+              </span>
+              {isAOpen ? "◀ A공급" : "B공급 ▶"}
             </span>
           </div>
-          <div className="mt-1 flex items-center gap-1.5">
+          <div className="mt-1.5 flex items-center gap-1.5">
             <span
               className="h-3 w-3 shrink-0 rounded-full shadow"
               style={{ backgroundColor: gasColor }}

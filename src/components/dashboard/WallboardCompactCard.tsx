@@ -174,10 +174,18 @@ export function OneScreenCylinderCard({
             {chA.gasName}
           </span>
         </div>
-        <span className="shrink-0 font-mono text-[10px] font-bold text-amber-300 whitespace-nowrap">
-          절체압력{" "}
-          {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)}
-          {unitLabel}
+        <span
+          className={`shrink-0 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-black whitespace-nowrap ${
+            isAOpen
+              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.65)] ring-1 ring-amber-200"
+              : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.65)] ring-1 ring-cyan-200"
+          }`}
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950" />
+          </span>
+          {isAOpen ? "◀ A공급" : "B공급 ▶"}
         </span>
       </div>
 
@@ -185,19 +193,31 @@ export function OneScreenCylinderCard({
       <div className="mt-1.5 grid grid-cols-12 items-center gap-1">
         {/* 좌측 A실린더 [CH-홀수] 요약 */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border p-1.5 transition-all ${
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
             isAOpen
-              ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_10px_rgba(56,189,248,0.12)]"
-              : "border-slate-800 bg-slate-950/90 opacity-85"
+              ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
+              : "border-slate-800 bg-slate-950/80 opacity-75"
           }`}
         >
           <div className="flex items-center justify-between gap-0.5">
-            <span className="rounded bg-amber-400 px-1 py-0.2 text-[9px] font-black text-slate-950 whitespace-nowrap">
+            <span
+              className={`rounded px-1 py-0.2 text-[9px] font-black whitespace-nowrap ${
+                isAOpen ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-300"
+              }`}
+            >
               A실린더
             </span>
-            <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
-              {formatChannelCode(chA.id)}
-            </span>
+            <div className="flex items-center gap-0.5">
+              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
+                {formatChannelCode(chA.id)}
+              </span>
+              {isAOpen && (
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+              )}
+            </div>
           </div>
           <div
             onClick={() => onSelectChannel?.(chA)}
@@ -424,19 +444,31 @@ export function OneScreenCylinderCard({
 
         {/* 우측 B실린더 [CH-짝수] 요약 */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border p-1.5 transition-all ${
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
             isBOpen
-              ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_10px_rgba(56,189,248,0.12)]"
-              : "border-slate-800 bg-slate-950/90 opacity-85"
+              ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
+              : "border-slate-800 bg-slate-950/80 opacity-75"
           }`}
         >
           <div className="flex items-center justify-between gap-0.5">
-            <span className="rounded bg-amber-400 px-1 py-0.2 text-[9px] font-black text-slate-950 whitespace-nowrap">
+            <span
+              className={`rounded px-1 py-0.2 text-[9px] font-black whitespace-nowrap ${
+                isBOpen ? "bg-cyan-400 text-slate-950" : "bg-slate-800 text-slate-300"
+              }`}
+            >
               B실린더
             </span>
-            <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
-              {formatChannelCode(chB.id)}
-            </span>
+            <div className="flex items-center gap-0.5">
+              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
+                {formatChannelCode(chB.id)}
+              </span>
+              {isBOpen && (
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+              )}
+            </div>
           </div>
           <div
             onClick={() => onSelectChannel?.(chB)}
@@ -540,11 +572,18 @@ export function MasterAlarmCard({
             {meta.shortBadge}
           </span>
         </div>
-        <span className="shrink-0 font-mono text-xs text-amber-300 whitespace-nowrap">
-          절체압력 :{" "}
-          <strong>
-            {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)} {unitLabel}
-          </strong>
+        <span
+          className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs sm:text-sm font-black whitespace-nowrap ${
+            isAOpen
+              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_14px_rgba(251,191,36,0.65)] ring-2 ring-amber-200"
+              : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_14px_rgba(52,211,153,0.65)] ring-2 ring-cyan-200"
+          }`}
+        >
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-950" />
+          </span>
+          {isAOpen ? "◀ A공급" : "B공급 ▶"}
         </span>
       </div>
 
@@ -553,26 +592,35 @@ export function MasterAlarmCard({
         {/* 좌측: A실린더 [CH-홀수] / B실린더 [CH-짝수] 그래픽 박스 */}
         <div className="col-span-7 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
           <div className="flex items-center justify-between text-[11px] font-black text-slate-200 border-b border-slate-800/80 pb-1">
-            <span className="text-sky-300 whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 text-sky-300 whitespace-nowrap">
               A실린더 <code className="text-[10px] text-amber-300">[{formatChannelCode(chA.id)}]</code>
+              {isAOpen && (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                </span>
+              )}
             </span>
-            <span className="font-mono text-[10px] text-emerald-300 whitespace-nowrap">
-              {isAOpen ? "◀ A실린더 공급중" : "B실린더 공급중 ▶"}
-            </span>
-            <span className="text-teal-300 whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 text-teal-300 whitespace-nowrap">
               B실린더 <code className="text-[10px] text-amber-300">[{formatChannelCode(chB.id)}]</code>
+              {isBOpen && (
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+                </span>
+              )}
             </span>
           </div>
 
           {/* 중앙: [좌측 A실린더 수치] — [중앙 A/B 실린더] — [우측 B실린더 수치] (3단 분리) */}
           <div className="my-2 flex items-center justify-between gap-1.5 px-0.5">
-            {/* A실린더 압력 숫자 (좌측 정렬 & 활성 공급 시 네온 테두리) */}
+            {/* A실린더 압력 숫자 (좌측 정렬 & 활성 공급 시 네온 블링크 테두리) */}
             <div
               onClick={() => onSelectChannel?.(chA)}
-              className={`flex-1 min-w-0 cursor-pointer rounded-lg border px-2 py-1.5 text-left font-mono transition-all ${
+              className={`flex-1 min-w-0 cursor-pointer rounded-lg border-2 px-2 py-1.5 text-left font-mono transition-all ${
                 isAOpen
-                  ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                  : "border-slate-800/90 bg-slate-900/80 opacity-85"
+                  ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
+                  : "border-slate-800/90 bg-slate-900/70 opacity-75"
               }`}
             >
               <div className="text-[9px] font-bold text-slate-300 whitespace-nowrap">
@@ -621,13 +669,13 @@ export function MasterAlarmCard({
               </div>
             </div>
 
-            {/* B실린더 압력 숫자 (우측 정렬 & 활성 공급 시 네온 테두리) */}
+            {/* B실린더 압력 숫자 (우측 정렬 & 활성 공급 시 네온 블링크 테두리) */}
             <div
               onClick={() => onSelectChannel?.(chB)}
-              className={`flex-1 min-w-0 cursor-pointer rounded-lg border px-2 py-1.5 text-right font-mono transition-all ${
+              className={`flex-1 min-w-0 cursor-pointer rounded-lg border-2 px-2 py-1.5 text-right font-mono transition-all ${
                 isBOpen
-                  ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
-                  : "border-slate-800/90 bg-slate-900/80 opacity-85"
+                  ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
+                  : "border-slate-800/90 bg-slate-900/70 opacity-75"
               }`}
             >
               <div className="text-[9px] font-bold text-slate-300 whitespace-nowrap">

@@ -150,17 +150,21 @@ export default function CylinderPairCard({
             {meta.facilityBadge}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] whitespace-nowrap">
+        <div className="flex items-center gap-2 text-xs whitespace-nowrap">
           <span
-            className={`whitespace-nowrap rounded px-2 py-0.5 font-extrabold ${
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-xs sm:text-sm font-black transition-all ${
               isAOpen
-                ? "bg-sky-500/25 text-sky-200 border border-sky-400/60"
-                : "bg-teal-500/25 text-teal-200 border border-teal-400/60"
+                ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_16px_rgba(251,191,36,0.65)] ring-2 ring-amber-200"
+                : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_16px_rgba(52,211,153,0.65)] ring-2 ring-cyan-200"
             }`}
           >
-            {isAOpen ? "◀ A실린더 공급중" : "B실린더 공급중 ▶"}
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-950" />
+            </span>
+            {isAOpen ? "◀ A공급" : "B공급 ▶"}
           </span>
-          <span className="whitespace-nowrap rounded bg-slate-800 px-2 py-0.5 text-slate-300 font-bold">
+          <span className="whitespace-nowrap rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] text-slate-300 font-bold">
             절체압력{" "}
             <strong className="font-mono text-amber-300">
               {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)} {unitLabel}
@@ -175,19 +179,31 @@ export default function CylinderPairCard({
         <div
           className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2 transition-all ${
             isAOpen
-              ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
-              : "border-slate-800 bg-slate-900/75 opacity-90"
+              ? "border-emerald-400 bg-gradient-to-b from-emerald-950/35 to-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.28)] ring-2 ring-emerald-400/75"
+              : "border-slate-800 bg-slate-900/65 opacity-75"
           }`}
         >
           <div>
             <div className="flex items-center justify-between gap-1 whitespace-nowrap">
               <div className="flex items-center gap-1 whitespace-nowrap">
-                <span className="whitespace-nowrap rounded bg-amber-400 px-1.5 py-0.5 text-[11px] font-black text-slate-950">
+                <span
+                  className={`whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-black ${
+                    isAOpen
+                      ? "bg-amber-400 text-slate-950 shadow"
+                      : "bg-slate-800 text-slate-300"
+                  }`}
+                >
                   A실린더
                 </span>
                 <span className="whitespace-nowrap rounded border border-sky-400/50 bg-sky-500/20 px-1.5 py-0.5 font-mono text-[11px] font-black text-sky-200">
                   {formatChannelCode(chA.id)}
                 </span>
+                {isAOpen && (
+                  <span className="relative flex h-2.5 w-2.5 ml-0.5" title="현재 공급중">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                  </span>
+                )}
               </div>
               <button
                 type="button"
@@ -198,10 +214,7 @@ export default function CylinderPairCard({
                 ⚙️
               </button>
             </div>
-            <div className="mt-1.5 flex items-center justify-between gap-1 whitespace-nowrap text-[11px] font-bold">
-              <span className={isAOpen ? "text-emerald-300" : "text-slate-300"}>
-                {isAOpen ? "🟢 공급중" : "⚪ 예비대기"}
-              </span>
+            <div className="mt-1.5 flex items-center justify-end whitespace-nowrap text-[11px] font-bold">
               <span className="text-slate-200">{colA.badge}</span>
             </div>
 
@@ -593,19 +606,31 @@ export default function CylinderPairCard({
         <div
           className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2 transition-all ${
             isBOpen
-              ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
-              : "border-slate-800 bg-slate-900/75 opacity-90"
+              ? "border-emerald-400 bg-gradient-to-b from-emerald-950/35 to-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.28)] ring-2 ring-emerald-400/75"
+              : "border-slate-800 bg-slate-900/65 opacity-75"
           }`}
         >
           <div>
             <div className="flex items-center justify-between gap-1 whitespace-nowrap">
               <div className="flex items-center gap-1 whitespace-nowrap">
-                <span className="whitespace-nowrap rounded bg-amber-400 px-1.5 py-0.5 text-[11px] font-black text-slate-950">
+                <span
+                  className={`whitespace-nowrap rounded px-1.5 py-0.5 text-[11px] font-black ${
+                    isBOpen
+                      ? "bg-cyan-400 text-slate-950 shadow"
+                      : "bg-slate-800 text-slate-300"
+                  }`}
+                >
                   B실린더
                 </span>
                 <span className="whitespace-nowrap rounded border border-sky-400/50 bg-sky-500/20 px-1.5 py-0.5 font-mono text-[11px] font-black text-sky-200">
                   {formatChannelCode(chB.id)}
                 </span>
+                {isBOpen && (
+                  <span className="relative flex h-2.5 w-2.5 ml-0.5" title="현재 공급중">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_8px_#34d399]" />
+                  </span>
+                )}
               </div>
               <button
                 type="button"
@@ -616,10 +641,7 @@ export default function CylinderPairCard({
                 ⚙️
               </button>
             </div>
-            <div className="mt-1.5 flex items-center justify-between gap-1 whitespace-nowrap text-[11px] font-bold">
-              <span className={isBOpen ? "text-emerald-300" : "text-slate-300"}>
-                {isBOpen ? "🟢 공급중" : "⚪ 예비대기"}
-              </span>
+            <div className="mt-1.5 flex items-center justify-end whitespace-nowrap text-[11px] font-bold">
               <span className="text-slate-200">{colB.badge}</span>
             </div>
 
