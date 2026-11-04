@@ -648,37 +648,37 @@
             <tr>
               <td><strong>공급 활성 상태<br/>(열림)</strong></td>
               <td>
-                <span class="term-std">공급중 (OPEN)</span>
+                <span class="term-std">공급중</span>
               </td>
               <td>
-                <span class="term-eng">ACTIVE / IN-SERVICE (OPEN)</span>
+                <span class="term-eng">ACTIVE / IN-SERVICE</span>
               </td>
               <td>
-                <span class="term-ban">주공급, 사용중, ON, 열림</span>
+                <span class="term-ban">공급중(OPEN), 주공급, 사용중, ON, 열림</span>
               </td>
               <td>
-                공압/솔레노이드 차단 밸브(SAV)가 개방되어 현재 공정 라인으로 가스를 공급하고 있는 상태입니다.
+                공압/솔레노이드 차단 밸브(SAV)가 개방되어 현재 공정 배관으로 가스를 공급하고 있는 상태입니다. 영문 중복(OPEN)을 제거하고 한글 단일어 <strong>'공급중'</strong>으로만 표기합니다.
               </td>
             </tr>
             <tr>
               <td><strong>예비 대기 상태<br/>(닫힘)</strong></td>
               <td>
-                <span class="term-std">예비대기 (CLOSE)</span>
+                <span class="term-std">예비대기</span>
               </td>
               <td>
-                <span class="term-eng">STANDBY / RESERVE (CLOSE)</span>
+                <span class="term-eng">STANDBY / RESERVE</span>
               </td>
               <td>
-                <span class="term-ban">대기중, 잠김, OFF, 클로즈</span>
+                <span class="term-ban">예비대기(CLOSE), 대기중, 잠김, OFF, 클로즈</span>
               </td>
               <td>
-                반대편 공급 실린더가 소진될 때까지 밸브를 닫고 만충 압력을 유지하며 대기하는 상태입니다.
+                반대편 공급 실린더가 소진될 때까지 밸브를 닫고 만충 압력을 유지하며 대기하는 상태입니다. 영문 중복(CLOSE)을 제거하고 한글 단일어 <strong>'예비대기'</strong>로만 표기합니다.
               </td>
             </tr>
             <tr>
               <td><strong>자동 전환 동작</strong></td>
               <td>
-                <span class="term-std">자동 절체 (Auto-Changeover)</span>
+                <span class="term-std">자동절체</span>
               </td>
               <td>
                 <span class="term-eng">Automatic Changeover / Switchover</span>
@@ -687,55 +687,54 @@
                 <span class="term-ban">자동 토글, 스위치, 체인지</span>
               </td>
               <td>
-                공급중 실린더의 압력(PV)이 절체 설정압력(SV) 이하로 도달 시, 예비대기 실린더로 공급 라인을 무중단 자동 전환하는 동작입니다.
+                공급중 실린더의 현재압력이 절체압력 이하로 도달 시, 예비대기 실린더로 공급 배관을 무중단 자동 전환하는 동작입니다.
               </td>
             </tr>
             <tr>
               <td><strong>현재 측정압력</strong></td>
               <td>
-                <span class="term-std">PV (현재압력)</span>
+                <span class="term-std">현재압력</span>
               </td>
               <td>
                 <span class="term-eng">Process Value (PV)</span>
                 ISA-5.1 국제 계장 표준
               </td>
               <td>
-                <span class="term-ban">Position Volume (오표기!)</span>
+                <span class="term-ban">PV(Process Value) 현재압력, Position Volume</span>
               </td>
               <td>
-                압력전송기(PT)에서 실시간으로 계측된 실린더의 현재 압력값(Bar / PSI / MPa)입니다.
+                압력전송기(PT)에서 실시간으로 계측된 실린더의 현재 압력값(Bar / PSI / MPa)입니다. 줄바꿈 방지를 위해 4글자 단일어 <strong>'현재압력'</strong>으로만 표기합니다.
               </td>
             </tr>
             <tr>
-              <td><strong>절체 설정압력<br/>(하한 경보)</strong></td>
+              <td><strong>자동절체 기준압력<br/>(하한 경보)</strong></td>
               <td>
-                <span class="term-std">SV (절체 설정압력)</span>
+                <span class="term-std">절체압력</span>
               </td>
               <td>
                 <span class="term-eng">Set Value / Switchover Setpoint (SV)</span>
                 ISA-5.1 국제 계장 표준
               </td>
               <td>
-                <span class="term-ban">Setting Volume (오표기!)</span><br/>
-                <span class="term-ban">위험압력, 하한치</span>
+                <span class="term-ban">SV(절체), 절체SV, Setting Volume, 위험압력</span>
               </td>
               <td>
-                자동 절체(A⇄B 전환) 및 용기 교체 경보가 발령되는 기준 설정 압력입니다. (일반 고압가스 15.0 Bar / 아세틸렌 2.5 Bar)
+                자동절체(A⇄B 전환) 및 용기 교체 경보가 발령되는 기준 설정 압력입니다. (일반 고압가스 15.0 Bar / 아세틸렌 2.5 Bar) 줄바꿈 방지를 위해 4글자 단일어 <strong>'절체압력'</strong>으로만 표기합니다.
               </td>
             </tr>
             <tr>
-              <td><strong>사전 예고압력<br/>(주의 경보)</strong></td>
+              <td><strong>사전 예고 기준압력<br/>(주의 경보)</strong></td>
               <td>
-                <span class="term-std">예고압력 (WARN)</span>
+                <span class="term-std">예고압력</span>
               </td>
               <td>
                 <span class="term-eng">Low-Pressure Warning Setpoint</span>
               </td>
               <td>
-                <span class="term-ban">경고압력, 1차알람</span>
+                <span class="term-ban">예고(WARN), 경고압력, 1차알람</span>
               </td>
               <td>
-                자동 절체(SV) 도달 전에 작업자가 예비 용기를 미리 점검하도록 황색 주의등을 켜는 사전 예고 압력입니다. (일반 35.0 Bar / 아세틸렌 6.0 Bar)
+                절체압력 도달 전에 작업자가 예비 용기를 미리 점검하도록 황색 주의등을 켜는 사전 예고 압력입니다. (일반 25.0 Bar / 아세틸렌 6.0 Bar) <strong>절체압력 바로 아래 줄에 '예고압력'</strong>으로 나란히 표기합니다.
               </td>
             </tr>
           </tbody>
@@ -886,12 +885,12 @@
         </div>
 
         <div class="box-after">
-          <div class="box-title" style="color: #34d399;">✅ AFTER (규격화 통일 표기)</div>
+          <div class="box-title" style="color: #34d399;">✅ AFTER (순수 한글 단일어 & 줄바꿈 제로 표준 표기)</div>
           <div class="mock-ui">
             • 상단 헤더: <strong>"특수가스 스마트 관제 시스템 (11뱅크 · 22실린더 | 가스캐비닛 5뱅크 · 오토체인지 6뱅크)"</strong><br/>
-            • 카드 배지: <strong>"BANK-01 · 가스캐비닛 1호기 (GC-01)"</strong><br/>
-            • 용기 표기: <strong>"A실린더 [CH-01] / B실린더 [CH-02]"</strong> (좁은 배지: <code>A통 [CH-01]</code>)<br/>
-            • 계측 표기: <strong>"PV : Process Value (현재압력) / SV : Set Value (절체압력)"</strong>
+            • 카드 배지: <strong>"1번 뱅크 · 가스캐비닛 1호 · 고순도메탄 (P-CH4)"</strong><br/>
+            • 용기 및 밸브 표기: <strong>"A실린더 [CH-01] / B실린더 [CH-02] · 공급중 / 예비대기"</strong><br/>
+            • 압력 3종 표기: <strong>"현재압력 / 절체압력 / 예고압력 (한 단어 한 줄 고정)"</strong>
           </div>
         </div>
       </div>

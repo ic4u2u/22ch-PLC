@@ -145,10 +145,10 @@ export default function FloorplanTab({
           onClick={() => onSelectChannel(ch)}
           className={`flex flex-col justify-between rounded-xl border-2 p-2 cursor-pointer transition-all hover:scale-[1.03] ${boxClass}`}
         >
-          {/* 상단: A실린더/B실린더 배지 + 채널번호(CH-01) + 공급중(OPEN)/예비대기(CLOSE) 상태 */}
+          {/* 상단: A실린더/B실린더 배지 + 채널번호(CH-01) + 공급중/예비대기 상태 */}
           <div className="flex items-center justify-between gap-1">
             <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-black ${
+              className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-black whitespace-nowrap ${
                 ch.side === "A"
                   ? "bg-amber-400 text-slate-950"
                   : "bg-cyan-400 text-slate-950"
@@ -157,23 +157,23 @@ export default function FloorplanTab({
               {ch.side}실린더 [{formatChannelCode(ch.id)}]
             </span>
             <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black ${
+              className={`rounded px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${
                 isOpen
                   ? "bg-emerald-400 text-slate-950"
                   : "bg-slate-800 text-slate-400 border border-slate-600"
               }`}
             >
-              {isOpen ? "● 공급중" : "○ 예비대기"}
+              {isOpen ? "공급중" : "예비대기"}
             </span>
           </div>
 
           {/* 중단: 큼직한 압력 수치 */}
           <div className="my-1.5 flex items-baseline justify-between gap-1 font-mono">
-            <span className="text-[10px] font-bold text-slate-400">
+            <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
               {phys.realMassPct}%
             </span>
             {isFault ? (
-              <span className="text-sm font-black text-purple-300">FAULT</span>
+              <span className="text-sm font-black text-purple-300 whitespace-nowrap">센서점검</span>
             ) : (
               <span
                 className={`text-base sm:text-lg font-black tracking-tighter whitespace-nowrap ${
@@ -223,11 +223,11 @@ export default function FloorplanTab({
         {/* 상단: 가스 종류 고유 색상 헤더 바 (같은 가스 2개씩 한눈에 구분!) */}
         <div className="mb-2 border-b border-slate-800 pb-1.5">
           <div className="flex items-center justify-between gap-1">
-            <span className="font-mono text-[10px] font-black text-slate-300">
-              {stationPrefix} (BANK-{String(bankNum).padStart(2, "0")})
+            <span className="text-[10px] font-black text-slate-300 whitespace-nowrap">
+              {stationPrefix} ({bankNum}번 뱅크)
             </span>
             <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black ${
+              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black whitespace-nowrap ${
                 isAOpen
                   ? "bg-sky-500/25 text-sky-300 border border-sky-400/40"
                   : "bg-teal-500/25 text-teal-300 border border-teal-400/40"
@@ -242,7 +242,7 @@ export default function FloorplanTab({
               style={{ backgroundColor: gasColor }}
             />
             <span
-              className="truncate text-xs sm:text-sm font-black tracking-tight"
+              className="truncate text-xs sm:text-sm font-black tracking-tight whitespace-nowrap"
               style={{ color: "#ffffff" }}
             >
               {chA.gasName}
@@ -371,104 +371,104 @@ export default function FloorplanTab({
             backgroundSize: "32px 32px",
           }}
         >
-          {/* 1층 (좌상단): PIPE RACK & 🏠 제3구역: H2 저장소 (오토체인지 6호기 : G-H2 A실린더 + B실린더) */}
+          {/* 1층 (좌상단): PIPE RACK & 🏠 제3구역: 수소저장소 (오토체인지 6호 : 일반수소 A실린더 + B실린더) */}
           <div className="flex flex-wrap items-stretch justify-between gap-4">
             <div className="w-full lg:w-[380px] rounded-2xl border-2 border-purple-500/70 bg-purple-950/15 p-3.5 shadow-lg">
               <div className="mb-2 flex items-center justify-between">
-                <span className="rounded-lg bg-purple-500 px-2.5 py-0.5 text-xs font-black text-slate-950">
-                  🏠 제3구역: H2 저장소 (BANK-11 · 2실린더)
+                <span className="rounded-lg bg-purple-500 px-2.5 py-0.5 text-xs font-black text-slate-950 whitespace-nowrap">
+                  🏠 제3구역: 수소저장소 (11번 뱅크 · 2실린더)
                 </span>
-                <span className="font-mono text-[11px] font-bold text-purple-300">
-                  CH-21 ~ CH-22 (ACM-06)
+                <span className="font-mono text-[11px] font-bold text-purple-300 whitespace-nowrap">
+                  CH-21 ~ CH-22 (6호)
                 </span>
               </div>
-              {h2RoomPair && renderGasPairStation(h2RoomPair, "오토체인지 6호기")}
+              {h2RoomPair && renderGasPairStation(h2RoomPair, "오토체인지 6호")}
             </div>
 
             {/* 우측: 도면 범례 (가스 종류별 고유 색상 & P/G 등급 안내) */}
             <div className="flex-1 min-w-[280px] rounded-2xl border border-slate-800 bg-slate-900/90 p-3.5 flex flex-col justify-between">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                <span className="text-xs font-black text-cyan-300">
+                <span className="text-xs font-black text-cyan-300 whitespace-nowrap">
                   🎨 뱅크별 2실린더(A실린더+B실린더) 표준 색상 구분 가이드
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-400 whitespace-nowrap">
                   실린더 박스 클릭 시 상세 트렌드 & 영점 보정(⚙️)
                 </span>
               </div>
               <div className="my-2 grid grid-cols-2 gap-2 sm:grid-cols-3 text-xs">
                 <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
-                  <span className="font-black text-emerald-400">🟢 공급중 (OPEN · 초록 박스)</span>
+                  <span className="font-black text-emerald-400 whitespace-nowrap">🟢 공급중 (초록 박스)</span>
                   <p className="mt-0.5 text-[11px] text-slate-400">
-                    현재 공정 라인으로 가스를 공급 중인 활성 실린더
+                    현재 공정 배관으로 가스를 공급 중인 활성 실린더
                   </p>
                 </div>
                 <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
-                  <span className="font-black text-slate-300">⚪ 예비대기 (CLOSE · 슬레이트)</span>
+                  <span className="font-black text-slate-300 whitespace-nowrap">⚪ 예비대기 (슬레이트 박스)</span>
                   <p className="mt-0.5 text-[11px] text-slate-400">
-                    만충 상태로 자동절체(Switchover)를 대기 중인 예비 실린더
+                    만충 상태로 자동절체를 대기 중인 예비 실린더
                   </p>
                 </div>
                 <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
-                  <span className="font-black text-amber-300">┇ 중앙 색상 점선</span>
+                  <span className="font-black text-amber-300 whitespace-nowrap">┇ 중앙 색상 점선</span>
                   <p className="mt-0.5 text-[11px] text-slate-400">
                     동일 뱅크의 <strong>A실린더(좌·홀수CH)</strong>와 <strong>B실린더(우·짝수CH)</strong> 구분선
                   </p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-300">
-                <span className="font-bold text-slate-400">순도 기호:</span>
-                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-cyan-300">
-                  P- (Pure) = N5 (99.999% 초고순도)
+                <span className="font-bold text-slate-400 whitespace-nowrap">순도 기호:</span>
+                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-cyan-300 whitespace-nowrap">
+                  P- = 99.999% 초고순도
                 </span>
-                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-amber-300">
-                  G- (General) = N35 (99.95% 일반순도)
+                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-amber-300 whitespace-nowrap">
+                  G- = 99.95% 일반순도
                 </span>
               </div>
             </div>
           </div>
 
-          {/* 2층 (중단 벽면 5,500mm): 🔄 제2구역: 오토체인지 구역 (오토체인지 1~5호기 = 10실린더 : P-N2, G-N2, He, Ar, O2) */}
+          {/* 2층 (중단 벽면 5,500mm): 🔄 제2구역: 오토체인지 구역 (오토체인지 1~5호 = 10실린더) */}
           <div className="rounded-2xl border-2 border-emerald-500/60 bg-emerald-950/10 p-3.5 shadow-lg">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30 pb-2">
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950">
+                <span className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950 whitespace-nowrap">
                   🔄 제2구역: 오토체인지 벽면 매니폴드 구역 (5뱅크 · 10실린더)
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-emerald-200">
-                  오토체인지 1~5호기 (ACM-01~05) — A실린더·B실린더 2기씩 독립 구획 (설치 폭 5,500mm)
+                <span className="text-xs sm:text-sm font-extrabold text-emerald-200 whitespace-nowrap">
+                  오토체인지 1~5호 — A실린더·B실린더 2기씩 독립 구획 (설치 폭 5,500mm)
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-emerald-400">
-                CH-11 ~ CH-20 (BANK-06 ~ BANK-10)
+              <span className="font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">
+                CH-11 ~ CH-20 (6번 ~ 10번 뱅크)
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {autoWallPairs.map((pair, idx) =>
-                renderGasPairStation(pair, `오토체인지 ${idx + 1}호기`)
+                renderGasPairStation(pair, `오토체인지 ${idx + 1}호`)
               )}
             </div>
           </div>
 
-          {/* 3층 (하단 방폭룸 7,700mm): 🗄️ 제1구역: 가스캐비닛 구역 (가스캐비닛 1~5호기 = 10실린더 : P-CH4, G-CH4, P-H2, MIX, C2H2) */}
+          {/* 3층 (하단 방폭룸 7,700mm): 🗄️ 제1구역: 가스캐비닛 구역 (가스캐비닛 1~5호 = 10실린더) */}
           <div className="rounded-2xl border-2 border-sky-500/60 bg-sky-950/10 p-3.5 shadow-lg">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-sky-500/30 pb-2">
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-sky-500 px-2.5 py-1 text-xs font-black text-slate-950">
+                <span className="rounded-lg bg-sky-500 px-2.5 py-1 text-xs font-black text-slate-950 whitespace-nowrap">
                   🗄️ 제1구역: 가스캐비닛 구역 (5뱅크 · 10실린더)
                 </span>
-                <span className="text-xs sm:text-sm font-extrabold text-sky-200">
-                  가스캐비닛 1~5호기 (GC-01~05) — 캐비닛 1대(800×550mm)당 A실린더·B실린더 2기씩 수납
+                <span className="text-xs sm:text-sm font-extrabold text-sky-200 whitespace-nowrap">
+                  가스캐비닛 1~5호 — 캐비닛 1대(800×550mm)당 A실린더·B실린더 2기씩 수납
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-sky-400">
-                CH-01 ~ CH-10 (BANK-01 ~ BANK-05)
+              <span className="font-mono text-xs font-bold text-sky-400 whitespace-nowrap">
+                CH-01 ~ CH-10 (1번 ~ 5번 뱅크)
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               {cabinetPairs.map((pair, idx) =>
-                renderGasPairStation(pair, `가스캐비닛 ${idx + 1}호기`)
+                renderGasPairStation(pair, `가스캐비닛 ${idx + 1}호`)
               )}
             </div>
           </div>

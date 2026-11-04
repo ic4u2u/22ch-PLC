@@ -289,7 +289,7 @@ export default function WallboardView({
             </div>
             <div className="space-y-1 text-xs text-slate-300">
               <p>• <strong>1화면 전체(22실린더)</strong>: 상단 5뱅크 + 하단 6뱅크를 스크롤 없이 1화면에 표시</p>
-              <p>• <strong>마스터 알람뷰</strong>: 벽걸이 마스터 알람기 스타일 (초대형 PV/SV)</p>
+              <p>• <strong>마스터 알람뷰</strong>: 벽걸이 마스터 알람기 스타일 (초대형 현재압력/절체압력/예고압력)</p>
               <p>• <strong>구역 자동롤링</strong>: 가스캐비닛 5뱅크 ↔ 오토체인지 6뱅크 자동 순환</p>
             </div>
           </div>
@@ -413,18 +413,18 @@ export default function WallboardView({
          ===================================================================== */}
       {viewMode === "ONE_SCREEN" && (
         <div className="space-y-3">
-          {/* 상단 1열: 🗄️ 제1구역: 가스캐비닛 5뱅크 (BANK-01~05 · 10실린더) — 5열 가로 한 줄 배치 */}
+          {/* 상단 1열: 🗄️ 제1구역: 가스캐비닛 5뱅크 (1~5번 뱅크 · 10실린더) — 5열 가로 한 줄 배치 */}
           <section className="rounded-2xl border border-sky-500/40 bg-sky-950/10 p-2.5">
             <div className="mb-2 flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-sky-500 px-2.5 py-0.5 text-xs font-black text-slate-950">
-                  🗄️ 제1구역: 가스캐비닛 5뱅크 (GC-01~05 · 10실린더)
+                <span className="rounded-lg bg-sky-500 px-2.5 py-0.5 text-xs font-black text-slate-950 whitespace-nowrap">
+                  🗄️ 제1구역: 가스캐비닛 5뱅크 (1~5호 · 10실린더)
                 </span>
-                <span className="text-xs font-bold text-sky-200">
-                  BANK-01 ~ BANK-05 (P-CH4 · G-CH4 · P-H2 · MIX · C2H2 — A/B실린더 구성)
+                <span className="text-xs font-bold text-sky-200 whitespace-nowrap">
+                  1번 뱅크 ~ 5번 뱅크 (고순도메탄 · 일반메탄 · 고순도수소 · 혼합가스 · 아세틸렌)
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-sky-400">
+              <span className="font-mono text-xs font-bold text-sky-400 whitespace-nowrap">
                 CH-01 ~ CH-10 (5뱅크 한 줄 배치)
               </span>
             </div>
@@ -447,18 +447,18 @@ export default function WallboardView({
             </div>
           </section>
 
-          {/* 하단 2열: 🔄 제2·3구역: 오토체인지 6뱅크 (BANK-06~11 · 12실린더) — 6열 가로 한 줄 배치 */}
+          {/* 하단 2열: 🔄 제2·3구역: 오토체인지 6뱅크 (6~11번 뱅크 · 12실린더) — 6열 가로 한 줄 배치 */}
           <section className="rounded-2xl border border-emerald-500/40 bg-emerald-950/10 p-2.5">
             <div className="mb-2 flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-emerald-500 px-2.5 py-0.5 text-xs font-black text-slate-950">
-                  🔄 제2·3구역: 오토체인지 6뱅크 (ACM-01~06 · 12실린더)
+                <span className="rounded-lg bg-emerald-500 px-2.5 py-0.5 text-xs font-black text-slate-950 whitespace-nowrap">
+                  🔄 제2·3구역: 오토체인지 6뱅크 (1~6호 · 12실린더)
                 </span>
-                <span className="text-xs font-bold text-emerald-200">
-                  BANK-06 ~ BANK-11 (P-N2 · G-N2 · He · Ar · O2 · G-H2[H2저장소] — A/B실린더 구성)
+                <span className="text-xs font-bold text-emerald-200 whitespace-nowrap">
+                  6번 뱅크 ~ 11번 뱅크 (고순도질소 · 일반질소 · 고순도헬륨 · 고순도아르곤 · 고순도산소 · 일반수소)
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-emerald-400">
+              <span className="font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">
                 CH-11 ~ CH-22 (6뱅크 한 줄 배치)
               </span>
             </div>
@@ -537,11 +537,11 @@ export default function WallboardView({
               <span className="rounded-lg bg-cyan-400 px-2.5 py-1 text-xs font-black text-slate-950">
                 🔄 자동 순환 모드 ({rollingSec}초 주기)
               </span>
-              <span className="text-sm font-extrabold text-white">
+              <span className="text-sm font-extrabold text-white whitespace-nowrap">
                 현재 표시 중:{" "}
                 {rollingPage === "CABINET"
-                  ? "1페이지 — 🗄️ 제1구역: 가스캐비닛 5뱅크 (BANK-01~05 · 10실린더)"
-                  : "2페이지 — 🔄 제2·3구역: 오토체인지 6뱅크 (BANK-06~11 · 12실린더)"}
+                  ? "1페이지 — 🗄️ 제1구역: 가스캐비닛 5뱅크 (1~5번 뱅크 · 10실린더)"
+                  : "2페이지 — 🔄 제2·3구역: 오토체인지 6뱅크 (6~11번 뱅크 · 12실린더)"}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -620,19 +620,19 @@ export default function WallboardView({
                     className="flex cursor-pointer items-center justify-between rounded-xl border border-rose-400/60 bg-slate-950/90 p-3"
                   >
                     <div>
-                      <span className="rounded bg-rose-500/20 px-2 py-0.5 text-[11px] font-black text-rose-300">
-                        {ch.bankId} · {meta.shortBadge} · {ch.side}실린더
+                      <span className="rounded bg-rose-500/20 px-2 py-0.5 text-[11px] font-black text-rose-300 whitespace-nowrap">
+                        {meta.bankCode} · {meta.shortBadge} · {ch.side}실린더
                       </span>
-                      <div className="mt-1 text-base font-black text-white">
+                      <div className="mt-1 text-base font-black text-white whitespace-nowrap">
                         {ch.gasName} [{ch.side}실린더 · CH-{String(ch.id).padStart(2, "0")}]
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-400 whitespace-nowrap">
                         {ch.faultReason || ch.remainingText}
                       </div>
                     </div>
-                    <div className="font-mono text-3xl font-black text-rose-400">
+                    <div className="font-mono text-3xl font-black text-rose-400 whitespace-nowrap">
                       {ch.status === "SENSOR_FAULT"
-                        ? "FAULT"
+                        ? "센서점검"
                         : `${formatPressureByUnit(
                             ch.pressureBar,
                             unit,

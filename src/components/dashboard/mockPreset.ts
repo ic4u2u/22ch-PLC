@@ -18,12 +18,12 @@ import {
   TowerLampState,
 } from "./types";
 
-// 현장 실제 도면 & 한원케미칼 사양 반영 (P=Pure N5 99.999%, G=General N35 99.95%)
+// 현장 실제 도면 & 한원케미칼 사양 반영 (줄바꿈이 절대 일어나지 않는 간결한 한글 표준 가스명)
 export const GAS_PRESET = [
-  // [구역 1] 하단 가스저장소 (CABINET 5CH = 10 실린더)
+  // [제1구역] 가스캐비닛 1~5호 (5뱅크 = 10실린더)
   {
-    name: "P-CH4 [CH4(N5)] 고순도메탄",
-    code: "P-CH4(N5)",
+    name: "고순도메탄 (P-CH4)",
+    code: "P-CH4",
     color: "#ef4444",
     pinAX: 15,
     pinAY: 78,
@@ -31,8 +31,8 @@ export const GAS_PRESET = [
     pinBY: 78,
   },
   {
-    name: "G-CH4 [CH4(N35)] 일반메탄",
-    code: "G-CH4(N35)",
+    name: "일반메탄 (G-CH4)",
+    code: "G-CH4",
     color: "#f97316",
     pinAX: 30,
     pinAY: 78,
@@ -40,8 +40,8 @@ export const GAS_PRESET = [
     pinBY: 78,
   },
   {
-    name: "P-H2 [H2(N5)] 고순도수소",
-    code: "P-H2(N5)",
+    name: "고순도수소 (P-H2)",
+    code: "P-H2",
     color: "#eab308",
     pinAX: 45,
     pinAY: 78,
@@ -49,8 +49,8 @@ export const GAS_PRESET = [
     pinBY: 78,
   },
   {
-    name: "MIX(Ar+H2) 혼합가스",
-    code: "MIX(Ar+H2)",
+    name: "혼합가스 (Ar+H2)",
+    code: "Ar+H2",
     color: "#84cc16",
     pinAX: 60,
     pinAY: 78,
@@ -58,18 +58,18 @@ export const GAS_PRESET = [
     pinBY: 78,
   },
   {
-    name: "C2H2 [C2H2(N5)] 아세틸렌",
-    code: "C2H2(N5)",
+    name: "아세틸렌 (C2H2)",
+    code: "C2H2",
     color: "#ec4899",
     pinAX: 75,
     pinAY: 78,
     pinBX: 82,
     pinBY: 78,
   },
-  // [구역 2] 상단 벽면 오토체인지 (자동절체기 5세트 = 10 실린더)
+  // [제2구역] 오토체인지 1~5호 (5뱅크 = 10실린더)
   {
-    name: "P-N2 [N2(N5)] 고순도질소",
-    code: "P-N2(N5)",
+    name: "고순도질소 (P-N2)",
+    code: "P-N2",
     color: "#10b981",
     pinAX: 27,
     pinAY: 43,
@@ -77,8 +77,8 @@ export const GAS_PRESET = [
     pinBY: 43,
   },
   {
-    name: "G-N2 [N2(N35)] 일반질소",
-    code: "G-N2(N35)",
+    name: "일반질소 (G-N2)",
+    code: "G-N2",
     color: "#14b8a6",
     pinAX: 41,
     pinAY: 43,
@@ -86,8 +86,8 @@ export const GAS_PRESET = [
     pinBY: 43,
   },
   {
-    name: "He [He(N5)] 고순도헬륨",
-    code: "He(N5)",
+    name: "고순도헬륨 (He)",
+    code: "He",
     color: "#06b6d4",
     pinAX: 55,
     pinAY: 43,
@@ -95,8 +95,8 @@ export const GAS_PRESET = [
     pinBY: 43,
   },
   {
-    name: "Ar [Ar(N5)] 고순도아르곤",
-    code: "Ar(N5)",
+    name: "고순도아르곤 (Ar)",
+    code: "Ar",
     color: "#3b82f6",
     pinAX: 69,
     pinAY: 43,
@@ -104,18 +104,18 @@ export const GAS_PRESET = [
     pinBY: 43,
   },
   {
-    name: "O2 [O2(N5)] 고순도산소",
-    code: "O2(N5)",
+    name: "고순도산소 (O2)",
+    code: "O2",
     color: "#6366f1",
     pinAX: 83,
     pinAY: 43,
     pinBX: 90,
     pinBY: 43,
   },
-  // [구역 3] 좌상단 별도 H2 저장소 (오토체인지 6번째 세트 = 2 실린더)
+  // [제3구역] 수소저장소 오토체인지 6호 (1뱅크 = 2실린더)
   {
-    name: "G-H2 [H2(N35)] 일반수소",
-    code: "G-H2(N35)",
+    name: "일반수소 (G-H2)",
+    code: "G-H2",
     color: "#a855f7",
     pinAX: 20,
     pinAY: 16,

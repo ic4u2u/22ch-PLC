@@ -91,11 +91,11 @@ export default function LeakTestTab({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       {/* 좌측: 기밀 시험 컨트롤 패널 */}
       <div className="lg:col-span-5 rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        <h3 className="text-base font-extrabold text-cyan-300">
-          🧪 배관 기밀/누출 시험 (Leak Test) 계측기
+        <h3 className="text-base font-extrabold text-cyan-300 whitespace-nowrap">
+          🧪 배관 기밀/누출 시험 계측기
         </h3>
         <p className="mt-1 text-xs text-slate-400">
-          선택한 채널의 압력 강하량(ΔP)을 정밀 계측하여 허용 기준(<strong>0.2 bar 이하</strong>) 만족 시 PASS 판정 및 성적서를 자동 발행합니다.
+          선택한 채널의 압력 강하량(ΔP)을 정밀 계측하여 허용 기준(<strong>0.2 bar 이하</strong>) 만족 시 합격 판정 및 성적서를 자동 발행합니다.
         </p>
 
         <div className="mt-4 space-y-4">
@@ -219,8 +219,8 @@ export default function LeakTestTab({
             >
               <div className="text-lg font-black">
                 {lastResult.result === "PASS"
-                  ? "✅ 기밀 시험 합격 (PASS)"
-                  : "🚨 기밀 시험 불합격 (FAIL - 누출 의심)"}
+                  ? "✅ 기밀 시험 합격"
+                  : "🚨 기밀 시험 불합격 (누출 의심)"}
               </div>
               <div className="mt-1 text-xs">
                 시작 {lastResult.start} bar → 종료 {lastResult.end} bar (강하량 ΔP ={" "}
@@ -235,8 +235,8 @@ export default function LeakTestTab({
       <div className="lg:col-span-7 rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h3 className="text-base font-extrabold text-white">
-              📜 배관 기밀 시험(PASS/FAIL) 공식 성적서 이력
+            <h3 className="text-base font-extrabold text-white whitespace-nowrap">
+              📜 배관 기밀 시험(합격/불합격) 공식 성적서 이력
             </h3>
             <p className="text-xs text-slate-400">
               SQLite <code className="text-cyan-300">leak_test_logs</code> 테이블에 영구 보존된 성적서 내역입니다.
@@ -257,12 +257,12 @@ export default function LeakTestTab({
                   l.end_pressure,
                   l.delta_pressure,
                   l.threshold_bar,
-                  l.result,
+                  l.result === "PASS" ? "합격" : "불합격",
                   l.inspector,
                 ])
               )
             }
-            className="min-h-[40px] rounded-xl border border-emerald-500/50 bg-emerald-500/15 px-3.5 text-xs font-extrabold text-emerald-300 hover:bg-emerald-500/25"
+            className="min-h-[40px] rounded-xl border border-emerald-500/50 bg-emerald-500/15 px-3.5 text-xs font-extrabold text-emerald-300 hover:bg-emerald-500/25 whitespace-nowrap"
           >
             📥 성적서 엑셀(CSV) 다운로드
           </button>
@@ -304,13 +304,13 @@ export default function LeakTestTab({
                     </td>
                     <td className="p-2.5">
                       <span
-                        className={`rounded-md px-2 py-0.5 font-black ${
+                        className={`rounded-md px-2 py-0.5 font-black whitespace-nowrap ${
                           log.result === "PASS"
                             ? "bg-emerald-500/20 text-emerald-300"
                             : "bg-rose-500/25 text-rose-300"
                         }`}
                       >
-                        {log.result}
+                        {log.result === "PASS" ? "합격" : "불합격"}
                       </span>
                     </td>
                     <td className="p-2.5 text-slate-300">{log.inspector}</td>

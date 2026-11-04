@@ -81,21 +81,21 @@ export default function HeaderBar({
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white whitespace-nowrap">
                 특수가스 스마트 관제 시스템
               </h1>
-              <span className="inline-flex items-center rounded-md bg-cyan-500/15 px-2 py-0.5 font-mono text-[11px] font-black text-cyan-300 border border-cyan-500/40">
+              <span className="inline-flex items-center rounded-md bg-cyan-500/15 px-2 py-0.5 font-mono text-[11px] font-black text-cyan-300 border border-cyan-500/40 whitespace-nowrap">
                 11뱅크 · 22실린더 (CH-01~22)
               </span>
-              <span className="inline-flex items-center rounded-md bg-amber-400/20 px-2 py-0.5 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-400/50">
+              <span className="inline-flex items-center rounded-md bg-amber-400/20 px-2 py-0.5 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-400/50 whitespace-nowrap">
                 🕒 {APP_UPDATE_STAMP}
               </span>
-              <span className="hidden 2xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
-                가스캐비닛 5뱅크(GC-01~05) · 오토체인지 6뱅크(ACM-01~06)
+              <span className="hidden 2xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700 whitespace-nowrap">
+                가스캐비닛 5뱅크(1~5호) · 오토체인지 6뱅크(1~6호)
               </span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span className="inline-flex items-center gap-1.5 font-medium">
+              <span className="inline-flex items-center gap-1.5 font-medium whitespace-nowrap">
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${
                     diagnostics.plcConnected
@@ -108,13 +108,13 @@ export default function HeaderBar({
                   : `PLC 재연결 대기 중 (${diagnostics.plcIp}:${diagnostics.plcPort})`}
               </span>
               {dangerCount > 0 && (
-                <span className="rounded bg-rose-500/20 border border-rose-500/50 px-2 py-0.5 text-rose-300 font-bold animate-pulse">
+                <span className="rounded bg-rose-500/20 border border-rose-500/50 px-2 py-0.5 text-rose-300 font-bold animate-pulse whitespace-nowrap">
                   🚨 위험 {dangerCount}채널
                 </span>
               )}
               {faultCount > 0 && (
-                <span className="rounded bg-purple-500/20 border border-purple-500/50 px-2 py-0.5 text-purple-300 font-bold">
-                  ⚡ 센서고장(SENSOR_FAULT) {faultCount}채널
+                <span className="rounded bg-purple-500/20 border border-purple-500/50 px-2 py-0.5 text-purple-300 font-bold whitespace-nowrap">
+                  ⚡ 센서점검 {faultCount}채널
                 </span>
               )}
             </div>

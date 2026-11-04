@@ -347,10 +347,10 @@ export function ChannelDetailModal({
           </div>
           <svg viewBox={`0 0 ${svgW} ${svgH}`} className="h-36 w-full overflow-visible">
             <line x1="10" y1={svgH - 15} x2={svgW - 10} y2={svgH - 15} stroke="#334155" strokeWidth="1" />
-            {/* SV 자동절체 기준선 */}
+            {/* 절체압력 기준선 */}
             <line x1="10" y1={svY} x2={svgW - 10} y2={svY} stroke="#f43f5e" strokeDasharray="3 3" strokeWidth="1.2" />
             <text x="14" y={Math.max(12, svY - 4)} fill="#fb7185" fontSize="9" fontWeight="bold">
-              SV 절체기준 ({channel.dangerBar}b)
+              절체압력 ({channel.dangerBar}b)
             </text>
             {/* 실측 데이터 영역 구분선 */}
             <line x1={historyW} y1="10" x2={historyW} y2={svgH - 15} stroke="#475569" strokeDasharray="2 2" />
@@ -475,21 +475,10 @@ export function ChannelDetailModal({
           )}
         </div>
 
-        {/* 예고압력(WARN) / 절체 설정압력(SV) 임계값 저장 */}
+        {/* 절체압력 / 예고압력 임계값 저장 */}
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="flex-1">
-            <label className="text-xs text-slate-400">예고압력(WARN) 기준 (Bar)</label>
-            <input
-              type="number"
-              step="0.5"
-              disabled={!isUnlocked}
-              value={warnBar}
-              onChange={(e) => setWarnBar(Number(e.target.value))}
-              className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-amber-300"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-xs text-slate-400">절체 설정압력(SV) 기준 (Bar)</label>
+            <label className="text-xs font-bold text-rose-300 whitespace-nowrap">절체압력 기준 (Bar)</label>
             <input
               type="number"
               step="0.5"
@@ -499,6 +488,17 @@ export function ChannelDetailModal({
               className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-rose-300"
             />
           </div>
+          <div className="flex-1">
+            <label className="text-xs font-bold text-amber-300 whitespace-nowrap">예고압력 기준 (Bar)</label>
+            <input
+              type="number"
+              step="0.5"
+              disabled={!isUnlocked}
+              value={warnBar}
+              onChange={(e) => setWarnBar(Number(e.target.value))}
+              className="mt-1 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-amber-300"
+            />
+          </div>
           <button
             type="button"
             disabled={!isUnlocked}
@@ -506,11 +506,11 @@ export function ChannelDetailModal({
               onUpdateChannel(
                 channel.id,
                 { warnBar, dangerBar },
-                `임계값 변경 (예고압력=${warnBar} bar, 절체SV=${dangerBar} bar)`,
+                `임계값 변경 (절체압력=${dangerBar} bar, 예고압력=${warnBar} bar)`,
                 "THRESHOLD_UPDATE"
               )
             }
-            className="min-h-[42px] rounded-xl bg-cyan-500 px-4 text-xs font-extrabold text-slate-950 disabled:opacity-40"
+            className="min-h-[42px] rounded-xl bg-cyan-500 px-4 text-xs font-extrabold text-slate-950 disabled:opacity-40 whitespace-nowrap"
           >
             임계값 저장
           </button>
