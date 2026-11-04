@@ -2,9 +2,11 @@
 
 /**
  * 파일명: src/components/dashboard/FloorplanTab.tsx
- * 역할: [탭 5] 🗺️ 공장 도면 뷰
- *  - 실제 현장 CAD 도면(H2 저장소 + 자동절체기 5세트 + 가스저장소 캐비넷 5칸) 기본 SVG 내장
- *  - 마우스 드래그 앤 드롭으로 22채널 핀 배치 및 다중 PC 실시간 SQLite 동기화
+ * 역할: [탭 5] 🗺️ 공장 도면 뷰 (CAD 도면 3대 구역 + 같은 가스 종류 2개씩[A통·B통] 색상 구분선 & 폰트 완벽 분리 디자인)
+ *  - 구역 1 (좌상단): 🏠 H2 저장소 — BANK-11 [G-H2 일반수소 : CH21(A) | CH22(B)]
+ *  - 구역 2 (중단): 🔄 오토체인지 5세트 — BANK-06~10 [P-N2, G-N2, He, Ar, O2 : 각 A통 | B통 2개씩 색상 구분 박스]
+ *  - 구역 3 (하단): 🗄️ 가스저장소(CABINET) 5칸 — BANK-01~05 [P-CH4, G-CH4, P-H2, MIX, C2H2 : 각 A통 | B통 2개씩 방폭 캐비넷 박스]
+ *  - 사용자 원본 도면 업로드 시에도 같은 가스 A-B끼리 색상 연결선 및 고유 컬러 테두리로 2개씩 묶음 표시
  */
 
 import React, { useRef, useState } from "react";
@@ -12,6 +14,7 @@ import {
   ChannelData,
   PressureUnit,
   formatPressureByUnit,
+  getGasPhysicsMeta,
   getUnitLabel,
 } from "./types";
 
@@ -42,15 +45,35 @@ export default function FloorplanTab({
   const [draggingId, setDraggingId] = useState<number | null>(null);
   const unitLabel = getUnitLabel(unit);
 
+  // 22개 채널을 같은 가스 종류 2개씩(A통 + B통) 11개 페어로 그룹핑
+  const buildPairs = (list: ChannelData[]) => {
+    const pairs: { bankNum: number; chA: ChannelData; chB: ChannelData }[] = [];
+    for (let i = 0; i < list.length; i += 2) {
+      if (list[i] && list[i + 1]) {
+        pairs.push({
+          bankNum: Math.ceil(list[i].id / 2),
+          chA: list[i],
+          chB: list[i + 1],
+        });
+      }
+    }
+    return pairs;
+  };
+
+  const allPairs = buildPairs(channels);
+  const cabinetPairs = allPairs.filter((p) => p.bankNum >= 1 && p.bankNum <= 5);
+  const autoWallPairs = allPairs.filter((p) => p.bankNum >= 6 && p.bankNum <= 10);
+  const h2RoomPair = allPairs.find((p) => p.bankNum === 11);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (draggingId === null || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const xPct = Math.max(
-      3,
+      4,
       Math.min(96, Number((((e.clientX - rect.left) / rect.width) * 100).toFixed(1)))
     );
     const yPct = Math.max(
-      5,
+      6,
       Math.min(94, Number((((e.clientY - rect.top) / rect.height) * 100).toFixed(1)))
     );
 
@@ -82,23 +105,179 @@ export default function FloorplanTab({
     reader.readAsDataURL(file);
   };
 
+  // 도면 내 [같은 가스 2개(A통 + B통) 통합 스테이션 박스] 렌더링 함수
+  const renderGasPairStation = (
+    pair: { bankNum: number; chA: ChannelData; chB: ChannelData },
+    stationPrefix: string
+  ) => {
+    const { bankNum, chA, chB } = pair;
+    const gasColor = chA.color || "#0ea5e9";
+    const isAOpen = chA.valveState === 0;
+    const hasAlarm =
+      chA.status === "DANGER" ||
+      chB.status === "DANGER" ||
+      chA.status === "SENSOR_FAULT" ||
+      chB.status === "SENSOR_FAULT";
+
+    const renderSingleCylinderPin = (ch: ChannelData) => {
+      const isOpen = ch.valveState === 0;
+      const phys = getGasPhysicsMeta(ch.gasCode, ch.pressureBar, ch.maxBar);
+      const isFault = ch.status === "SENSOR_FAULT";
+      const isDanger = ch.status === "DANGER";
+      const isWarn = ch.status === "WARN";
+
+      let boxClass = isOpen
+        ? "border-emerald-400 bg-emerald-950/70 text-white shadow-md shadow-emerald-500/15"
+        : "border-slate-600 bg-slate-900/90 text-slate-300";
+
+      if (isFault) {
+        boxClass = "border-purple-400 bg-purple-950/80 text-white animate-pulse";
+      } else if (isDanger) {
+        boxClass = "border-rose-400 bg-rose-950/80 text-white animate-pulse";
+      } else if (isWarn && isOpen) {
+        boxClass = "border-amber-400 bg-amber-950/75 text-white";
+      }
+
+      return (
+        <div
+          key={ch.id}
+          onClick={() => onSelectChannel(ch)}
+          className={`flex flex-col justify-between rounded-xl border-2 p-2 cursor-pointer transition-all hover:scale-[1.03] ${boxClass}`}
+        >
+          {/* 상단: A통/B통 배지 + 채널번호 + OPEN/CLOSE 상태 */}
+          <div className="flex items-center justify-between gap-1">
+            <span
+              className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-black ${
+                ch.side === "A"
+                  ? "bg-amber-400 text-slate-950"
+                  : "bg-cyan-400 text-slate-950"
+              }`}
+            >
+              {ch.side}통 · CH{String(ch.id).padStart(2, "0")}
+            </span>
+            <span
+              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black ${
+                isOpen
+                  ? "bg-emerald-400 text-slate-950"
+                  : "bg-slate-800 text-slate-400 border border-slate-600"
+              }`}
+            >
+              {isOpen ? "OPEN" : "CLOSE"}
+            </span>
+          </div>
+
+          {/* 중단: 큼직한 압력 수치 */}
+          <div className="my-1.5 flex items-baseline justify-between gap-1 font-mono">
+            <span className="text-[10px] font-bold text-slate-400">
+              {phys.realMassPct}%
+            </span>
+            {isFault ? (
+              <span className="text-sm font-black text-purple-300">FAULT</span>
+            ) : (
+              <span
+                className={`text-base sm:text-lg font-black tracking-tighter whitespace-nowrap ${
+                  isOpen ? "text-white" : "text-slate-300"
+                }`}
+              >
+                {formatPressureByUnit(ch.pressureBar, unit, ch.maxBar)}
+                <span className="ml-0.5 text-[10px] font-bold text-cyan-300">
+                  {unitLabel}
+                </span>
+              </span>
+            )}
+          </div>
+
+          {/* 하단: 미니 잔량 게이지 바 */}
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+            <div
+              className={`h-full transition-all duration-300 ${
+                isFault
+                  ? "bg-purple-400"
+                  : isDanger
+                  ? "bg-rose-500"
+                  : isWarn && isOpen
+                  ? "bg-amber-400"
+                  : isOpen
+                  ? "bg-emerald-400"
+                  : "bg-slate-500"
+              }`}
+              style={{ width: `${phys.realMassPct}%` }}
+            />
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div
+        key={`station-${bankNum}`}
+        className={`flex flex-col justify-between rounded-2xl border-2 bg-slate-950/95 p-2.5 shadow-xl transition-all ${
+          hasAlarm ? "ring-2 ring-rose-500" : ""
+        }`}
+        style={{
+          borderColor: gasColor,
+          borderTopWidth: "5px",
+        }}
+      >
+        {/* 상단: 가스 종류 고유 색상 헤더 바 (같은 가스 2개씩 한눈에 구분!) */}
+        <div className="mb-2 border-b border-slate-800 pb-1.5">
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-mono text-[10px] font-black text-slate-300">
+              {stationPrefix} (BANK-{String(bankNum).padStart(2, "0")})
+            </span>
+            <span
+              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-black ${
+                isAOpen
+                  ? "bg-sky-500/25 text-sky-300 border border-sky-400/40"
+                  : "bg-teal-500/25 text-teal-300 border border-teal-400/40"
+              }`}
+            >
+              {isAOpen ? "◀A공급" : "B공급▶"}
+            </span>
+          </div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span
+              className="h-3 w-3 shrink-0 rounded-full shadow"
+              style={{ backgroundColor: gasColor }}
+            />
+            <span
+              className="truncate text-xs sm:text-sm font-black tracking-tight"
+              style={{ color: "#ffffff" }}
+            >
+              {chA.gasName}
+            </span>
+          </div>
+        </div>
+
+        {/* 본문: 좌측 [A통] | 중앙 색상 점선 구분선 | 우측 [B통] */}
+        <div className="grid grid-cols-2 gap-2 relative">
+          <div
+            className=" pr-1 border-r-2 border-dashed"
+            style={{ borderColor: `${gasColor}88` }}
+          >
+            {renderSingleCylinderPin(chA)}
+          </div>
+          <div className="pl-0.5">{renderSingleCylinderPin(chB)}</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-extrabold text-cyan-300">
-            🗺️ 현장 특수가스 저장소(CABINET 5CH) & 오토체인지(자동절체기 6CH) 실시간 도면
+          <h3 className="text-base sm:text-lg font-extrabold text-cyan-300">
+            🗺️ 현장 특수가스 저장소(CABINET 5CH) & 오토체인지(자동절체기 6CH) CAD 도면 뷰
           </h3>
           <p className="text-xs text-slate-400">
-            {isUnlocked
-              ? "🔓 관리자 잠금 해제됨: 채널 핀을 마우스로 드래그하여 원하는 위치에 놓으면 모든 관제 PC/태블릿에 즉시 동기화됩니다."
-              : "🔒 핀 위치를 이동하거나 도면 이미지를 변경하려면 상단 [관리자 PIN 잠금]을 해제해 주세요."}
+            같은 종류의 가스 2통(<strong>A통 + B통</strong>)씩 <strong>고유 가스 색상 테두리 박스</strong>와 <strong>중앙 점선 구분선</strong>으로 묶여 있어 인접 가스와 절대 헷갈리지 않습니다.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <label className="min-h-[40px] cursor-pointer inline-flex items-center rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3.5 py-2 text-xs font-extrabold text-cyan-200 hover:bg-cyan-500/25">
-            <span>🖼️ 원본 도면 이미지 업로드</span>
+            <span>🖼️ 사용자 도면 이미지 업로드</span>
             <input
               type="file"
               accept="image/*"
@@ -113,7 +292,7 @@ export default function FloorplanTab({
                 if (!isUnlocked) return onRequestPin();
                 onSyncFloorplan({
                   floorplan_bg: "",
-                  detail: "현장 CAD 기반 기본 SVG 도면으로 복원",
+                  detail: "현장 CAD 기반 기본 구조화 도면으로 복원",
                 });
               }}
               className="min-h-[40px] rounded-xl bg-slate-800 px-3 text-xs font-bold text-slate-300 hover:bg-slate-700"
@@ -124,196 +303,43 @@ export default function FloorplanTab({
         </div>
       </div>
 
-      {/* 도면 캔버스 */}
-      <div
-        ref={containerRef}
-        onMouseMove={handleMouseMove}
-        onMouseUp={() => setDraggingId(null)}
-        onMouseLeave={() => setDraggingId(null)}
-        className="relative h-[560px] w-full select-none overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-inner"
-      >
-        {floorplanBg ? (
+      {/* 사용자 커스텀 배경 이미지가 업로드된 경우: 드래그 앤 드롭 캔버스 + A/B 색상 연결선 */}
+      {floorplanBg ? (
+        <div
+          ref={containerRef}
+          onMouseMove={handleMouseMove}
+          onMouseUp={() => setDraggingId(null)}
+          onMouseLeave={() => setDraggingId(null)}
+          className="relative h-[580px] w-full select-none overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-inner"
+        >
           <img
             src={floorplanBg}
             alt="Custom Floorplan"
-            className="h-full w-full object-cover opacity-80"
+            className="h-full w-full object-cover opacity-75"
           />
-        ) : (
-          /* 실제 현장 CAD 도면 1:1 재현 SVG (H2 저장소 + 자동절체기 5세트 + 가스저장소 CABINET 5칸) */
-          <svg viewBox="0 0 1000 560" className="h-full w-full">
-            <defs>
-              <pattern id="cad-grid" width="35" height="35" patternUnits="userSpaceOnUse">
-                <path
-                  d="M 35 0 L 0 0 0 35"
-                  fill="none"
-                  stroke="#1e293b"
-                  strokeWidth="1"
-                />
-              </pattern>
-            </defs>
-            <rect width="1000" height="560" fill="url(#cad-grid)" />
-
-            {/* 상단 PIPE RACK & H2 저장소 (BANK-11 : G-H2 CH21/CH22) */}
-            <line x1="180" y1="0" x2="180" y2="55" stroke="#38bdf8" strokeWidth="3" />
-            <line x1="192" y1="0" x2="192" y2="55" stroke="#38bdf8" strokeWidth="3" />
-            <text x="208" y="24" fill="#94a3b8" fontSize="12" fontWeight="bold">
-              PIPE RACK (PIPE : STS304 x 15A)
-            </text>
-
-            <rect
-              x="110"
-              y="55"
-              width="310"
-              height="85"
-              rx="6"
-              fill="#0f172a"
-              stroke="#a855f7"
-              strokeWidth="2.5"
-            />
-            <text x="265" y="78" fill="#d8b4fe" fontSize="14" fontWeight="bold" textAnchor="middle">
-              🏠 H2 저장소 [오토체인지 6번: G-H2 (일반수소 A/B)]
-            </text>
-
-            {/* 중단 구역: 오토체인지 (자동절체기 5세트 = 10 실린더, 폭 5,500mm) */}
-            <rect
-              x="40"
-              y="165"
-              width="920"
-              height="160"
-              rx="8"
-              fill="#0f172a"
-              stroke="#10b981"
-              strokeWidth="2"
-            />
-            <text x="60" y="192" fill="#34d399" fontSize="14" fontWeight="bold">
-              🔄 오토체인지 구역 (자동절체기 A/B 매니폴드 5세트 + H2저장소 1세트 = 총 6CH / 12실린더, 5,500mm)
-            </text>
-
-            {/* 자동절체기 5세트 실린더 원형 A/B 마크 */}
-            {[
-              { x: 305, label: "BANK-06 : P-N2 [N2(N5)]" },
-              { x: 445, label: "BANK-07 : G-N2 [N2(N35)]" },
-              { x: 585, label: "BANK-08 : He(N5)" },
-              { x: 725, label: "BANK-09 : Ar(N5)" },
-              { x: 865, label: "BANK-10 : O2(N5)" },
-            ].map((item, idx) => (
-              <g key={idx}>
-                <rect
-                  x={item.x - 45}
-                  y={202}
-                  width={90}
-                  height={16}
-                  rx={3}
-                  fill="#1e293b"
-                  stroke="#64748b"
-                />
-                <circle
-                  cx={item.x - 28}
-                  cy={245}
-                  r={22}
-                  fill="#090d16"
-                  stroke="#334155"
-                  strokeWidth="2"
-                />
-                <circle
-                  cx={item.x + 28}
-                  cy={245}
-                  r={22}
-                  fill="#090d16"
-                  stroke="#334155"
-                  strokeWidth="2"
-                />
-                <text
-                  x={item.x}
-                  y={298}
-                  fill="#cbd5e1"
-                  fontSize="11.5"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
-                  {item.label}
-                </text>
-              </g>
-            ))}
-
-            {/* 하단 구역: 가스저장소 CABINET 5칸 (800 x 550mm x 5칸 = 10 실린더, 폭 7,700mm) */}
-            <rect
-              x="70"
-              y="350"
-              width="860"
-              height="185"
-              rx="8"
-              fill="#0f172a"
-              stroke="#0ea5e9"
-              strokeWidth="2.5"
-            />
-            <text x="92" y="378" fill="#38bdf8" fontSize="14" fontWeight="bold">
-              🗄️ 가스저장소 (CABINET : 방폭 캐비넷 5CH × A/B 2통 = 10실린더, 800×550mm, 총 폭 7,700mm)
-            </text>
-
-            {[
-              { x: 115, title: "CABINET 1 (BANK-01)", sub: "P-CH4 / CH4(N5)" },
-              { x: 265, title: "CABINET 2 (BANK-02)", sub: "G-CH4 / CH4(N35)" },
-              { x: 415, title: "CABINET 3 (BANK-03)", sub: "P-H2 / H2(N5)" },
-              { x: 565, title: "CABINET 4 (BANK-04)", sub: "MIX (Ar + H2)" },
-              { x: 715, title: "CABINET 5 (BANK-05)", sub: "C2H2 (N5)" },
-            ].map((cab, idx) => (
-              <g key={idx}>
-                <rect
-                  x={cab.x}
-                  y={392}
-                  width={145}
-                  height={120}
-                  rx={6}
-                  fill="#1e293b"
-                  stroke="#475569"
-                  strokeWidth="2"
-                />
-                <text
-                  x={cab.x + 72}
-                  y={412}
-                  fill="#fde047"
-                  fontSize="11"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
-                  {cab.title}
-                </text>
-                <text
-                  x={cab.x + 72}
-                  y={498}
-                  fill="#e2e8f0"
-                  fontSize="12"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
-                  {cab.sub}
-                </text>
-              </g>
+          {/* 같은 가스 A통-B통 사이 색상 구분 연결선 SVG */}
+          <svg className="pointer-events-none absolute inset-0 h-full w-full">
+            {allPairs.map(({ bankNum, chA, chB }) => (
+              <line
+                key={`line-${bankNum}`}
+                x1={`${chA.pinX}%`}
+                y1={`${chA.pinY}%`}
+                x2={`${chB.pinX}%`}
+                y2={`${chB.pinY}%`}
+                stroke={chA.color || "#38bdf8"}
+                strokeWidth="3"
+                strokeDasharray="5 3"
+              />
             ))}
           </svg>
-        )}
-
-        {/* 22채널 드래그 앤 드롭 핀 렌더링 */}
-        {channels.map((ch) => {
-          let pinBg = "bg-emerald-500 border-emerald-200 text-slate-950";
-          if (ch.status === "SENSOR_FAULT") {
-            pinBg = "bg-purple-600 border-purple-200 text-white animate-bounce";
-          } else if (ch.status === "DANGER") {
-            pinBg = "bg-rose-600 border-rose-200 text-white animate-pulse";
-          } else if (ch.status === "WARN") {
-            pinBg = "bg-amber-400 border-amber-100 text-slate-950";
-          } else if (ch.status === "SHUTOFF") {
-            pinBg = "bg-slate-700 border-slate-500 text-slate-300";
-          }
-
-          return (
+          {channels.map((ch) => (
             <div
               key={ch.id}
               style={{
                 left: `${ch.pinX ?? 15}%`,
                 top: `${ch.pinY ?? 25}%`,
                 transform: "translate(-50%, -50%)",
+                borderColor: ch.color || "#38bdf8",
               }}
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -323,23 +349,130 @@ export default function FloorplanTab({
               onClick={() => {
                 if (draggingId === null) onSelectChannel(ch);
               }}
-              className={`absolute z-10 cursor-pointer rounded-xl border-2 px-2 py-1 shadow-xl transition-transform hover:scale-110 ${pinBg}`}
+              className="absolute z-10 cursor-pointer rounded-xl border-2 bg-slate-950/95 px-2.5 py-1.5 text-white shadow-xl transition-transform hover:scale-110"
             >
-              <div className="flex items-center gap-1 text-[10px] font-black leading-none">
-                <span>CH{String(ch.id).padStart(2, "0")}[{ch.side}]</span>
+              <div className="text-[10px] font-black" style={{ color: ch.color }}>
+                {ch.gasCode} [{ch.side}통]
               </div>
-              <div className="text-[9px] font-extrabold opacity-90 leading-tight">
-                {ch.gasCode}
-              </div>
-              <div className="mt-0.5 font-mono text-[11px] font-black">
-                {ch.status === "SENSOR_FAULT"
-                  ? "FAULT"
-                  : `${formatPressureByUnit(ch.pressureBar, unit, ch.maxBar)} ${unitLabel}`}
+              <div className="font-mono text-xs font-black">
+                {formatPressureByUnit(ch.pressureBar, unit, ch.maxBar)} {unitLabel}
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* 기본 CAD 도면 뷰: 어떤 해상도에서도 박스 밖으로 밀려나지 않고 같은 가스 2개(A+B)씩 칼같이 구분되는 반응형 CAD 도면 */
+        <div
+          className="rounded-2xl border-2 border-slate-800 bg-slate-950 p-4 sm:p-5 space-y-5 shadow-inner"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(30,41,59,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(30,41,59,0.35) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        >
+          {/* 1층 (좌상단): PIPE RACK & 🏠 H2 저장소 (오토체인지 6번 세트 : G-H2 A통 + B통) */}
+          <div className="flex flex-wrap items-stretch justify-between gap-4">
+            <div className="w-full lg:w-[380px] rounded-2xl border-2 border-purple-500/70 bg-purple-950/15 p-3.5 shadow-lg">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="rounded-lg bg-purple-500 px-2.5 py-0.5 text-xs font-black text-slate-950">
+                  🏠 H2 저장소 (별도 격리실)
+                </span>
+                <span className="font-mono text-[11px] font-bold text-purple-300">
+                  PIPE : STS304 × 15A
+                </span>
+              </div>
+              {h2RoomPair && renderGasPairStation(h2RoomPair, "오토체인지 #6")}
+            </div>
+
+            {/* 우측: 도면 범례 (가스 종류별 고유 색상 & P/G 등급 안내) */}
+            <div className="flex-1 min-w-[280px] rounded-2xl border border-slate-800 bg-slate-900/90 p-3.5 flex flex-col justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                <span className="text-xs font-black text-cyan-300">
+                  🎨 가스 종류별 2실린더(A통+B통) 색상 구분 가이드
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  실린더 박스 클릭 시 상세 트렌드 & 영점 보정(⚙️)
+                </span>
+              </div>
+              <div className="my-2 grid grid-cols-2 gap-2 sm:grid-cols-3 text-xs">
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
+                  <span className="font-black text-emerald-400">🟢 OPEN (초록 박스)</span>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    현재 배관으로 가스를 공급 중인 주공급 실린더
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
+                  <span className="font-black text-slate-300">⏸️ CLOSE (슬레이트 박스)</span>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    만충 상태로 자동절체(토글)를 대기 중인 예비 실린더
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-2">
+                  <span className="font-black text-amber-300">┇ 중앙 색상 점선</span>
+                  <p className="mt-0.5 text-[11px] text-slate-400">
+                    같은 가스 종류의 <strong>A통(좌)</strong>과 <strong>B통(우)</strong> 한 쌍 묶음 표시
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-300">
+                <span className="font-bold text-slate-400">순도 기호:</span>
+                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-cyan-300">
+                  P- (Pure) = N5 (99.999% 초고순도)
+                </span>
+                <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-amber-300">
+                  G- (General) = N35 (99.95% 일반순도)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 2층 (중단 벽면 5,500mm): 🔄 오토체인지 구역 (자동절체기 5세트 = 10실린더 : P-N2, G-N2, He, Ar, O2) */}
+          <div className="rounded-2xl border-2 border-emerald-500/60 bg-emerald-950/10 p-3.5 shadow-lg">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-emerald-500 px-2.5 py-1 text-xs font-black text-slate-950">
+                  🔄 2) 오토체인지 벽면 매니폴드 구역 (5세트 · 10실린더)
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-emerald-200">
+                  같은 가스 종류별 A통·B통 2개씩 독립 구획 (설치 폭 5,500mm)
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold text-emerald-400">
+                CH11 ~ CH20 (BANK 06 ~ 10)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {autoWallPairs.map((pair, idx) =>
+                renderGasPairStation(pair, `오토체인지 #${idx + 1}`)
+              )}
+            </div>
+          </div>
+
+          {/* 3층 (하단 방폭룸 7,700mm): 🗄️ 가스저장소 (CABINET 5칸 = 10실린더 : P-CH4, G-CH4, P-H2, MIX, C2H2) */}
+          <div className="rounded-2xl border-2 border-sky-500/60 bg-sky-950/10 p-3.5 shadow-lg">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-sky-500/30 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="rounded-lg bg-sky-500 px-2.5 py-1 text-xs font-black text-slate-950">
+                  🗄️ 1) 가스저장소 방폭 캐비넷 구역 (5칸 · 10실린더)
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-sky-200">
+                  캐비넷 1칸(800×550mm)당 같은 가스 A통·B통 2개씩 수납 (총 폭 7,700mm)
+                </span>
+              </div>
+              <span className="font-mono text-xs font-bold text-sky-400">
+                CH01 ~ CH10 (BANK 01 ~ 05)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {cabinetPairs.map((pair, idx) =>
+                renderGasPairStation(pair, `CABINET #${idx + 1}`)
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

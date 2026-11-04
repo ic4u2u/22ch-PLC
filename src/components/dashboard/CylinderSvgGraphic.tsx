@@ -117,13 +117,18 @@ export default function CylinderPairCard({
       className={`rounded-2xl border-2 p-3.5 transition-all shadow-lg ${
         hasAlarm
           ? "border-rose-500/90 bg-gradient-to-b from-rose-950/30 to-slate-900"
-          : isCabinet
-          ? "border-sky-500/40 bg-slate-900/95 hover:border-sky-400"
-          : "border-emerald-500/40 bg-slate-900/95 hover:border-emerald-400"
+          : "bg-slate-900/95"
       }`}
+      style={{
+        borderColor: hasAlarm ? undefined : chA.color || "#0ea5e9",
+        borderTopWidth: "6px",
+      }}
     >
       {/* 1. 상단 헤더: 설비 구분(캐비넷/오토체인지) + 가스 이름표 + 설정압력(SV) */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-800 pb-2.5">
+      <div
+        className="flex flex-wrap items-center justify-between gap-1.5 border-b-2 border-dashed pb-2.5"
+        style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
+      >
         <div className="flex items-center gap-1.5">
           <span
             className={`rounded-lg border px-2 py-0.5 text-[11px] font-black ${
@@ -135,10 +140,10 @@ export default function CylinderPairCard({
             {meta.facilityBadge}
           </span>
           <span
-            className="rounded-lg px-2.5 py-0.5 text-xs font-black text-white shadow"
+            className="rounded-lg px-2.5 py-0.5 text-xs sm:text-sm font-black text-white shadow tracking-tight"
             style={{ backgroundColor: chA.color || "#0284c7" }}
           >
-            {chA.gasName}
+            {chA.gasName} (A·B 2통 세트)
           </span>
         </div>
         <div className="flex items-center gap-1.5 font-mono text-[11px]">

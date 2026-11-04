@@ -136,13 +136,19 @@ export function OneScreenCylinderCard({
           ? "border-purple-500 bg-gradient-to-b from-purple-950/45 to-slate-950"
           : hasWarn
           ? "border-amber-500/80 bg-gradient-to-b from-amber-950/30 to-slate-950"
-          : isCabinet
-          ? "border-sky-500/40 bg-slate-900/95 hover:border-sky-400"
-          : "border-emerald-500/40 bg-slate-900/95 hover:border-emerald-400"
+          : "bg-slate-900/95"
       }`}
+      style={{
+        borderColor:
+          hasDanger || hasFault || hasWarn ? undefined : chA.color || "#0ea5e9",
+        borderTopWidth: "5px",
+      }}
     >
       {/* 상단: 설비 번호 + 가스명 + SV 기준값 */}
-      <div className="flex items-center justify-between gap-1 border-b border-slate-800/90 pb-1.5">
+      <div
+        className="flex items-center justify-between gap-1 border-b-2 border-dashed pb-1.5"
+        style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
+      >
         <div className="flex items-center gap-1 min-w-0">
           <span
             className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black ${
@@ -468,9 +474,18 @@ export function MasterAlarmCard({
   const isBOpen = chB.valveState === 0;
 
   return (
-    <div className="rounded-2xl border-2 border-slate-700 bg-slate-900/95 p-3 shadow-xl">
-      {/* 상단: 가스명 & 설정압력(SV) — 글자 줄바꿈 깨짐 방지 */}
-      <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-700 pb-2 text-xs font-bold">
+    <div
+      className="rounded-2xl border-2 bg-slate-900/95 p-3 shadow-xl"
+      style={{
+        borderColor: chA.color || "#0ea5e9",
+        borderTopWidth: "6px",
+      }}
+    >
+      {/* 상단: 가스명 & 설정압력(SV) — 글자 줄바꿈 깨짐 방지 및 가스별 색상 구분선 */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-1.5 border-b-2 border-dashed pb-2 text-xs font-bold"
+        style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
+      >
         <div className="flex items-center gap-1.5 min-w-0">
           <span
             className="shrink-0 rounded px-2 py-0.5 text-[11px] font-black text-white"
