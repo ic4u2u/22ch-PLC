@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACSC 22CH 특수가스 스마트 관제 시스템 — 표준 용어 및 명칭 통일 규격서 (v1.0)</title>
+  <style>
+    :root {
+      --bg-main: #0b1120;
+      --bg-card: #111827;
+      --bg-sub: #1e293b;
+      --border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-indigo: #6366f1;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Malgun Gothic', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding: 32px 20px 80px;
+    }
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    /* 상단 고정 다운로드 & 액션 바 */
+    .top-action-bar {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+    .top-action-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 15px;
+      color: #e2e8f0;
+    }
+    .badge-std {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      color: #22d3ee;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 9px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+      text-decoration: none;
+    }
+    .btn-download {
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+    }
+    .btn-download:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+    .btn-print {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+    }
+    .btn-print:hover {
+      background: #334155;
+    }
+
+    /* 문서 헤더 */
+    .doc-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      border: 1px solid #334155;
+      border-top: 5px solid var(--accent-cyan);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .doc-header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+    .doc-header p.subtitle {
+      color: #94a3b8;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 12.5px;
+    }
+    .meta-item strong {
+      display: block;
+      color: #38bdf8;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    /* 섹션 공통 */
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #1e293b;
+    }
+    .section-num {
+      background: var(--accent-cyan);
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 13px;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+
+    /* 진단 카드 그리드 */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 16px;
+    }
+    .problem-card {
+      background: #0f172a;
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      border-left: 4px solid var(--accent-rose);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .problem-card h3 {
+      font-size: 15px;
+      color: #fda4af;
+      margin-bottom: 8px;
+    }
+    .problem-card p {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+    .bad-example {
+      background: rgba(244, 63, 94, 0.1);
+      color: #fecdd3;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    /* 4단계 계층 다이어그램 */
+    .hierarchy-box {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .level-row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px 20px;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .level-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    .level-badge {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-weight: 900;
+      text-align: center;
+    }
+    .lvl-1 { background: rgba(99, 102, 241, 0.15); border: 1px solid #6366f1; color: #a5b4fc; }
+    .lvl-2 { background: rgba(6, 182, 212, 0.15); border: 1px solid #06b6d4; color: #67e8f9; }
+    .lvl-3 { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7; }
+    .lvl-4 { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fcd34d; }
+
+    .level-desc h4 {
+      font-size: 16px;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+    .level-desc p {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .code-pill {
+      display: inline-block;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #38bdf8;
+      font-family: 'Consolas', monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 5px;
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+
+    /* 테이블 스타일 */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #334155;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    th {
+      background: #1e293b;
+      color: #e2e8f0;
+      font-weight: 800;
+      padding: 12px 14px;
+      border-bottom: 2px solid #475569;
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #1e293b;
+      background: #0f172a;
+      color: #cbd5e1;
+      vertical-align: top;
+    }
+    tr:hover td {
+      background: #131c31;
+    }
+    .term-std {
+      color: #34d399;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .term-ban {
+      color: #fb7185;
+      text-decoration: line-through;
+      font-size: 12px;
+    }
+    .term-eng {
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 12px;
+      display: block;
+    }
+
+    /* Before / After 비교 박스 */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 14px;
+    }
+    @media (max-width: 768px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .box-before {
+      background: rgba(244, 63, 94, 0.06);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .box-after {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .box-title {
+      font-weight: 900;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mock-ui {
+      background: #090d16;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Consolas', 'Malgun Gothic', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+        padding: 0;
+      }
+      .top-action-bar {
+        display: none;
+      }
+      .section, .doc-header, .level-row, .problem-card, td, th {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #cbd5e1 !important;
+      }
+      .term-std, .doc-header h1, .section-title {
+        color: #000000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 상단 액션 바 (다운로드 & 인쇄) -->
+    <div class="top-action-bar">
+      <div class="top-action-title">
+        <span class="badge-std">STANDARD SPEC v1.0</span>
+        <span>ACSC 특수가스 스마트 관제 시스템 — 표준 용어 및 명칭 통일 규격서</span>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-download" onclick="downloadThisHtml()">
+          📥 HTML 파일 내 PC로 다운로드
+        </button>
+        <button class="btn btn-print" onclick="window.print()">
+          🖨️ PDF 저장 / 인쇄하기
+        </button>
+      </div>
+    </div>
+
+    <!-- 문서 헤더 -->
+    <header class="doc-header">
+      <h1>📘 ACSC 특수가스 스마트 관제 시스템 표준 용어 규격서</h1>
+      <p class="subtitle">
+        특수가스 관련 국제 표준(SEMI S2 / SEMI E52 / ISA-5.1), 한국가스안전공사(KGS AA913), 및 국내외 자동절체 가스캐비닛 특허(IPC F17C 7/00) 문헌을 기반으로 <strong>채널(CH)·뱅크(BANK)·실린더(A/B통)·계측제어(PV/SV)</strong> 용어를 단일 체계로 규격화한 기준 문서입니다.
+      </p>
+      <div class="meta-grid">
+        <div class="meta-item">
+          <strong>적용 대상 시스템</strong>
+          ACSC 11뱅크 · 22실린더(22채널) 스마트 관제 시스템
+        </div>
+        <div class="meta-item">
+          <strong>준거 국제/국내 표준</strong>
+          SEMI S2 / SEMI E52 / ISA-5.1 / KGS AA913
+        </div>
+        <div class="meta-item">
+          <strong>참조 특허 기술 분류</strong>
+          IPC F17C 7/00, F16K 17/00 (오토체인지 가스캐비닛)
+        </div>
+        <div class="meta-item">
+          <strong>문서 작성일 및 상태</strong>
+          2026-11-04 · 대표님 검토 및 승인 대기 (개발 전 단계)
+        </div>
+      </div>
+    </header>
+
+    <!-- 섹션 1: 기존 용어 혼선 원인 진단 -->
+    <section class="section">
+      <div class="section-title">
+        <span class="section-num">PART 1</span>
+        <span>왜 지금까지 용어가 헷갈렸는가? (현행 4대 혼선 원인 진단)</span>
+      </div>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <h3>① '채널(CH)'의 이중 사용 충돌</h3>
+          <p>
+            PLC 압력센서 22개에도 <strong>22CH</strong>을 쓰고, 가스캐비닛(5대)·오토체인지(6대) 설비 묶음에도 <strong>5CH / 6CH</strong>을 동시에 사용하여, <strong>1CH이 가스통 1개인지 설비 1대(2통)인지</strong> 큰 혼란이 발생했습니다.
+          </p>
+          <div class="bad-example">
+            ❌ 혼선 사례: "22CH 마스터 알람 (캐비닛 5CH · 오토체인지 6CH)"
+          </div>
+        </div>
+
+        <div class="problem-card">
+          <h3>② '뱅크(BANK)'와 '캐비닛' 계층 혼재</h3>
+          <p>
+            어떤 곳에서는 같은 가스 2통 묶음 전체를 <strong>BANK-01</strong>이라 부르고, 어떤 곳에서는 <strong>가스캐비닛 #1</strong>로 부르며, 표기 형식도 <code>CH-01/Ch-02뱅크</code>처럼 대소문자와 용어가 섞여 있었습니다.
+          </p>
+          <div class="bad-example">
+            ❌ 혼선 사례: "CH-01/Ch-02뱅크", "가스캐비닛 #1 (BANK-01)"
+          </div>
+        </div>
+
+        <div class="problem-card">
+          <h3>③ '실린더 / A·B통 / 채널번호' 제각각 표기</h3>
+          <p>
+            동일한 고압가스 용기 1통을 화면마다 <strong>A통, A-Cylinder, CH01[A], Ch-01, 좌측통</strong> 등 5가지 이상의 다른 이름으로 표기하여 직관성이 떨어졌습니다.
+          </p>
+          <div class="bad-example">
+            ❌ 혼선 사례: 도면은 "CH01[A]", 전광판은 "A-Cylinder", 하단은 "A통"
+          </div>
+        </div>
+
+        <div class="problem-card">
+          <h3>④ 'PV / SV' 계측 제어 약어 오표기</h3>
+          <p>
+            국제 공정제어 표준(ISA-5.1)에서 <strong>PV는 Process Value(현재 측정압력)</strong>, <strong>SV는 Set Value(설정압력)</strong>인데, 기존 일부 화면에 <em>Position Volume / Setting Volume</em>으로 잘못 적혀 있었습니다.
+          </p>
+          <div class="bad-example">
+            ❌ 혼선 사례: PV = Position Volume (X), SV = Setting Volume (X)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 2: 4단계 계층형 표준 명칭 체계 -->
+    <section class="section">
+      <div class="section-title">
+        <span class="section-num">PART 2</span>
+        <span>[핵심 해결책] 특수가스 논문·특허 기반 4단계 계층형 표준 명칭 체계</span>
+      </div>
+      <p style="color: #94a3b8; font-size: 14px; margin-bottom: 18px;">
+        특수가스 공급장치(BSGS/GCS) 특허 및 SEMI S2 규격에 따라, 상위 공간부터 하위 PLC 센서까지 <strong>[구역(Zone) ➔ 뱅크(Bank) ➔ 실린더(Cylinder) ➔ 채널(Channel)]</strong>의 4단계로 역할을 완전히 분리하여 <strong>1개의 단어는 오직 1개의 뜻만 갖도록</strong> 통일합니다.
+      </p>
+
+      <div class="hierarchy-box">
+        <div class="level-row">
+          <div class="level-badge lvl-1">
+            LEVEL 1 (공간 단위)<br />
+            <span style="font-size: 18px;">구역 (ZONE)</span><br />
+            <small>총 3개 물리 구역</small>
+          </div>
+          <div class="level-desc">
+            <h4>설비가 설치된 물리적 장소 구분</h4>
+            <p>공장 도면 및 현장 위치 식별을 위한 최상위 공간 명칭입니다.</p>
+            <span class="code-pill">제1구역: 가스캐비닛 구역 (방폭 5뱅크)</span>
+            <span class="code-pill">제2구역: 오토체인지 구역 (매니폴드 5뱅크)</span>
+            <span class="code-pill">제3구역: H2 저장소 구역 (독립 오토체인지 1뱅크)</span>
+          </div>
+        </div>
+
+        <div class="level-row">
+          <div class="level-badge lvl-2">
+            LEVEL 2 (가스종류·설비 단위)<br />
+            <span style="font-size: 18px;">뱅크 (BANK)</span><br />
+            <small>총 11개 뱅크 (가스 11종)</small>
+          </div>
+          <div class="level-desc">
+            <h4>동일한 종류의 가스 2통(A+B)을 묶어 무중단 공급하는 1세트의 설비 단위</h4>
+            <p>
+              <strong>★ 핵심 규칙:</strong> 가스 종류(설비 세트)를 부를 때는 <strong>절대 '채널(CH)'을 쓰지 않고 무조건 '뱅크(BANK)'로만 통일</strong>합니다!<br />
+              설비 형태를 함께 표기할 때는 <strong>방폭캐비닛 1~5호기(GC-01~05)</strong>, <strong>오토체인지 1~6호기(ACM-01~06)</strong>로 명확히 구분합니다.
+            </p>
+            <span class="code-pill">표준 코드: BANK-01 ~ BANK-11</span>
+            <span class="code-pill">설비 병기: BANK-01 (방폭캐비닛 1호기)</span>
+            <span class="code-pill">설비 병기: BANK-06 (오토체인지 1호기)</span>
+          </div>
+        </div>
+
+        <div class="level-row">
+          <div class="level-badge lvl-3">
+            LEVEL 3 (용기 단위)<br />
+            <span style="font-size: 18px;">실린더 (CYLINDER)</span><br />
+            <small>뱅크당 2기 · 총 22실린더</small>
+          </div>
+          <div class="level-desc">
+            <h4>각 뱅크 내부의 좌측(A)과 우측(B)에 장착되는 고압가스 용기</h4>
+            <p>
+              특허 명세서에서는 '제1실린더/제2실린더'로 부르며, 산업 현장 및 SCADA HMI에서는 시인성이 가장 뛰어난 <strong>A실린더(좌측) / B실린더(우측)</strong>(좁은 배지에서는 약칭 <strong>A통 / B통</strong>)로 통일합니다.
+            </p>
+            <span class="code-pill">공식 명칭: A실린더 / B실린더</span>
+            <span class="code-pill">영문 코드: CYL-A / CYL-B</span>
+            <span class="code-pill">현장 약칭(좁은 화면): A통 / B통</span>
+          </div>
+        </div>
+
+        <div class="level-row">
+          <div class="level-badge lvl-4">
+            LEVEL 4 (PLC 센서 단위)<br />
+            <span style="font-size: 18px;">채널 (CHANNEL, CH)</span><br />
+            <small>총 22개 계측 채널</small>
+          </div>
+          <div class="level-desc">
+            <h4>개별 실린더의 압력전송기(PT) 1개와 1:1로 연결된 PLC 아날로그 입력 포트</h4>
+            <p>
+              <strong>★ 핵심 규칙:</strong> <strong>'채널(CH)'은 오직 PLC 압력센서 번호(CH-01 ~ CH-22)에만 사용</strong>합니다.<br />
+              표기 시 반드시 <strong>대문자 `CH` + 하이픈(`-`) + 두 자리 숫자</strong>로 통일하며, <strong>홀수 번호는 무조건 A실린더, 짝수 번호는 무조건 B실린더</strong>입니다.
+            </p>
+            <span class="code-pill">홀수(A실린더): CH-01, CH-03, ... CH-21</span>
+            <span class="code-pill">짝수(B실린더): CH-02, CH-04, ... CH-22</span>
+            <span class="code-pill">통합 표기법: A실린더 [CH-01] / B실린더 [CH-02]</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 3: 표준 용어 사전 (논문·특허·국제규격 대조표) -->
+    <section class="section">
+      <div class="section-title">
+        <span class="section-num">PART 3</span>
+        <span>전 화면 통일 표준 용어 사전 (특수가스 논문·특허·SEMI 규격 기준)</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>구분</th>
+              <th>통일 표준 용어 (국문/코드)</th>
+              <th>국제 표준 / 특허 영문 표기</th>
+              <th>기존 혼용/금지 표현 (폐기)</th>
+              <th>기술적 정의 및 사용 원칙 (논문·특허 기준)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>설비 묶음<br/>(가스 1종=2통)</strong></td>
+              <td>
+                <span class="term-std">뱅크 (BANK-01 ~ 11)</span>
+              </td>
+              <td>
+                <span class="term-eng">Gas Bank / Supply Unit</span>
+                SEMI E52 / F17C 7/00
+              </td>
+              <td>
+                <span class="term-ban">캐비닛 5CH, 오토체인지 6CH</span><br/>
+                <span class="term-ban">CH-01/Ch-02뱅크</span>
+              </td>
+              <td>
+                동일 가스 2실린더(A+B)가 연결된 1세트의 공급 설비. 전체 11세트는 <strong>"11뱅크 (방폭캐비닛 5뱅크 · 오토체인지 6뱅크)"</strong>로 표기합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>세부 설비 명칭</strong></td>
+              <td>
+                <span class="term-std">방폭캐비닛 1~5호기 (GC-01~05)</span><br/>
+                <span class="term-std">오토체인지 1~6호기 (ACM-01~06)</span>
+              </td>
+              <td>
+                <span class="term-eng">Gas Cabinet (GC)</span>
+                <span class="term-eng">Auto-Changeover Manifold (ACM)</span>
+              </td>
+              <td>
+                <span class="term-ban">가스캐비넷 #1, 캐비닛 1CH</span><br/>
+                <span class="term-ban">오토체인지 #1, 매니폴드 1CH</span>
+              </td>
+              <td>
+                KGS AA913 및 특허 표준 외래어 표기법에 맞춰 '캐비넷' 대신 <strong>'방폭캐비닛(GC)'</strong>과 <strong>'오토체인지(ACM)'</strong> 호기로 명확히 구분합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>개별 가스 용기</strong></td>
+              <td>
+                <span class="term-std">A실린더 / B실린더</span><br/>
+                <small>(좁은 화면 약칭: <strong>A통 / B통</strong>)</small>
+              </td>
+              <td>
+                <span class="term-eng">Cylinder A (CYL-A)</span>
+                <span class="term-eng">Cylinder B (CYL-B)</span>
+              </td>
+              <td>
+                <span class="term-ban">A-Cylinder / B-Cylinder</span><br/>
+                <span class="term-ban">좌측통 / 우측통, 1번통 / 2번통</span>
+              </td>
+              <td>
+                각 뱅크의 좌측 용기는 무조건 <strong>A실린더(A통)</strong>, 우측 용기는 무조건 <strong>B실린더(B통)</strong>로 고정합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>PLC 센서 번호</strong></td>
+              <td>
+                <span class="term-std">CH-01 ~ CH-22</span>
+              </td>
+              <td>
+                <span class="term-eng">PLC Analog Input Channel</span>
+                (PT 4~20mA Loop)
+              </td>
+              <td>
+                <span class="term-ban">CH01, Ch-02, ch1, 1채널</span>
+              </td>
+              <td>
+                압력전송기(PT) 1개당 부여되는 PLC 고유 채널 번호입니다. 반드시 <strong>대문자 `CH-` + 두 자리 숫자</strong>(`CH-01` ~ `CH-22`)로만 표기합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>실린더+채널<br/>결합 표기</strong></td>
+              <td>
+                <span class="term-std">A실린더 [CH-01]</span><br/>
+                <small>(좁은 배지: <strong>A통 [CH-01]</strong>)</small>
+              </td>
+              <td>
+                <span class="term-eng">CYL-A [CH-01]</span>
+              </td>
+              <td>
+                <span class="term-ban">CH01[A], Ch-01(A통)</span>
+              </td>
+              <td>
+                작업자가 용기 위치(A/B)를 먼저 인지하고 PLC 결선 번호(CH)를 바로 대조할 수 있도록 <strong>`A실린더 [CH-01]`</strong> 순서로 통일합니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>공급 활성 상태<br/>(열림)</strong></td>
+              <td>
+                <span class="term-std">공급중 (OPEN)</span>
+              </td>
+              <td>
+                <span class="term-eng">ACTIVE / IN-SERVICE (OPEN)</span>
+              </td>
+              <td>
+                <span class="term-ban">주공급, 사용중, ON, 열림</span>
+              </td>
+              <td>
+                공압/솔레노이드 차단 밸브(SAV)가 개방되어 현재 공정 라인으로 가스를 공급하고 있는 상태입니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>예비 대기 상태<br/>(닫힘)</strong></td>
+              <td>
+                <span class="term-std">예비대기 (CLOSE)</span>
+              </td>
+              <td>
+                <span class="term-eng">STANDBY / RESERVE (CLOSE)</span>
+              </td>
+              <td>
+                <span class="term-ban">대기중, 잠김, OFF, 클로즈</span>
+              </td>
+              <td>
+                반대편 공급 실린더가 소진될 때까지 밸브를 닫고 만충 압력을 유지하며 대기하는 상태입니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>자동 전환 동작</strong></td>
+              <td>
+                <span class="term-std">자동 절체 (Auto-Changeover)</span>
+              </td>
+              <td>
+                <span class="term-eng">Automatic Changeover / Switchover</span>
+              </td>
+              <td>
+                <span class="term-ban">자동 토글, 스위치, 체인지</span>
+              </td>
+              <td>
+                공급중 실린더의 압력(PV)이 절체 설정압력(SV) 이하로 도달 시, 예비대기 실린더로 공급 라인을 무중단 자동 전환하는 동작입니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>현재 측정압력</strong></td>
+              <td>
+                <span class="term-std">PV (현재압력)</span>
+              </td>
+              <td>
+                <span class="term-eng">Process Value (PV)</span>
+                ISA-5.1 국제 계장 표준
+              </td>
+              <td>
+                <span class="term-ban">Position Volume (오표기!)</span>
+              </td>
+              <td>
+                압력전송기(PT)에서 실시간으로 계측된 실린더의 현재 압력값(Bar / PSI / MPa)입니다.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>절체 설정압력<br/>(하한 경보)</strong></td>
+              <td>
+                <span class="term-std">SV (절체 설정압력)</span>
+              </td>
+              <td>
+                <span class="term-eng">Set Value / Switchover Setpoint (SV)</span>
+                ISA-5.1 국제 계장 표준
+              </td>
+              <td>
+                <span class="term-ban">Setting Volume (오표기!)</span><br/>
+                <span class="term-ban">위험압력, 하한치</span>
+              </td>
+              <td>
+                자동 절체(A⇄B 전환) 및 용기 교체 경보가 발령되는 기준 설정 압력입니다. (일반 고압가스 15.0 Bar / 아세틸렌 2.5 Bar)
+              </td>
+            </tr>
+            <tr>
+              <td><strong>사전 예고압력<br/>(주의 경보)</strong></td>
+              <td>
+                <span class="term-std">예고압력 (WARN)</span>
+              </td>
+              <td>
+                <span class="term-eng">Low-Pressure Warning Setpoint</span>
+              </td>
+              <td>
+                <span class="term-ban">경고압력, 1차알람</span>
+              </td>
+              <td>
+                자동 절체(SV) 도달 전에 작업자가 예비 용기를 미리 점검하도록 황색 주의등을 켜는 사전 예고 압력입니다. (일반 35.0 Bar / 아세틸렌 6.0 Bar)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 섹션 4: 전체 11뱅크 × 22실린더(22채널) 표준 마스터 매핑표 -->
+    <section class="section">
+      <div class="section-title">
+        <span class="section-num">PART 4</span>
+        <span>ACSC 11뱅크 × 22실린더(CH-01 ~ CH-22) 표준 명칭 마스터 규격표</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>표준 뱅크 코드</th>
+              <th>설비 호기 명칭 (국문 / 코드)</th>
+              <th>설치 구역</th>
+              <th>표준 가스 표기 (약호 · 순도 · 한글명)</th>
+              <th>좌측 용기 (A실린더)</th>
+              <th>우측 용기 (B실린더)</th>
+              <th>만충 / 예고 / 절체(SV)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:#38bdf8;">BANK-01</strong></td>
+              <td>방폭캐비닛 1호기 (<code>GC-01</code>)</td>
+              <td>제1구역 (캐비닛실)</td>
+              <td><strong>P-CH4 [CH4(N5)] 고순도메탄</strong></td>
+              <td><code>A실린더 [CH-01]</code></td>
+              <td><code>B실린더 [CH-02]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f59e0b;">BANK-02</strong></td>
+              <td>방폭캐비닛 2호기 (<code>GC-02</code>)</td>
+              <td>제1구역 (캐비닛실)</td>
+              <td><strong>G-CH4 [CH4(N35)] 일반메탄</strong></td>
+              <td><code>A실린더 [CH-03]</code></td>
+              <td><code>B실린더 [CH-04]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#f43f5e;">BANK-03</strong></td>
+              <td>방폭캐비닛 3호기 (<code>GC-03</code>)</td>
+              <td>제1구역 (캐비닛실)</td>
+              <td><strong>P-H2 [H2(N5)] 고순도수소</strong></td>
+              <td><code>A실린더 [CH-05]</code></td>
+              <td><code>B실린더 [CH-06]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#a855f7;">BANK-04</strong></td>
+              <td>방폭캐비닛 4호기 (<code>GC-04</code>)</td>
+              <td>제1구역 (캐비닛실)</td>
+              <td><strong>MIX(Ar+H2) 혼합가스</strong></td>
+              <td><code>A실린더 [CH-07]</code></td>
+              <td><code>B실린더 [CH-08]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#ec4899;">BANK-05</strong></td>
+              <td>방폭캐비닛 5호기 (<code>GC-05</code>)</td>
+              <td>제1구역 (캐비닛실)</td>
+              <td><strong>C2H2 [C2H2(N5)] 아세틸렌</strong></td>
+              <td><code>A실린더 [CH-09]</code></td>
+              <td><code>B실린더 [CH-10]</code></td>
+              <td>25.0 / 6.0 / 2.5 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#10b981;">BANK-06</strong></td>
+              <td>오토체인지 1호기 (<code>ACM-01</code>)</td>
+              <td>제2구역 (매니폴드실)</td>
+              <td><strong>P-N2 [N2(N5)] 고순도질소</strong></td>
+              <td><code>A실린더 [CH-11]</code></td>
+              <td><code>B실린더 [CH-12]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#14b8a6;">BANK-07</strong></td>
+              <td>오토체인지 2호기 (<code>ACM-02</code>)</td>
+              <td>제2구역 (매니폴드실)</td>
+              <td><strong>G-N2 [N2(N35)] 일반질소</strong></td>
+              <td><code>A실린더 [CH-13]</code></td>
+              <td><code>B실린더 [CH-14]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#6366f1;">BANK-08</strong></td>
+              <td>오토체인지 3호기 (<code>ACM-03</code>)</td>
+              <td>제2구역 (매니폴드실)</td>
+              <td><strong>He [He(N5)] 고순도헬륨</strong></td>
+              <td><code>A실린더 [CH-15]</code></td>
+              <td><code>B실린더 [CH-16]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#3b82f6;">BANK-09</strong></td>
+              <td>오토체인지 4호기 (<code>ACM-04</code>)</td>
+              <td>제2구역 (매니폴드실)</td>
+              <td><strong>Ar [Ar(N5)] 고순도아르곤</strong></td>
+              <td><code>A실린더 [CH-17]</code></td>
+              <td><code>B실린더 [CH-18]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#84cc16;">BANK-10</strong></td>
+              <td>오토체인지 5호기 (<code>ACM-05</code>)</td>
+              <td>제2구역 (매니폴드실)</td>
+              <td><strong>O2 [O2(N5)] 고순도산소</strong></td>
+              <td><code>A실린더 [CH-19]</code></td>
+              <td><code>B실린더 [CH-20]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+            <tr>
+              <td><strong style="color:#eab308;">BANK-11</strong></td>
+              <td>오토체인지 6호기 (<code>ACM-06</code>)</td>
+              <td>제3구역 (H2저장소)</td>
+              <td><strong>G-H2 [H2(N35)] 일반수소</strong></td>
+              <td><code>A실린더 [CH-21]</code></td>
+              <td><code>B실린더 [CH-22]</code></td>
+              <td>150.0 / 35.0 / 15.0 Bar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 섹션 5: 화면별 Before vs After 적용 예시 -->
+    <section class="section">
+      <div class="section-title">
+        <span class="section-num">PART 5</span>
+        <span>승인 후 화면 적용 시 변화 비교 (Before ➔ After 미리보기)</span>
+      </div>
+
+      <div class="compare-grid">
+        <div class="box-before">
+          <div class="box-title" style="color: #fb7185;">❌ BEFORE (기존 혼용 표기)</div>
+          <div class="mock-ui">
+            • 상단 헤더: "ACSC 22CH 마스터 알람 (캐비닛 5CH · 오토체인지 6CH)"<br/>
+            • 카드 배지: "가스캐비넷 #1" 또는 "BANK-01 · CH01/CH02"<br/>
+            • 용기 표기: "A-Cylinder / B-Cylinder" 또는 "CH01[A] / CH02[B]"<br/>
+            • 계측 표기: "PV : Position Volume / SV : Setting Volume"
+          </div>
+        </div>
+
+        <div class="box-after">
+          <div class="box-title" style="color: #34d399;">✅ AFTER (규격화 통일 표기)</div>
+          <div class="mock-ui">
+            • 상단 헤더: <strong>"ACSC 11뱅크 · 22채널 관제 (방폭캐비닛 5뱅크 · 오토체인지 6뱅크)"</strong><br/>
+            • 카드 배지: <strong>"BANK-01 · 방폭캐비닛 1호기 (GC-01)"</strong><br/>
+            • 용기 표기: <strong>"A실린더 [CH-01] / B실린더 [CH-02]"</strong> (좁은 배지: <code>A통 [CH-01]</code>)<br/>
+            • 계측 표기: <strong>"PV : Process Value (현재압력) / SV : Set Value (절체압력)"</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function downloadThisHtml() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ACSC_특수가스_표준용어규격서_v1.0.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
