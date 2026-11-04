@@ -76,19 +76,22 @@ export default function HeaderBar({
       <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-3">
         {/* 좌측: 시스템 로고 및 PLC 실시간 연결 배지 */}
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 font-black text-white shadow-lg shadow-cyan-500/20">
-            ACSC
+          <div className="flex h-11 px-3 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 font-black text-white shadow-lg shadow-cyan-500/20 tracking-tight text-sm">
+            🛡️ GAS
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white">
-                ACSC 22채널 특수가스 스마트 관제 시스템
+                특수가스 스마트 관제 시스템
               </h1>
+              <span className="inline-flex items-center rounded-md bg-cyan-500/15 px-2 py-0.5 font-mono text-[11px] font-black text-cyan-300 border border-cyan-500/40">
+                11뱅크 · 22실린더 (CH-01~22)
+              </span>
               <span className="inline-flex items-center rounded-md bg-amber-400/20 px-2 py-0.5 font-mono text-[11px] font-extrabold text-amber-300 border border-amber-400/50">
                 🕒 {APP_UPDATE_STAMP}
               </span>
               <span className="hidden 2xl:inline-flex items-center rounded-md bg-slate-800 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-slate-700">
-                QOOTEC 미니PC · LS XBL-EMTA · USB 경광등 (22CH / 11BANK)
+                가스캐비닛 5뱅크(GC-01~05) · 오토체인지 6뱅크(ACM-01~06)
               </span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-400">

@@ -699,8 +699,8 @@ export default function Dashboard24() {
             {/* 2. 6대 메인 탭 네비게이션 */}
             <nav className="no-print mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
               {[
-                { id: "GRID", label: "🟢 22채널 그리드" },
-                { id: "MANIFOLD", label: "🔀 11뱅크 A/B 매니폴드 뷰" },
+                { id: "GRID", label: "🟢 11뱅크 · 22실린더 그리드" },
+                { id: "MANIFOLD", label: "🔀 11뱅크 A/B 자동절체 제어" },
                 { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
                 { id: "WALLBOARD", label: "📺 대형 전광판 TV 뷰" },
                 { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },

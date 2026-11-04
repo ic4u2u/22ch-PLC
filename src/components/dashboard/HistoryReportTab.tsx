@@ -76,10 +76,10 @@ export default function HistoryReportTab({
               type="button"
               onClick={() =>
                 downloadUtf8BomCsv(
-                  `ACSC_22CH_압력이력_${new Date().toISOString().slice(0, 10)}.csv`,
+                  `특수가스관제_22채널_압력이력_${new Date().toISOString().slice(0, 10)}.csv`,
                   [
                     "Timestamp",
-                    ...channels.map((c) => `CH${String(c.id).padStart(2, "0")}_${c.gasCode}(bar)`),
+                    ...channels.map((c) => `CH-${String(c.id).padStart(2, "0")}_${c.side}실린더_${c.gasCode}(Bar)`),
                   ],
                   historyLogs.map((h) => {
                     let p: number[] = [];
@@ -157,11 +157,11 @@ export default function HistoryReportTab({
               </button>
             </div>
             <h2 className="text-xl font-black">
-              [ACSC 22채널 특수가스 스마트 관제]{" "}
+              [특수가스 스마트 관제 시스템]{" "}
               {reportType === "DAILY" ? "일간" : "주간"} 운전 및 안전점검 보고서
             </h2>
             <p className="mt-1 text-xs text-slate-400 print:text-gray-700">
-              기준 일시: {selectedSnapshot?.timestamp || "2026-10-26 12:00:00"} | 설비: LS ELECTRIC XGB + XBL-EMTA (22CH / 11BANK)
+              기준 일시: {selectedSnapshot?.timestamp || "2026-11-04 12:00:00"} | 설비: LS ELECTRIC XGB + XBL-EMTA (총 11뱅크 · 22실린더 / CH-01~22)
             </p>
           </div>
 

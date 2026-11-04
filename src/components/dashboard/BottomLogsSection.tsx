@@ -60,7 +60,7 @@ export default function BottomLogsSection({
               type="button"
               onClick={() =>
                 downloadUtf8BomCsv(
-                  `ACSC_실시간알람로그_${dateSuffix}.csv`,
+                  `특수가스관제_실시간알람로그_${dateSuffix}.csv`,
                   ["일시", "등급", "코드", "뱅크/채널", "상세내용"],
                   alerts.map((a) => [
                     a.timestamp,
@@ -120,7 +120,7 @@ export default function BottomLogsSection({
               type="button"
               onClick={() =>
                 downloadUtf8BomCsv(
-                  `ACSC_실린더교체및소모량_${dateSuffix}.csv`,
+                  `특수가스관제_실린더교체및소모량_${dateSuffix}.csv`,
                   ["교체일시", "년월", "채널", "가스명", "교체전(bar)", "교체후(bar)", "상승폭(bar)"],
                   replacements.map((r) => [
                     r.timestamp,
@@ -169,7 +169,7 @@ export default function BottomLogsSection({
                       {r.timestamp.slice(5, 19)}
                     </td>
                     <td className="py-1.5 font-bold text-white">
-                      CH{String(r.channel_id).padStart(2, "0")} {r.gas_name}
+                      CH-{String(r.channel_id).padStart(2, "0")} {r.gas_name}
                     </td>
                     <td className="py-1.5 text-right font-mono text-emerald-300">
                       {r.prev_pressure}→{r.new_pressure} (+{r.delta_pressure})
@@ -191,7 +191,7 @@ export default function BottomLogsSection({
               type="button"
               onClick={() =>
                 downloadUtf8BomCsv(
-                  `ACSC_감사로그_AuditTrail_${dateSuffix}.csv`,
+                  `특수가스관제_감사로그_AuditTrail_${dateSuffix}.csv`,
                   ["일시", "실행주체", "작업유형", "대상", "상세내역"],
                   auditLogs.map((l) => [
                     l.timestamp,

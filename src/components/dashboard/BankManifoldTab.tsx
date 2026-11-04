@@ -126,7 +126,7 @@ export default function BankManifoldTab({
 
         {/* 좌우 A/B 실린더 + 중앙 POU 공급 화살표 다이어그램 */}
         <div className="mt-3 grid grid-cols-3 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 p-3">
-          {/* 좌측 A 실린더 */}
+          {/* 좌측 A실린더 [CH-홀수] */}
           <div
             className={`rounded-xl border p-2.5 text-center ${
               isAActive || isDual
@@ -135,18 +135,18 @@ export default function BankManifoldTab({
             }`}
           >
             <div className="text-[11px] font-extrabold text-blue-200">
-              A통 (CH{String(bank.chA).padStart(2, "0")})
+              A실린더 [CH-{String(bank.chA).padStart(2, "0")}]
             </div>
-            <div className="mt-1 font-mono text-lg font-black text-white">
+            <div className="mt-1 font-mono tabular-nums text-lg font-black text-white">
               {chA ? formatPressureByUnit(chA.pressureBar, unit, chA.maxBar) : "0"}{" "}
               <span className="text-[10px] text-cyan-400">{unitLabel}</span>
             </div>
             <div className="mt-1 text-[10px] font-bold text-emerald-300">
               {isDual
-                ? "🟢 동시공급(Dual)"
+                ? "🟢 동시공급 (Dual)"
                 : isAActive
-                ? "🟢 주 공급(Active)"
-                : "🟡 예비(Standby)"}
+                ? "🟢 공급중 (OPEN)"
+                : "⚪ 예비대기 (CLOSE)"}
             </div>
           </div>
 
@@ -176,16 +176,16 @@ export default function BankManifoldTab({
                 onUpdateBank(
                   bank.id,
                   { activeSide: nextSide },
-                  `${bank.id} 수동 주 공급 라인 전환 (${bank.activeSide} → ${nextSide})`
+                  `${bank.id} 수동 공급 실린더 전환 (${bank.activeSide}실린더 → ${nextSide}실린더)`
                 );
               }}
               className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-[10px] font-bold text-slate-200 hover:bg-slate-700"
             >
-              🔄 A/B 수동전환
+              🔄 A/B 수동 절체
             </button>
           </div>
 
-          {/* 우측 B 실린더 */}
+          {/* 우측 B실린더 [CH-짝수] */}
           <div
             className={`rounded-xl border p-2.5 text-center ${
               !isAActive || isDual
@@ -194,18 +194,18 @@ export default function BankManifoldTab({
             }`}
           >
             <div className="text-[11px] font-extrabold text-teal-200">
-              B통 (CH{String(bank.chB).padStart(2, "0")})
+              B실린더 [CH-{String(bank.chB).padStart(2, "0")}]
             </div>
-            <div className="mt-1 font-mono text-lg font-black text-white">
+            <div className="mt-1 font-mono tabular-nums text-lg font-black text-white">
               {chB ? formatPressureByUnit(chB.pressureBar, unit, chB.maxBar) : "0"}{" "}
               <span className="text-[10px] text-cyan-400">{unitLabel}</span>
             </div>
             <div className="mt-1 text-[10px] font-bold text-amber-300">
               {isDual
-                ? "🟢 동시공급(Dual)"
+                ? "🟢 동시공급 (Dual)"
                 : !isAActive
-                ? "🟢 주 공급(Active)"
-                : "🟡 예비(Standby)"}
+                ? "🟢 공급중 (OPEN)"
+                : "⚪ 예비대기 (CLOSE)"}
             </div>
           </div>
         </div>
@@ -368,7 +368,7 @@ export default function BankManifoldTab({
               : "bg-slate-800 text-sky-300 hover:bg-slate-700"
           }`}
         >
-          🗄️ 1) 가스캐비넷 5CH (BANK 01~05 · 10실린더)
+          🗄️ 제1구역: 가스캐비닛 5뱅크 (BANK-01~05 · 10실린더)
         </button>
         <button
           type="button"
@@ -379,19 +379,19 @@ export default function BankManifoldTab({
               : "bg-slate-800 text-emerald-300 hover:bg-slate-700"
           }`}
         >
-          🔄 2) 오토체인지 6CH (BANK 06~11 · 12실린더)
+          🔄 제2·3구역: 오토체인지 6뱅크 (BANK-06~11 · 12실린더)
         </button>
       </div>
 
-      {/* 구역 1: 가스캐비넷 5CH (10 실린더) */}
+      {/* 제1구역: 가스캐비닛 5뱅크 (10실린더) */}
       {(zoneFilter === "ALL" || zoneFilter === "CABINET") && (
         <section className="rounded-3xl border-2 border-sky-500/40 bg-sky-950/10 p-4 sm:p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-sky-500/30 pb-2.5">
             <span className="text-sm sm:text-base font-extrabold text-sky-300">
-              🗄️ 1) 가스캐비넷 5CH (모두 A/B 구성 · 10개 실린더 : P-CH4, G-CH4, P-H2, MIX(Ar+H2), C2H2)
+              🗄️ 제1구역: 가스캐비닛 5뱅크 (GC-01~05 · 10실린더 : P-CH4, G-CH4, P-H2, MIX, C2H2)
             </span>
             <span className="font-mono text-xs text-slate-400">
-              BANK-01 ~ BANK-05 (CH01~CH10)
+              BANK-01 ~ BANK-05 (CH-01 ~ CH-10)
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -400,15 +400,15 @@ export default function BankManifoldTab({
         </section>
       )}
 
-      {/* 구역 2: 오토체인지 6CH (12 실린더) */}
+      {/* 제2·3구역: 오토체인지 6뱅크 (12실린더) */}
       {(zoneFilter === "ALL" || zoneFilter === "AUTO_CHANGE") && (
         <section className="rounded-3xl border-2 border-emerald-500/40 bg-emerald-950/10 p-4 sm:p-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30 pb-2.5">
             <span className="text-sm sm:text-base font-extrabold text-emerald-300">
-              🔄 2) 오토체인지 6CH (모두 A/B 구성 · 12개 실린더 : P-N2, G-N2, He, Ar, O2, G-H2)
+              🔄 제2·3구역: 오토체인지 6뱅크 (ACM-01~06 · 12실린더 : P-N2, G-N2, He, Ar, O2, G-H2)
             </span>
             <span className="font-mono text-xs text-slate-400">
-              BANK-06 ~ BANK-11 (CH11~CH22)
+              BANK-06 ~ BANK-11 (CH-11 ~ CH-22)
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

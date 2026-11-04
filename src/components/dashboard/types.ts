@@ -1,16 +1,45 @@
 /**
  * 파일명: src/components/dashboard/types.ts
- * 역할: ACSC 22채널(11뱅크) 특수가스 관제 시스템 공통 타입 정의,
- *       가스캐비넷(5CH)/오토체인지(6CH) 설비 구분 유틸리티,
+ * 역할: [특수가스 스마트 관제 시스템] 11뱅크 · 22실린더(CH-01~22) 공통 타입 정의,
+ *       표준 용어 포맷터(BANK-01~11, A/B실린더, CH-01~22, GC-01~05, ACM-01~06),
  *       Qwen3-TTS 기반 인간형 한국어 음성 안내 & 소프트 차임벨, CSV 유틸리티
  */
 
 export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: %
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 업데이트 일시 스탬프
-export const APP_UPDATE_STAMP = "Beta v1.00 RC · 업데이트: 2026-11-04 10:18 (가스 2통씩 색상 구분선 & 도면 정렬 완벽 개선)";
+export const APP_UPDATE_STAMP =
+  "Beta v1.10 RC · 업데이트: 2026-11-04 11:15 (표준 용어 규격 통일 & 고대비 UI/UX 전면 고도화)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
+
+/**
+ * 표준 PLC 계측 채널 번호 포맷터 (항상 대문자 CH- + 두 자리 숫자: CH-01 ~ CH-22)
+ */
+export function formatChannelCode(channelId: number): string {
+  return `CH-${String(channelId).padStart(2, "0")}`;
+}
+
+/**
+ * 표준 뱅크 코드 포맷터 (항상 BANK-01 ~ BANK-11)
+ */
+export function formatBankCode(bankNumber: number): string {
+  return `BANK-${String(bankNumber).padStart(2, "0")}`;
+}
+
+/**
+ * 표준 실린더 + 채널 통합 표기 포맷터
+ * - short=false: "A실린더 [CH-01]" / "B실린더 [CH-02]"
+ * - short=true : "A통 [CH-01]" / "B통 [CH-02]"
+ */
+export function formatCylinderLabel(
+  side: "A" | "B",
+  channelId: number,
+  short = false
+): string {
+  const chCode = formatChannelCode(channelId);
+  return short ? `${side}통 [${chCode}]` : `${side}실린더 [${chCode}]`;
+}
 
 export interface ChannelData {
   id: number;
@@ -145,30 +174,56 @@ export interface HistoryLogItem {
 }
 
 /**
- * 뱅크 번호(1~11) 또는 채널 번호(1~22)로 [가스캐비넷 5CH] vs [오토체인지 6CH] 설비 메타데이터 반환
+ * 뱅크 번호(1~11)로 [가스캐비닛 5뱅크 (GC-01~05)] vs [오토체인지 6뱅크 (ACM-01~06)] 표준 설비 메타데이터 반환
  */
 export function getBankFacilityMeta(bankNumber: number) {
+  const bankCode = formatBankCode(bankNumber);
   if (bankNumber <= 5) {
+    const unitCode = `GC-0${bankNumber}`;
+    const unitName = `가스캐비닛 ${bankNumber}호기`;
     return {
+      bankCode,
       zone: "CABINET" as FacilityZone,
-      zoneLabel: "가스캐비넷",
-      facilityBadge: `🗄️ 가스캐비넷 #${bankNumber}`,
-      subLocation: "하단 방폭 캐비넷 룸 (800×550)",
-      purityType: bankNumber === 2 ? "General (N35 · 99.95%)" : bankNumber === 4 ? "혼합가스 (Ar+H2)" : "Pure (N5 · 99.999%)",
+      zoneName: "제1구역: 가스캐비닛 구역",
+      zoneLabel: "가스캐비닛",
+      unitCode,
+      unitName,
+      facilityBadge: `🗄️ ${unitName} (${unitCode})`,
+      shortBadge: `🗄️ 캐비닛 ${bankNumber}호기 (${unitCode})`,
+      subLocation: "제1구역: 방폭 가스캐비닛실 (800×550)",
+      purityType:
+        bankNumber === 2
+          ? "General (N35 · 99.95%)"
+          : bankNumber === 4
+          ? "혼합가스 (Ar+H2)"
+          : "Pure (N5 · 99.999%)",
     };
   }
   const autoNum = bankNumber - 5;
+  const unitCode = `ACM-0${autoNum}`;
+  const unitName = `오토체인지 ${autoNum}호기`;
   return {
+    bankCode,
     zone: "AUTO_CHANGE" as FacilityZone,
+    zoneName:
+      bankNumber === 11
+        ? "제3구역: H2 저장소 구역"
+        : "제2구역: 오토체인지 구역",
     zoneLabel: "오토체인지",
+    unitCode,
+    unitName,
     facilityBadge:
       bankNumber === 11
-        ? `🏠 오토체인지 #${autoNum} (H2저장소)`
-        : `🔄 오토체인지 #${autoNum}`,
+        ? `🏠 ${unitName} (${unitCode}·H2저장소)`
+        : `🔄 ${unitName} (${unitCode})`,
+    shortBadge:
+      bankNumber === 11
+        ? `🏠 오토체인지 6호기 (H2저장소)`
+        : `🔄 오토체인지 ${autoNum}호기 (${unitCode})`,
     subLocation:
       bankNumber === 11
-        ? "좌상단 별도 H2 저장소"
-        : "상단 벽면 자동절체기 매니폴드",
+        ? "제3구역: 독립 H2 저장소"
+        : "제2구역: 벽면 오토체인지 매니폴드실",
     purityType:
       bankNumber === 7 || bankNumber === 11
         ? "General (N35 · 99.95%)"

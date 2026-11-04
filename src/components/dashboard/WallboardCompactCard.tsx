@@ -12,6 +12,7 @@ import React from "react";
 import {
   ChannelData,
   PressureUnit,
+  formatChannelCode,
   formatPressureByUnit,
   getBankFacilityMeta,
   getGasPhysicsMeta,
@@ -144,12 +145,18 @@ export function OneScreenCylinderCard({
         borderTopWidth: "5px",
       }}
     >
-      {/* 상단: 설비 번호 + 가스명 + SV 기준값 */}
+      {/* 상단: [BANK 코드] + [설비 호기] + [가스명] + [절체 SV] */}
       <div
         className="flex items-center justify-between gap-1 border-b-2 border-dashed pb-1.5"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
       >
         <div className="flex items-center gap-1 min-w-0">
+          <span
+            className="shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] font-black text-white"
+            style={{ backgroundColor: chA.color || "#0284c7" }}
+          >
+            {bankId}
+          </span>
           <span
             className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black ${
               isCabinet
@@ -157,12 +164,13 @@ export function OneScreenCylinderCard({
                 : "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
             }`}
           >
-            {isCabinet ? `캐비넷#${bankNum}` : bankNum === 11 ? "H2저장소" : `오토#${bankNum - 5}`}
+            {isCabinet
+              ? `캐비닛${bankNum}호`
+              : bankNum === 11
+              ? "오토6호(H2)"
+              : `오토${bankNum - 5}호`}
           </span>
-          <span
-            className="truncate rounded px-1.5 py-0.5 text-[11px] font-black text-white"
-            style={{ backgroundColor: chA.color || "#0284c7" }}
-          >
+          <span className="truncate text-[11px] font-black text-white">
             {chA.gasName}
           </span>
         </div>
@@ -173,30 +181,38 @@ export function OneScreenCylinderCard({
         </span>
       </div>
 
-      {/* 중단: [좌 A통 PV/OPEN] + [중앙 자동절체기 & A/B 가스통 SVG] + [우 B통 PV/OPEN] */}
+      {/* 중단: [좌 A실린더 PV/OPEN] + [중앙 자동절체기 & A/B 실린더 SVG] + [우 B실린더 PV/OPEN] */}
       <div className="mt-1.5 grid grid-cols-12 items-center gap-1">
-        {/* 좌측 A통 요약 */}
-        <div className="col-span-4 flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-1.5">
-          <div className="flex items-center justify-between">
-            <span className="rounded bg-amber-400 px-1 py-0.2 font-mono text-[9px] font-black text-slate-950">
-              A통
+        {/* 좌측 A실린더 [CH-홀수] 요약 */}
+        <div
+          className={`col-span-4 flex flex-col justify-between rounded-xl border p-1.5 transition-all ${
+            isAOpen
+              ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_10px_rgba(56,189,248,0.12)]"
+              : "border-slate-800 bg-slate-950/90 opacity-85"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-0.5">
+            <span className="rounded bg-amber-400 px-1 py-0.2 text-[9px] font-black text-slate-950">
+              A실린더
             </span>
-            <span className="font-mono text-[9px] text-slate-400">
-              CH{String(chA.id).padStart(2, "0")}
+            <span className="font-mono text-[9px] font-bold text-sky-300">
+              {formatChannelCode(chA.id)}
             </span>
           </div>
           <div
             onClick={() => onSelectChannel?.(chA)}
             className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
-            <div className="text-[8px] font-bold text-cyan-400">PV 현재</div>
+            <div className="text-[8px] font-bold text-cyan-400">PV 현재압력</div>
             {chA.status === "SENSOR_FAULT" ? (
               <div className="text-xs font-black text-purple-300">FAULT</div>
             ) : (
               <div
                 className={`${
-                  fontScale === "LARGE" ? "text-base sm:text-lg" : "text-sm sm:text-base"
-                } font-black leading-none tracking-tighter whitespace-nowrap ${visA.text}`}
+                  fontScale === "LARGE"
+                    ? "text-base sm:text-lg"
+                    : "text-sm sm:text-base"
+                } font-black tabular-nums leading-none tracking-tighter whitespace-nowrap ${visA.text}`}
               >
                 {formatPressureByUnit(chA.pressureBar, unit, chA.maxBar)}
               </div>
@@ -208,13 +224,13 @@ export function OneScreenCylinderCard({
               if (!isUnlocked) return onRequestPin?.();
               onToggleValve?.(chA.id, isAOpen ? 1 : 0);
             }}
-            className={`w-full rounded py-1 font-mono text-[10px] font-black transition-all ${
+            className={`w-full rounded py-1 font-mono text-[9.5px] font-black transition-all ${
               isAOpen
                 ? "bg-sky-500 text-slate-950 hover:bg-rose-500 hover:text-white"
-                : "border border-rose-500/60 bg-rose-950/60 text-rose-300 hover:bg-emerald-500 hover:text-slate-950"
+                : "border border-slate-600 bg-slate-800/90 text-slate-300 hover:bg-emerald-500 hover:text-slate-950"
             }`}
           >
-            {isAOpen ? "OPEN" : "CLOSE"}
+            {isAOpen ? "● 공급중" : "○ 예비대기"}
           </button>
         </div>
 
@@ -398,28 +414,36 @@ export function OneScreenCylinderCard({
           </svg>
         </div>
 
-        {/* 우측 B통 요약 */}
-        <div className="col-span-4 flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-950/90 p-1.5">
-          <div className="flex items-center justify-between">
-            <span className="rounded bg-amber-400 px-1 py-0.2 font-mono text-[9px] font-black text-slate-950">
-              B통
+        {/* 우측 B실린더 [CH-짝수] 요약 */}
+        <div
+          className={`col-span-4 flex flex-col justify-between rounded-xl border p-1.5 transition-all ${
+            isBOpen
+              ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_10px_rgba(56,189,248,0.12)]"
+              : "border-slate-800 bg-slate-950/90 opacity-85"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-0.5">
+            <span className="rounded bg-amber-400 px-1 py-0.2 text-[9px] font-black text-slate-950">
+              B실린더
             </span>
-            <span className="font-mono text-[9px] text-slate-400">
-              CH{String(chB.id).padStart(2, "0")}
+            <span className="font-mono text-[9px] font-bold text-sky-300">
+              {formatChannelCode(chB.id)}
             </span>
           </div>
           <div
             onClick={() => onSelectChannel?.(chB)}
             className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
-            <div className="text-[8px] font-bold text-cyan-400">PV 현재</div>
+            <div className="text-[8px] font-bold text-cyan-400">PV 현재압력</div>
             {chB.status === "SENSOR_FAULT" ? (
               <div className="text-xs font-black text-purple-300">FAULT</div>
             ) : (
               <div
                 className={`${
-                  fontScale === "LARGE" ? "text-base sm:text-lg" : "text-sm sm:text-base"
-                } font-black leading-none tracking-tighter whitespace-nowrap ${visB.text}`}
+                  fontScale === "LARGE"
+                    ? "text-base sm:text-lg"
+                    : "text-sm sm:text-base"
+                } font-black tabular-nums leading-none tracking-tighter whitespace-nowrap ${visB.text}`}
               >
                 {formatPressureByUnit(chB.pressureBar, unit, chB.maxBar)}
               </div>
@@ -431,21 +455,21 @@ export function OneScreenCylinderCard({
               if (!isUnlocked) return onRequestPin?.();
               onToggleValve?.(chB.id, isBOpen ? 1 : 0);
             }}
-            className={`w-full rounded py-1 font-mono text-[10px] font-black transition-all ${
+            className={`w-full rounded py-1 font-mono text-[9.5px] font-black transition-all ${
               isBOpen
                 ? "bg-sky-500 text-slate-950 hover:bg-rose-500 hover:text-white"
-                : "border border-rose-500/60 bg-rose-950/60 text-rose-300 hover:bg-emerald-500 hover:text-slate-950"
+                : "border border-slate-600 bg-slate-800/90 text-slate-300 hover:bg-emerald-500 hover:text-slate-950"
             }`}
           >
-            {isBOpen ? "OPEN" : "CLOSE"}
+            {isBOpen ? "● 공급중" : "○ 예비대기"}
           </button>
         </div>
       </div>
 
-      {/* 하단: A/B 잔여 사용시간 요약 (2열 분리로 텍스트 겹침 방지) */}
+      {/* 하단: A/B실린더 잔여 사용시간 요약 (2열 분리로 텍스트 겹침 방지) */}
       <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 px-0.5 font-mono">
-        <span className="truncate text-left">A: {chA.remainingText}</span>
-        <span className="truncate text-right">B: {chB.remainingText}</span>
+        <span className="truncate text-left">A실린더: {chA.remainingText}</span>
+        <span className="truncate text-right">B실린더: {chB.remainingText}</span>
       </div>
     </div>
   );
@@ -481,23 +505,23 @@ export function MasterAlarmCard({
         borderTopWidth: "6px",
       }}
     >
-      {/* 상단: 가스명 & 설정압력(SV) — 글자 줄바꿈 깨짐 방지 및 가스별 색상 구분선 */}
+      {/* 상단: [BANK 코드] + [가스명] + [설비 호기(GC/ACM)] + [절체 설정압력(SV)] */}
       <div
         className="flex flex-wrap items-center justify-between gap-1.5 border-b-2 border-dashed pb-2 text-xs font-bold"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
       >
         <div className="flex items-center gap-1.5 min-w-0">
           <span
-            className="shrink-0 rounded px-2 py-0.5 text-[11px] font-black text-white"
+            className="shrink-0 rounded px-2 py-0.5 font-mono text-[11px] font-black text-white"
             style={{ backgroundColor: chA.color || "#0284c7" }}
           >
-            {chA.gasCode}
+            {bankId}
           </span>
           <span className="truncate text-sm font-extrabold text-white">
             {chA.gasName}
           </span>
           <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-cyan-300 whitespace-nowrap">
-            {meta.facilityBadge}
+            {meta.shortBadge}
           </span>
         </div>
         <span className="shrink-0 font-mono text-xs text-amber-300 whitespace-nowrap">
@@ -508,30 +532,38 @@ export function MasterAlarmCard({
         </span>
       </div>
 
-      {/* 본문: 좌측 A/B 실린더 그래픽 & 우측 초대형 PV/SV 디지털 패널 */}
+      {/* 본문: 좌측 A실린더/B실린더 그래픽 & 우측 초대형 PV/SV 디지털 패널 */}
       <div className="mt-2.5 grid grid-cols-12 gap-2.5 items-stretch">
-        {/* 좌측: A-Cylinder / B-Cylinder 그래픽 박스 (수치와 가스통 간격 분리로 겹침 100% 방지) */}
+        {/* 좌측: A실린더 [CH-홀수] / B실린더 [CH-짝수] 그래픽 박스 */}
         <div className="col-span-7 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
           <div className="flex items-center justify-between text-[11px] font-black text-slate-200 border-b border-slate-800/80 pb-1">
-            <span className="text-sky-300">A-Cylinder</span>
-            <span className="font-mono text-[10px] text-amber-300">
-              {isAOpen ? "◀ A공급중" : "B공급중 ▶"}
+            <span className="text-sky-300">
+              A실린더 <code className="text-[10px] text-amber-300">[{formatChannelCode(chA.id)}]</code>
             </span>
-            <span className="text-teal-300">B-Cylinder</span>
+            <span className="font-mono text-[10px] text-emerald-300">
+              {isAOpen ? "◀ A실린더 공급중" : "B실린더 공급중 ▶"}
+            </span>
+            <span className="text-teal-300">
+              B실린더 <code className="text-[10px] text-amber-300">[{formatChannelCode(chB.id)}]</code>
+            </span>
           </div>
 
-          {/* 중앙: [좌측 A 수치] — [중앙 A/B 가스통] — [우측 B 수치] (절대 겹치지 않는 3단 분리) */}
+          {/* 중앙: [좌측 A실린더 수치] — [중앙 A/B 실린더] — [우측 B실린더 수치] (3단 분리) */}
           <div className="my-2 flex items-center justify-between gap-1.5 px-0.5">
-            {/* A 압력 숫자 (좌측 정렬 & 전용 박스) */}
+            {/* A실린더 압력 숫자 (좌측 정렬 & 활성 공급 시 네온 테두리) */}
             <div
               onClick={() => onSelectChannel?.(chA)}
-              className="flex-1 min-w-0 cursor-pointer rounded-lg border border-slate-800/90 bg-slate-900/90 px-2 py-1.5 text-left font-mono"
+              className={`flex-1 min-w-0 cursor-pointer rounded-lg border px-2 py-1.5 text-left font-mono transition-all ${
+                isAOpen
+                  ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                  : "border-slate-800/90 bg-slate-900/80 opacity-85"
+              }`}
             >
-              <div className="text-[9px] font-bold text-slate-400">
-                CH-{String(chA.id).padStart(2, "0")}
+              <div className="text-[9px] font-bold text-slate-300">
+                A실린더 · {formatChannelCode(chA.id)}
               </div>
               <div
-                className={`text-lg sm:text-xl font-black leading-tight tracking-tighter whitespace-nowrap ${
+                className={`text-lg sm:text-xl font-black tabular-nums leading-tight tracking-tighter whitespace-nowrap ${
                   isAOpen ? "text-white" : "text-slate-400"
                 }`}
               >
@@ -542,7 +574,7 @@ export function MasterAlarmCard({
               </div>
             </div>
 
-            {/* 중앙 쌍둥이 미니 가스통 물높이 (폭 슬림화 & 상단 매니폴드 연결선) */}
+            {/* 중앙 쌍둥이 미니 가스통 물높이 */}
             <div className="shrink-0 flex flex-col items-center px-1">
               <div className="h-1.5 w-10 rounded-t bg-slate-600 mb-0.5" />
               <div className="flex items-center gap-1.5">
@@ -553,7 +585,9 @@ export function MasterAlarmCard({
                   <div
                     key={item.id}
                     className={`relative h-16 w-6 overflow-hidden rounded-t-lg rounded-b border-2 bg-slate-900 ${
-                      item.open ? "border-sky-400 shadow-sm shadow-sky-500/30" : "border-slate-600 opacity-80"
+                      item.open
+                        ? "border-sky-400 shadow-sm shadow-sky-500/30"
+                        : "border-slate-600 opacity-80"
                     }`}
                   >
                     <div
@@ -571,16 +605,20 @@ export function MasterAlarmCard({
               </div>
             </div>
 
-            {/* B 압력 숫자 (우측 정렬 & 전용 박스) */}
+            {/* B실린더 압력 숫자 (우측 정렬 & 활성 공급 시 네온 테두리) */}
             <div
               onClick={() => onSelectChannel?.(chB)}
-              className="flex-1 min-w-0 cursor-pointer rounded-lg border border-slate-800/90 bg-slate-900/90 px-2 py-1.5 text-right font-mono"
+              className={`flex-1 min-w-0 cursor-pointer rounded-lg border px-2 py-1.5 text-right font-mono transition-all ${
+                isBOpen
+                  ? "border-sky-400/80 bg-sky-950/25 shadow-[0_0_12px_rgba(56,189,248,0.12)]"
+                  : "border-slate-800/90 bg-slate-900/80 opacity-85"
+              }`}
             >
-              <div className="text-[9px] font-bold text-slate-400">
-                CH-{String(chB.id).padStart(2, "0")}
+              <div className="text-[9px] font-bold text-slate-300">
+                B실린더 · {formatChannelCode(chB.id)}
               </div>
               <div
-                className={`text-lg sm:text-xl font-black leading-tight tracking-tighter whitespace-nowrap ${
+                className={`text-lg sm:text-xl font-black tabular-nums leading-tight tracking-tighter whitespace-nowrap ${
                   isBOpen ? "text-white" : "text-slate-400"
                 }`}
               >
@@ -592,7 +630,7 @@ export function MasterAlarmCard({
             </div>
           </div>
 
-          {/* 하단 OPEN / CLOSE 대형 버튼 & 각각의 상태 텍스트 (2열 분리로 글자 겹침 방지) */}
+          {/* 하단 공급중(OPEN) / 예비대기(CLOSE) 대형 버튼 & 상태 텍스트 */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <button
@@ -604,13 +642,13 @@ export function MasterAlarmCard({
                 className={`w-full rounded-lg py-1.5 font-mono text-xs font-black transition-all ${
                   isAOpen
                     ? "bg-sky-500 text-white shadow"
-                    : "border border-rose-500/60 bg-slate-900 text-rose-400"
+                    : "border border-slate-600 bg-slate-900 text-slate-400"
                 }`}
               >
-                {isAOpen ? "OPEN (공급중)" : "CLOSE (대기)"}
+                {isAOpen ? "● 공급중 (OPEN)" : "○ 예비대기 (CLOSE)"}
               </button>
               <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono">
-                A: {chA.remainingText}
+                A실린더: {chA.remainingText}
               </div>
             </div>
 
@@ -624,28 +662,28 @@ export function MasterAlarmCard({
                 className={`w-full rounded-lg py-1.5 font-mono text-xs font-black transition-all ${
                   isBOpen
                     ? "bg-sky-500 text-white shadow"
-                    : "border border-rose-500/60 bg-slate-900 text-rose-400"
+                    : "border border-slate-600 bg-slate-900 text-slate-400"
                 }`}
               >
-                {isBOpen ? "OPEN (공급중)" : "CLOSE (대기)"}
+                {isBOpen ? "● 공급중 (OPEN)" : "○ 예비대기 (CLOSE)"}
               </button>
               <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono">
-                B: {chB.remainingText}
+                B실린더: {chB.remainingText}
               </div>
             </div>
           </div>
         </div>
 
-        {/* 우측: 경쟁사 2번 사진 우측과 동일한 초대형 PV / 가로 잔량 바 / SV 계기판 (5칸) */}
+        {/* 우측: 국제 계장 표준(ISA-5.1) 초대형 PV(Process Value) / 가로 잔량 바 / SV(Set Value) 계기판 (5칸) */}
         <div className="col-span-5 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
           <div className="flex items-baseline justify-between gap-1">
             <div className="shrink-0">
-              <div className="text-sm font-black text-cyan-300">PV</div>
+              <div className="text-sm font-black text-cyan-300">PV 현재압력</div>
               <div className="text-[9px] text-slate-400 whitespace-nowrap">
-                주공급({isAOpen ? "A통" : "B통"})
+                Process Value ({isAOpen ? "A실린더" : "B실린더"})
               </div>
             </div>
-            <div className="font-mono text-2xl sm:text-3xl font-black tracking-tight text-white whitespace-nowrap">
+            <div className="font-mono tabular-nums text-2xl sm:text-3xl font-black tracking-tight text-white whitespace-nowrap">
               {formatPressureByUnit(
                 isAOpen ? chA.pressureBar : chB.pressureBar,
                 unit,
@@ -670,12 +708,12 @@ export function MasterAlarmCard({
 
           <div className="flex items-baseline justify-between gap-1 border-t border-slate-800 pt-1.5">
             <div className="shrink-0">
-              <div className="text-sm font-black text-slate-300">SV</div>
+              <div className="text-sm font-black text-slate-300">SV 절체압력</div>
               <div className="text-[9px] text-slate-500 whitespace-nowrap">
-                절체기준
+                Set Value (자동절체 기준)
               </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-black text-amber-300 whitespace-nowrap">
+            <div className="font-mono tabular-nums text-xl sm:text-2xl font-black text-amber-300 whitespace-nowrap">
               {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)}
               <span className="ml-1 text-[11px] text-slate-400">{unitLabel}</span>
             </div>

@@ -246,7 +246,7 @@ export default function LeakTestTab({
             type="button"
             onClick={() =>
               downloadUtf8BomCsv(
-                `ACSC_기밀시험성적서_${new Date().toISOString().slice(0, 10)}.csv`,
+                `특수가스관제_기밀시험성적서_${new Date().toISOString().slice(0, 10)}.csv`,
                 ["일시", "채널", "가스명", "시험시간(초)", "시작압력(bar)", "종료압력(bar)", "ΔP(bar)", "허용치(bar)", "판정", "점검자"],
                 leakLogs.map((l) => [
                   l.timestamp,

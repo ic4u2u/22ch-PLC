@@ -180,7 +180,7 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
     id,
     bankId: `BANK-${String(bankIdx + 1).padStart(2, "0")}`,
     side,
-    name: `CH-${String(id).padStart(2, "0")} [${side}]`,
+    name: `${side}실린더 [CH-${String(id).padStart(2, "0")}]`,
     gasName: gas.name,
     gasCode: gas.code,
     color: gas.color,
@@ -203,7 +203,7 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
         : 0.15
       : 0.0,
     remainingText: !isOpenSide
-      ? `예비 대기 (만충 ${initBar}b · 기밀정상)`
+      ? `예비대기 (만충 ${initBar}b · 기밀정상)`
       : id === 1
       ? "예상절체 17:15 (±3분 · 절체임박)"
       : "예상절체 21:40 (±15분 · 공급중)",

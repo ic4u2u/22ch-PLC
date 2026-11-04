@@ -475,10 +475,10 @@ export function ChannelDetailModal({
           )}
         </div>
 
-        {/* 주의/위험 임계값 저장 */}
+        {/* 예고압력(WARN) / 절체 설정압력(SV) 임계값 저장 */}
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <div className="flex-1">
-            <label className="text-xs text-slate-400">주의(WARN) 기준 (bar)</label>
+            <label className="text-xs text-slate-400">예고압력(WARN) 기준 (Bar)</label>
             <input
               type="number"
               step="0.5"
@@ -489,7 +489,7 @@ export function ChannelDetailModal({
             />
           </div>
           <div className="flex-1">
-            <label className="text-xs text-slate-400">위험(DANGER) 기준 (bar)</label>
+            <label className="text-xs text-slate-400">절체 설정압력(SV) 기준 (Bar)</label>
             <input
               type="number"
               step="0.5"
@@ -506,7 +506,7 @@ export function ChannelDetailModal({
               onUpdateChannel(
                 channel.id,
                 { warnBar, dangerBar },
-                `임계값 변경 (주의=${warnBar} bar, 위험=${dangerBar} bar)`,
+                `임계값 변경 (예고압력=${warnBar} bar, 절체SV=${dangerBar} bar)`,
                 "THRESHOLD_UPDATE"
               )
             }

@@ -10,6 +10,7 @@ import React from "react";
 import {
   ChannelData,
   PressureUnit,
+  formatChannelCode,
   formatPressureByUnit,
   getBankFacilityMeta,
   getGasPhysicsMeta,
@@ -124,14 +125,23 @@ export default function CylinderPairCard({
         borderTopWidth: "6px",
       }}
     >
-      {/* 1. 상단 헤더: 설비 구분(캐비넷/오토체인지) + 가스 이름표 + 설정압력(SV) */}
+      {/* 1. 상단 3단 컬러 코딩 헤더: [BANK 코드] + [가스명 대형 배지] + [설비 호기(GC/ACM)] + [자동절체 SV] */}
       <div
         className="flex flex-wrap items-center justify-between gap-1.5 border-b-2 border-dashed pb-2.5"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span
-            className={`rounded-lg border px-2 py-0.5 text-[11px] font-black ${
+            className="rounded-md px-2 py-0.5 font-mono text-[11px] font-black text-white shadow"
+            style={{ backgroundColor: chA.color || "#0284c7" }}
+          >
+            {bankId}
+          </span>
+          <span className="text-sm sm:text-base font-black text-white tracking-tight">
+            {chA.gasName}
+          </span>
+          <span
+            className={`rounded-md border px-2 py-0.5 text-[11px] font-extrabold ${
               isCabinet
                 ? "bg-sky-500/20 border-sky-400/50 text-sky-200"
                 : "bg-emerald-500/20 border-emerald-400/50 text-emerald-200"
@@ -139,22 +149,18 @@ export default function CylinderPairCard({
           >
             {meta.facilityBadge}
           </span>
-          <span
-            className="rounded-lg px-2.5 py-0.5 text-xs sm:text-sm font-black text-white shadow tracking-tight"
-            style={{ backgroundColor: chA.color || "#0284c7" }}
-          >
-            {chA.gasName} (A·B 2통 세트)
-          </span>
         </div>
         <div className="flex items-center gap-1.5 font-mono text-[11px]">
           <span
             className={`rounded px-2 py-0.5 font-extrabold ${
               isAOpen
-                ? "bg-sky-500/25 text-sky-300 border border-sky-400/50"
-                : "bg-teal-500/25 text-teal-300 border border-teal-400/50"
+                ? "bg-sky-500/25 text-sky-200 border border-sky-400/60"
+                : "bg-teal-500/25 text-teal-200 border border-teal-400/60"
             }`}
           >
-            {isAOpen ? "◀ A통 공급중 (B대기)" : "B통 공급중 (A대기) ▶"}
+            {isAOpen
+              ? "◀ A실린더 공급중 (B예비)"
+              : "B실린더 공급중 (A예비) ▶"}
           </span>
           <span className="rounded bg-slate-800 px-2 py-0.5 text-slate-300 font-bold">
             절체SV:{" "}
@@ -165,35 +171,46 @@ export default function CylinderPairCard({
         </div>
       </div>
 
-      {/* 2. 중앙 비주얼 모식도: [좌측 A-Cylinder 계기판] + [중앙 자동절체기 & A/B 가스통 SVG] + [우측 B-Cylinder 계기판] */}
+      {/* 2. 중앙 비주얼 모식도: [좌측 A실린더 계기판] + [중앙 자동절체기 & A/B 실린더 SVG] + [우측 B실린더 계기판] */}
       <div className="mt-3 grid grid-cols-12 items-stretch gap-2 rounded-xl border border-slate-800/90 bg-slate-950 p-2.5">
-        {/* 좌측: A-Cylinder PV / SV 디지털 계기판 & OPEN/CLOSE 버튼 (4칸) */}
-        <div className="col-span-4 flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/90 p-2.5">
+        {/* 좌측: A실린더 [CH-홀수] PV / SV 디지털 계기판 & 공급중(OPEN)/예비대기(CLOSE) 버튼 (4칸) */}
+        <div
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2.5 transition-all ${
+            isAOpen
+              ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
+              : "border-slate-800 bg-slate-900/75 opacity-90"
+          }`}
+        >
           <div>
-            <div className="flex items-center justify-between">
-              <span className="rounded bg-amber-400 px-1.5 py-0.5 font-mono text-[11px] font-black text-slate-950">
-                A-Cylinder
-              </span>
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center gap-1">
+                <span className="rounded bg-amber-400 px-1.5 py-0.5 text-[11px] font-black text-slate-950">
+                  A실린더
+                </span>
+                <span className="rounded border border-sky-400/50 bg-sky-500/20 px-1.5 py-0.5 font-mono text-[11px] font-black text-sky-200">
+                  {formatChannelCode(chA.id)}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => onSelectChannel(chA)}
-                title="A통 트렌드 차트 & 영점 보정"
+                title="A실린더 트렌드 차트 & 영점 보정"
                 className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 hover:bg-cyan-500 hover:text-slate-950"
               >
                 ⚙️
               </button>
             </div>
-            <div className="mt-1 font-mono text-[10px] text-slate-400">
-              CH-{String(chA.id).padStart(2, "0")} · {colA.badge}
+            <div className="mt-1 font-mono text-[10px] font-bold text-slate-300">
+              {isAOpen ? "🟢 공급중 (OPEN)" : "⚪ 예비대기 (CLOSE)"} · {colA.badge}
             </div>
 
-            {/* PV (현재 압력) 초대형 표시 */}
+            {/* PV (현재 측정압력 - Process Value) 초대형 표시 */}
             <div
               onClick={() => onSelectChannel(chA)}
               className="mt-2 cursor-pointer rounded-lg border border-slate-800 bg-slate-950 p-2 text-right"
             >
               <div className="flex items-center justify-between text-[10px] font-bold text-cyan-400">
-                <span>PV</span>
+                <span>PV (Process Value)</span>
                 <span>현재압력</span>
               </div>
               {chA.status === "SENSOR_FAULT" ? (
@@ -201,7 +218,7 @@ export default function CylinderPairCard({
                   FAULT ({chA.rawBar}b)
                 </div>
               ) : (
-                <div className="mt-0.5 font-mono text-xl sm:text-2xl font-black tracking-tight text-white">
+                <div className="mt-0.5 font-mono tabular-nums text-xl sm:text-2xl font-black tracking-tight text-white">
                   {formatPressureByUnit(chA.pressureBar, unit, chA.maxBar)}
                   <span className="ml-0.5 text-[10px] text-slate-400">
                     {unitLabel}
@@ -210,16 +227,17 @@ export default function CylinderPairCard({
               )}
             </div>
 
-            {/* SV (설정 경보 압력) 표시 */}
-            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-slate-950/70 px-2 py-1 font-mono text-[11px]">
-              <span className="font-bold text-slate-400">SV (기준)</span>
-              <span className="font-bold text-amber-300">
+            {/* 예고압력(WARN) & 절체압력(SV) 표시 */}
+            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-slate-950/70 px-2 py-1 font-mono text-[10.5px]">
+              <span className="font-bold text-slate-400">SV(절체) / 예고</span>
+              <span className="font-bold text-amber-300 tabular-nums">
+                {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)} /{" "}
                 {formatPressureByUnit(chA.warnBar, unit, chA.maxBar)} {unitLabel}
               </span>
             </div>
           </div>
 
-          {/* OPEN / CLOSE 원클릭 스위치 + 잔여시간 */}
+          {/* 공급중(OPEN) / 예비대기(CLOSE) 원클릭 스위치 + 잔여시간 */}
           <div className="mt-2">
             <button
               type="button"
@@ -230,10 +248,10 @@ export default function CylinderPairCard({
               className={`min-h-[38px] w-full rounded-lg font-mono text-xs font-black tracking-wider transition-all shadow ${
                 isAOpen
                   ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-rose-600 hover:to-rose-700"
-                  : "border border-rose-500/60 bg-rose-950/50 text-rose-300 hover:bg-emerald-600 hover:text-white"
+                  : "border border-slate-600 bg-slate-800/90 text-slate-300 hover:bg-emerald-600 hover:text-white"
               }`}
             >
-              {isAOpen ? "OPEN" : "CLOSE"}
+              {isAOpen ? "● 공급중 (OPEN)" : "○ 예비대기 (CLOSE)"}
             </button>
             <div className="mt-1 truncate text-center text-[10px] font-semibold text-slate-400">
               {chA.remainingText}
@@ -561,33 +579,44 @@ export default function CylinderPairCard({
           </svg>
         </div>
 
-        {/* 우측: B-Cylinder PV / SV 디지털 계기판 & OPEN/CLOSE 버튼 (4칸) */}
-        <div className="col-span-4 flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/90 p-2.5">
+        {/* 우측: B실린더 [CH-짝수] PV / SV 디지털 계기판 & 공급중(OPEN)/예비대기(CLOSE) 버튼 (4칸) */}
+        <div
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2.5 transition-all ${
+            isBOpen
+              ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
+              : "border-slate-800 bg-slate-900/75 opacity-90"
+          }`}
+        >
           <div>
-            <div className="flex items-center justify-between">
-              <span className="rounded bg-amber-400 px-1.5 py-0.5 font-mono text-[11px] font-black text-slate-950">
-                B-Cylinder
-              </span>
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center gap-1">
+                <span className="rounded bg-amber-400 px-1.5 py-0.5 text-[11px] font-black text-slate-950">
+                  B실린더
+                </span>
+                <span className="rounded border border-sky-400/50 bg-sky-500/20 px-1.5 py-0.5 font-mono text-[11px] font-black text-sky-200">
+                  {formatChannelCode(chB.id)}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => onSelectChannel(chB)}
-                title="B통 트렌드 차트 & 영점 보정"
+                title="B실린더 트렌드 차트 & 영점 보정"
                 className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 hover:bg-cyan-500 hover:text-slate-950"
               >
                 ⚙️
               </button>
             </div>
-            <div className="mt-1 font-mono text-[10px] text-slate-400">
-              CH-{String(chB.id).padStart(2, "0")} · {colB.badge}
+            <div className="mt-1 font-mono text-[10px] font-bold text-slate-300">
+              {isBOpen ? "🟢 공급중 (OPEN)" : "⚪ 예비대기 (CLOSE)"} · {colB.badge}
             </div>
 
-            {/* PV (현재 압력) 초대형 표시 */}
+            {/* PV (현재 측정압력 - Process Value) 초대형 표시 */}
             <div
               onClick={() => onSelectChannel(chB)}
               className="mt-2 cursor-pointer rounded-lg border border-slate-800 bg-slate-950 p-2 text-right"
             >
               <div className="flex items-center justify-between text-[10px] font-bold text-cyan-400">
-                <span>PV</span>
+                <span>PV (Process Value)</span>
                 <span>현재압력</span>
               </div>
               {chB.status === "SENSOR_FAULT" ? (
@@ -595,7 +624,7 @@ export default function CylinderPairCard({
                   FAULT ({chB.rawBar}b)
                 </div>
               ) : (
-                <div className="mt-0.5 font-mono text-xl sm:text-2xl font-black tracking-tight text-white">
+                <div className="mt-0.5 font-mono tabular-nums text-xl sm:text-2xl font-black tracking-tight text-white">
                   {formatPressureByUnit(chB.pressureBar, unit, chB.maxBar)}
                   <span className="ml-0.5 text-[10px] text-slate-400">
                     {unitLabel}
@@ -604,16 +633,17 @@ export default function CylinderPairCard({
               )}
             </div>
 
-            {/* SV (설정 경보 압력) 표시 */}
-            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-slate-950/70 px-2 py-1 font-mono text-[11px]">
-              <span className="font-bold text-slate-400">SV (기준)</span>
-              <span className="font-bold text-amber-300">
+            {/* 예고압력(WARN) & 절체압력(SV) 표시 */}
+            <div className="mt-1.5 flex items-center justify-between rounded-lg bg-slate-950/70 px-2 py-1 font-mono text-[10.5px]">
+              <span className="font-bold text-slate-400">SV(절체) / 예고</span>
+              <span className="font-bold text-amber-300 tabular-nums">
+                {formatPressureByUnit(chB.dangerBar, unit, chB.maxBar)} /{" "}
                 {formatPressureByUnit(chB.warnBar, unit, chB.maxBar)} {unitLabel}
               </span>
             </div>
           </div>
 
-          {/* OPEN / CLOSE 원클릭 스위치 + 잔여시간 */}
+          {/* 공급중(OPEN) / 예비대기(CLOSE) 원클릭 스위치 + 잔여시간 */}
           <div className="mt-2">
             <button
               type="button"
@@ -624,10 +654,10 @@ export default function CylinderPairCard({
               className={`min-h-[38px] w-full rounded-lg font-mono text-xs font-black tracking-wider transition-all shadow ${
                 isBOpen
                   ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white hover:from-rose-600 hover:to-rose-700"
-                  : "border border-rose-500/60 bg-rose-950/50 text-rose-300 hover:bg-emerald-600 hover:text-white"
+                  : "border border-slate-600 bg-slate-800/90 text-slate-300 hover:bg-emerald-600 hover:text-white"
               }`}
             >
-              {isBOpen ? "OPEN" : "CLOSE"}
+              {isBOpen ? "● 공급중 (OPEN)" : "○ 예비대기 (CLOSE)"}
             </button>
             <div className="mt-1 truncate text-center text-[10px] font-semibold text-slate-400">
               {chB.remainingText}
