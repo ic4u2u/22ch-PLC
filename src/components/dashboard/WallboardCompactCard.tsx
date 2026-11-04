@@ -181,7 +181,7 @@ export function OneScreenCylinderCard({
           </div>
           <div
             onClick={() => onSelectChannel?.(chA)}
-            className="my-1 cursor-pointer text-right font-mono"
+            className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
             <div className="text-[8px] font-bold text-cyan-400">PV 현재</div>
             {chA.status === "SENSOR_FAULT" ? (
@@ -189,8 +189,8 @@ export function OneScreenCylinderCard({
             ) : (
               <div
                 className={`${
-                  fontScale === "LARGE" ? "text-xl" : "text-base sm:text-lg"
-                } font-black leading-none tracking-tight ${visA.text}`}
+                  fontScale === "LARGE" ? "text-base sm:text-lg" : "text-sm sm:text-base"
+                } font-black leading-none tracking-tighter whitespace-nowrap ${visA.text}`}
               >
                 {formatPressureByUnit(chA.pressureBar, unit, chA.maxBar)}
               </div>
@@ -404,7 +404,7 @@ export function OneScreenCylinderCard({
           </div>
           <div
             onClick={() => onSelectChannel?.(chB)}
-            className="my-1 cursor-pointer text-right font-mono"
+            className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
             <div className="text-[8px] font-bold text-cyan-400">PV 현재</div>
             {chB.status === "SENSOR_FAULT" ? (
@@ -412,8 +412,8 @@ export function OneScreenCylinderCard({
             ) : (
               <div
                 className={`${
-                  fontScale === "LARGE" ? "text-xl" : "text-base sm:text-lg"
-                } font-black leading-none tracking-tight ${visB.text}`}
+                  fontScale === "LARGE" ? "text-base sm:text-lg" : "text-sm sm:text-base"
+                } font-black leading-none tracking-tighter whitespace-nowrap ${visB.text}`}
               >
                 {formatPressureByUnit(chB.pressureBar, unit, chB.maxBar)}
               </div>
@@ -436,11 +436,10 @@ export function OneScreenCylinderCard({
         </div>
       </div>
 
-      {/* 하단: A/B 잔여 사용시간 요약 */}
-      <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 px-0.5">
-        <span className="truncate">A: {chA.remainingText}</span>
-        <span className="font-mono text-slate-500">{unitLabel}</span>
-        <span className="truncate">B: {chB.remainingText}</span>
+      {/* 하단: A/B 잔여 사용시간 요약 (2열 분리로 텍스트 겹침 방지) */}
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 px-0.5 font-mono">
+        <span className="truncate text-left">A: {chA.remainingText}</span>
+        <span className="truncate text-right">B: {chB.remainingText}</span>
       </div>
     </div>
   );
@@ -448,6 +447,7 @@ export function OneScreenCylinderCard({
 
 /**
  * 2. [경쟁사 2번 마스터 알람 벽걸이 모니터 스타일] 초대형 PV / SV + A/B 실린더 계기판 카드
+ *    (수치가 가스통 그래픽에 절대 가려지지 않도록 좌우 정렬·여백·폰트크기 완벽 최적화)
  */
 export function MasterAlarmCard({
   bankNum,
@@ -469,151 +469,200 @@ export function MasterAlarmCard({
 
   return (
     <div className="rounded-2xl border-2 border-slate-700 bg-slate-900/95 p-3 shadow-xl">
-      {/* 상단: 가스명 & 설정압력(SV) */}
-      <div className="flex items-center justify-between border-b border-slate-700 pb-2 text-xs font-bold">
-        <div className="flex items-center gap-2">
-          <span className="text-slate-300">
-            가스명 : <strong className="text-white text-sm">{chA.gasName}</strong>
+      {/* 상단: 가스명 & 설정압력(SV) — 글자 줄바꿈 깨짐 방지 */}
+      <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-700 pb-2 text-xs font-bold">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span
+            className="shrink-0 rounded px-2 py-0.5 text-[11px] font-black text-white"
+            style={{ backgroundColor: chA.color || "#0284c7" }}
+          >
+            {chA.gasCode}
           </span>
-          <span className="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-cyan-300">
+          <span className="truncate text-sm font-extrabold text-white">
+            {chA.gasName}
+          </span>
+          <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-cyan-300 whitespace-nowrap">
             {meta.facilityBadge}
           </span>
         </div>
-        <span className="font-mono text-amber-300">
-          설정압력(SV) : {formatPressureByUnit(chA.warnBar, unit, chA.maxBar)} {unitLabel}
+        <span className="shrink-0 font-mono text-xs text-amber-300 whitespace-nowrap">
+          절체SV :{" "}
+          <strong>
+            {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)} {unitLabel}
+          </strong>
         </span>
       </div>
 
       {/* 본문: 좌측 A/B 실린더 그래픽 & 우측 초대형 PV/SV 디지털 패널 */}
       <div className="mt-2.5 grid grid-cols-12 gap-2.5 items-stretch">
-        {/* 좌측: 경쟁사 2번 사진 좌측과 동일한 A-Cylinder / B-Cylinder 그래픽 박스 */}
-        <div className="col-span-6 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-black text-slate-200">
-            <span>A-Cylinder</span>
-            <span>B-Cylinder</span>
+        {/* 좌측: A-Cylinder / B-Cylinder 그래픽 박스 (수치와 가스통 간격 분리로 겹침 100% 방지) */}
+        <div className="col-span-7 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[11px] font-black text-slate-200 border-b border-slate-800/80 pb-1">
+            <span className="text-sky-300">A-Cylinder</span>
+            <span className="font-mono text-[10px] text-amber-300">
+              {isAOpen ? "◀ A공급중" : "B공급중 ▶"}
+            </span>
+            <span className="text-teal-300">B-Cylinder</span>
           </div>
 
-          <div className="my-2 grid grid-cols-12 items-center gap-1">
-            {/* A 압력 숫자 */}
+          {/* 중앙: [좌측 A 수치] — [중앙 A/B 가스통] — [우측 B 수치] (절대 겹치지 않는 3단 분리) */}
+          <div className="my-2 flex items-center justify-between gap-1.5 px-0.5">
+            {/* A 압력 숫자 (좌측 정렬 & 전용 박스) */}
             <div
               onClick={() => onSelectChannel?.(chA)}
-              className="col-span-4 cursor-pointer text-center font-mono"
+              className="flex-1 min-w-0 cursor-pointer rounded-lg border border-slate-800/90 bg-slate-900/90 px-2 py-1.5 text-left font-mono"
             >
-              <div className="text-2xl sm:text-3xl font-black text-white">
+              <div className="text-[9px] font-bold text-slate-400">
+                CH-{String(chA.id).padStart(2, "0")}
+              </div>
+              <div
+                className={`text-lg sm:text-xl font-black leading-tight tracking-tighter whitespace-nowrap ${
+                  isAOpen ? "text-white" : "text-slate-400"
+                }`}
+              >
                 {formatPressureByUnit(chA.pressureBar, unit, chA.maxBar)}
               </div>
-              <div className="text-[10px] text-slate-400">{unitLabel}</div>
+              <div className="text-[10px] font-bold text-cyan-400">
+                {unitLabel} ({visA.pct}%)
+              </div>
             </div>
 
-            {/* 중앙 쌍둥이 미니 가스통 물높이 */}
-            <div className="col-span-4 flex items-center justify-center gap-2">
-              {[
-                { id: `maA-${bankId}`, vis: visA },
-                { id: `maB-${bankId}`, vis: visB },
-              ].map((item) => (
-                <div
-                  key={item.id}
-                  className="relative h-20 w-7 overflow-hidden rounded-t-xl rounded-b-md border-2 border-slate-400 bg-slate-900"
-                >
+            {/* 중앙 쌍둥이 미니 가스통 물높이 (폭 슬림화 & 상단 매니폴드 연결선) */}
+            <div className="shrink-0 flex flex-col items-center px-1">
+              <div className="h-1.5 w-10 rounded-t bg-slate-600 mb-0.5" />
+              <div className="flex items-center gap-1.5">
+                {[
+                  { id: `maA-${bankId}`, vis: visA, open: isAOpen, label: "A" },
+                  { id: `maB-${bankId}`, vis: visB, open: isBOpen, label: "B" },
+                ].map((item) => (
                   <div
-                    className="absolute bottom-0 left-0 right-0 transition-all duration-300"
-                    style={{
-                      height: `${item.vis.pct}%`,
-                      background: `linear-gradient(180deg, ${item.vis.top}, ${item.vis.bottom})`,
-                    }}
-                  />
-                </div>
-              ))}
+                    key={item.id}
+                    className={`relative h-16 w-6 overflow-hidden rounded-t-lg rounded-b border-2 bg-slate-900 ${
+                      item.open ? "border-sky-400 shadow-sm shadow-sky-500/30" : "border-slate-600 opacity-80"
+                    }`}
+                  >
+                    <div
+                      className="absolute bottom-0 left-0 right-0 transition-all duration-300"
+                      style={{
+                        height: `${item.vis.pct}%`,
+                        background: `linear-gradient(180deg, ${item.vis.top}, ${item.vis.bottom})`,
+                      }}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center font-mono text-[9px] font-black text-white drop-shadow">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* B 압력 숫자 */}
+            {/* B 압력 숫자 (우측 정렬 & 전용 박스) */}
             <div
               onClick={() => onSelectChannel?.(chB)}
-              className="col-span-4 cursor-pointer text-center font-mono"
+              className="flex-1 min-w-0 cursor-pointer rounded-lg border border-slate-800/90 bg-slate-900/90 px-2 py-1.5 text-right font-mono"
             >
-              <div className="text-2xl sm:text-3xl font-black text-white">
+              <div className="text-[9px] font-bold text-slate-400">
+                CH-{String(chB.id).padStart(2, "0")}
+              </div>
+              <div
+                className={`text-lg sm:text-xl font-black leading-tight tracking-tighter whitespace-nowrap ${
+                  isBOpen ? "text-white" : "text-slate-400"
+                }`}
+              >
                 {formatPressureByUnit(chB.pressureBar, unit, chB.maxBar)}
               </div>
-              <div className="text-[10px] text-slate-400">{unitLabel}</div>
+              <div className="text-[10px] font-bold text-cyan-400">
+                {unitLabel} ({visB.pct}%)
+              </div>
             </div>
           </div>
 
-          {/* 하단 OPEN / CLOSE 대형 버튼 */}
+          {/* 하단 OPEN / CLOSE 대형 버튼 & 각각의 상태 텍스트 (2열 분리로 글자 겹침 방지) */}
           <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (!isUnlocked) return onRequestPin?.();
-                onToggleValve?.(chA.id, isAOpen ? 1 : 0);
-              }}
-              className={`rounded-lg py-1.5 font-mono text-xs font-black ${
-                isAOpen
-                  ? "bg-sky-500 text-white"
-                  : "border border-rose-500/60 bg-slate-900 text-rose-400"
-              }`}
-            >
-              {isAOpen ? "OPEN" : "CLOSE"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!isUnlocked) return onRequestPin?.();
-                onToggleValve?.(chB.id, isBOpen ? 1 : 0);
-              }}
-              className={`rounded-lg py-1.5 font-mono text-xs font-black ${
-                isBOpen
-                  ? "bg-sky-500 text-white"
-                  : "border border-rose-500/60 bg-slate-900 text-rose-400"
-              }`}
-            >
-              {isBOpen ? "OPEN" : "CLOSE"}
-            </button>
-          </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isUnlocked) return onRequestPin?.();
+                  onToggleValve?.(chA.id, isAOpen ? 1 : 0);
+                }}
+                className={`w-full rounded-lg py-1.5 font-mono text-xs font-black transition-all ${
+                  isAOpen
+                    ? "bg-sky-500 text-white shadow"
+                    : "border border-rose-500/60 bg-slate-900 text-rose-400"
+                }`}
+              >
+                {isAOpen ? "OPEN (공급중)" : "CLOSE (대기)"}
+              </button>
+              <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono">
+                A: {chA.remainingText}
+              </div>
+            </div>
 
-          <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-            <span>A: {chA.remainingText}</span>
-            <span>B: {chB.remainingText}</span>
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!isUnlocked) return onRequestPin?.();
+                  onToggleValve?.(chB.id, isBOpen ? 1 : 0);
+                }}
+                className={`w-full rounded-lg py-1.5 font-mono text-xs font-black transition-all ${
+                  isBOpen
+                    ? "bg-sky-500 text-white shadow"
+                    : "border border-rose-500/60 bg-slate-900 text-rose-400"
+                }`}
+              >
+                {isBOpen ? "OPEN (공급중)" : "CLOSE (대기)"}
+              </button>
+              <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono">
+                B: {chB.remainingText}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 우측: 경쟁사 2번 사진 우측과 동일한 초대형 PV / 가로 잔량 바 / SV 계기판 */}
-        <div className="col-span-6 rounded-xl border border-slate-700/90 bg-slate-950 p-3 flex flex-col justify-between">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <div className="text-base font-black text-white">PV</div>
-              <div className="text-[9px] text-slate-400">Position Volume (주공급)</div>
+        {/* 우측: 경쟁사 2번 사진 우측과 동일한 초대형 PV / 가로 잔량 바 / SV 계기판 (5칸) */}
+        <div className="col-span-5 rounded-xl border border-slate-700/90 bg-slate-950 p-2.5 flex flex-col justify-between">
+          <div className="flex items-baseline justify-between gap-1">
+            <div className="shrink-0">
+              <div className="text-sm font-black text-cyan-300">PV</div>
+              <div className="text-[9px] text-slate-400 whitespace-nowrap">
+                주공급({isAOpen ? "A통" : "B통"})
+              </div>
             </div>
-            <div className="font-mono text-3xl sm:text-4xl font-black text-white">
+            <div className="font-mono text-2xl sm:text-3xl font-black tracking-tight text-white whitespace-nowrap">
               {formatPressureByUnit(
                 isAOpen ? chA.pressureBar : chB.pressureBar,
                 unit,
                 chA.maxBar
               )}
-              <span className="ml-1 text-xs text-slate-400">{unitLabel}</span>
+              <span className="ml-1 text-[11px] text-slate-400">{unitLabel}</span>
             </div>
           </div>
 
           {/* 가로형 파란색/청록색 잔량 게이지 바 */}
           <div className="my-2">
-            <div className="relative h-6 w-full overflow-hidden rounded bg-slate-800">
+            <div className="relative h-6 w-full overflow-hidden rounded-lg bg-slate-800">
               <div
                 className="h-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-300"
                 style={{ width: `${isAOpen ? visA.pct : visB.pct}%` }}
               />
               <span className="absolute inset-0 flex items-center justify-center font-mono text-xs font-black text-amber-300 drop-shadow">
-                {isAOpen ? visA.pct : visB.pct}%
+                실잔량 {isAOpen ? visA.pct : visB.pct}%
               </span>
             </div>
           </div>
 
-          <div className="flex items-baseline justify-between border-t border-slate-800 pt-1.5">
-            <div>
-              <div className="text-base font-black text-slate-300">SV</div>
-              <div className="text-[9px] text-slate-500">Setting Volume (경보압력)</div>
+          <div className="flex items-baseline justify-between gap-1 border-t border-slate-800 pt-1.5">
+            <div className="shrink-0">
+              <div className="text-sm font-black text-slate-300">SV</div>
+              <div className="text-[9px] text-slate-500 whitespace-nowrap">
+                절체기준
+              </div>
             </div>
-            <div className="font-mono text-2xl sm:text-3xl font-black text-amber-300">
+            <div className="font-mono text-xl sm:text-2xl font-black text-amber-300 whitespace-nowrap">
               {formatPressureByUnit(chA.dangerBar, unit, chA.maxBar)}
-              <span className="ml-1 text-xs text-slate-400">{unitLabel}</span>
+              <span className="ml-1 text-[11px] text-slate-400">{unitLabel}</span>
             </div>
           </div>
         </div>
