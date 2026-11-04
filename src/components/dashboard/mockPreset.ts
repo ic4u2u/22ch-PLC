@@ -205,8 +205,8 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
     remainingText: !isOpenSide
       ? `만충 ${initBar}b · 기밀정상`
       : id === 1
-      ? "예상절체 17:15 (절체임박)"
-      : "예상절체 21:40 (±15분)",
+      ? "절체임박 17:15"
+      : "절체예상 21:40",
     remainingMinutesTotal: isOpenSide ? (id === 1 ? 12 : 270) : 480,
   };
 });

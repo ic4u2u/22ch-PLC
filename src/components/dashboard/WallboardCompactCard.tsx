@@ -145,32 +145,19 @@ export function OneScreenCylinderCard({
         borderTopWidth: "5px",
       }}
     >
-      {/* 상단: [뱅크 명칭] + [설비 호기] + [가스명] + [절체압력] */}
+      {/* 상단: [뱅크 명칭] + [가스명] + [A/B공급 하이라이트] */}
       <div
-        className="flex items-center justify-between gap-1 border-b-2 border-dashed pb-1.5"
+        className="flex items-center justify-between gap-1.5 border-b-2 border-dashed pb-1.5"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
       >
-        <div className="flex items-center gap-1 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           <span
-            className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black text-white whitespace-nowrap"
+            className="shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-black text-white whitespace-nowrap"
             style={{ backgroundColor: chA.color || "#0284c7" }}
           >
             {meta.bankCode}
           </span>
-          <span
-            className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-black whitespace-nowrap ${
-              isCabinet
-                ? "bg-sky-500/25 text-sky-200 border border-sky-400/40"
-                : "bg-emerald-500/25 text-emerald-200 border border-emerald-400/40"
-            }`}
-          >
-            {isCabinet
-              ? `캐비닛 ${bankNum}호`
-              : bankNum === 11
-              ? "수소저장소"
-              : `오토 ${bankNum - 5}호`}
-          </span>
-          <span className="text-[11px] font-black text-white whitespace-nowrap">
+          <span className="text-xs font-black text-white whitespace-nowrap">
             {chA.gasName}
           </span>
         </div>
@@ -553,7 +540,7 @@ export function MasterAlarmCard({
         borderTopWidth: "6px",
       }}
     >
-      {/* 상단: [뱅크 명칭] + [가스명] + [설비 호기] + [절체압력] (줄바꿈 없이 한 줄) */}
+      {/* 상단: [뱅크 명칭] + [가스명] + [A/B공급 하이라이트] (줄바꿈 없이 한 줄) */}
       <div
         className="flex items-center justify-between gap-1.5 border-b-2 border-dashed pb-2 text-xs font-bold overflow-hidden"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
@@ -567,9 +554,6 @@ export function MasterAlarmCard({
           </span>
           <span className="text-sm font-extrabold text-white whitespace-nowrap">
             {chA.gasName}
-          </span>
-          <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-cyan-300 whitespace-nowrap">
-            {meta.shortBadge}
           </span>
         </div>
         <span

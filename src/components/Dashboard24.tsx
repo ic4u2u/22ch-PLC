@@ -353,7 +353,7 @@ export default function Dashboard24() {
             // 대기 중이던 만충 예비통을 OPEN(주공급)으로 즉시 토글!
             closeCh.valveState = 0;
             closeCh.status = "NORMAL";
-            closeCh.remainingText = `예상절체 22:30 (±15분)`;
+            closeCh.remainingText = `절체예상 22:30`;
 
             setBanks((prevBanks) =>
               prevBanks.map((b, i) =>
@@ -375,8 +375,8 @@ export default function Dashboard24() {
             openCh.faultReason = null;
             openCh.remainingText =
               openCh.status === "WARN"
-                ? `예상절체 17:20 (절체임박)`
-                : `예상절체 21:45 (±15분)`;
+                ? `절체임박 17:20`
+                : `절체예상 21:45`;
           }
 
           // 22번 채널(마지막 채널) 25초 주기 4~20mA 센서 이상(SENSOR_FAULT) 시연

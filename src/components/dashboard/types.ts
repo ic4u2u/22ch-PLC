@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "Beta v1.22 RC · 업데이트: 2026-11-04 12:30 (상단 A/B공급 초대형 하이라이트 & 공급중 블링크 강조)";
+  "Beta v1.23 RC · 업데이트: 2026-11-04 12:45 (뱅크 내 중복 호기명 생략 & 가스명 가독성 극대화)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 

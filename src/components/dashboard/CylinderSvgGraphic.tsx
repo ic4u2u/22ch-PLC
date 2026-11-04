@@ -125,7 +125,7 @@ export default function CylinderPairCard({
         borderTopWidth: "6px",
       }}
     >
-      {/* 1. 상단 3단 컬러 코딩 헤더: [1번 뱅크] + [가스명 1줄 고정] + [설비 호기] + [절체압력] */}
+      {/* 1. 상단 3단 컬러 코딩 헤더: [1번 뱅크] + [가스명 1줄 고정] + [A/B공급 하이라이트] + [절체압력] */}
       <div
         className="flex flex-wrap items-center justify-between gap-1.5 border-b-2 border-dashed pb-2.5"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
@@ -139,15 +139,6 @@ export default function CylinderPairCard({
           </span>
           <span className="whitespace-nowrap text-sm sm:text-base font-black text-white tracking-tight">
             {chA.gasName}
-          </span>
-          <span
-            className={`shrink-0 whitespace-nowrap rounded-md border px-2 py-0.5 text-[11px] font-extrabold ${
-              isCabinet
-                ? "bg-sky-500/20 border-sky-400/50 text-sky-200"
-                : "bg-emerald-500/20 border-emerald-400/50 text-emerald-200"
-            }`}
-          >
-            {meta.facilityBadge}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs whitespace-nowrap">

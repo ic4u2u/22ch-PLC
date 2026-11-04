@@ -94,19 +94,10 @@ export default function BankManifoldTab({
             : "border-emerald-500/35 bg-slate-900/95"
         }`}
       >
-        {/* 상단: 설비 배지(캐비넷/오토체인지), 뱅크명, 가스 종류, 예비통 상태 */}
+        {/* 상단: 뱅크명, 가스 종류, 예비통 상태 (구역 타이틀과 중복되는 호기명 배지 생략) */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span
-              className={`rounded-lg border px-2 py-0.5 text-[11px] font-black whitespace-nowrap ${
-                isCabinet
-                  ? "bg-sky-500/20 border-sky-400/50 text-sky-200"
-                  : "bg-emerald-500/20 border-emerald-400/50 text-emerald-200"
-              }`}
-            >
-              {meta.facilityBadge}
-            </span>
-            <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-black text-cyan-300 whitespace-nowrap">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-md bg-cyan-500/20 border border-cyan-400/50 px-2.5 py-0.5 text-xs font-black text-cyan-200 whitespace-nowrap">
               {meta.bankCode}
             </span>
             <span className="text-sm font-extrabold text-white whitespace-nowrap">
