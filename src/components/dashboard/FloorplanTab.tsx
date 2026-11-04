@@ -242,7 +242,7 @@ export default function FloorplanTab({
               style={{ backgroundColor: gasColor }}
             />
             <span
-              className="truncate text-xs sm:text-sm font-black tracking-tight whitespace-nowrap"
+              className="text-xs sm:text-sm font-black tracking-tight whitespace-nowrap"
               style={{ color: "#ffffff" }}
             >
               {chA.gasName}

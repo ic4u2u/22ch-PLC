@@ -203,10 +203,10 @@ export const INITIAL_CHANNELS: ChannelData[] = Array.from({ length: 22 }, (_, id
         : 0.15
       : 0.0,
     remainingText: !isOpenSide
-      ? `예비대기 (만충 ${initBar}b · 기밀정상)`
+      ? `만충 ${initBar}b · 기밀정상`
       : id === 1
-      ? "예상절체 17:15 (±3분 · 절체임박)"
-      : "예상절체 21:40 (±15분 · 공급중)",
+      ? "예상절체 17:15 (절체임박)"
+      : "예상절체 21:40 (±15분)",
     remainingMinutesTotal: isOpenSide ? (id === 1 ? 12 : 270) : 480,
   };
 });

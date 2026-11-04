@@ -399,8 +399,8 @@ export function ChannelDetailModal({
                     status: channel.valveState === 1 ? "SHUTOFF" : "NORMAL",
                     remainingText:
                       channel.valveState === 1
-                        ? `예비 대기 (새통 ${fullBar}b · 기밀정상)`
-                        : `예상절체 22:30 (±15분 · 공급중)`,
+                        ? `만충 ${fullBar}b · 기밀정상`
+                        : `예상절체 22:30 (±15분)`,
                   },
                   `새 가스통 교체 및 N2 퍼지 완료 (${fullBar} bar 만충 리셋)`,
                   "CYLINDER_REPLACE"

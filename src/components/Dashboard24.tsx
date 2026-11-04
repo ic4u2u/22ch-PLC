@@ -324,15 +324,15 @@ export default function Dashboard24() {
             closeCh.pressureBar = Number(
               (fullRefillBar + (closeCh.calibrationOffset || 0)).toFixed(1)
             );
-            closeCh.remainingText = `예비 대기 (새통 ${fullRefillBar}b · 기밀정상)`;
+            closeCh.remainingText = `만충 ${fullRefillBar}b · 기밀정상`;
           } else {
             closeCh.pressureBar = Number(
               Math.max(0, closeCh.rawBar + (closeCh.calibrationOffset || 0)).toFixed(1)
             );
             closeCh.remainingText =
               closeCh.pressureBar <= emptyThreshold
-                ? "🟢 N2퍼지완료 · 안전교체가능"
-                : `예비 대기 (${closeCh.pressureBar}b · 기밀정상)`;
+                ? "퍼지완료 · 안전교체"
+                : `만충 ${closeCh.pressureBar}b · 기밀정상`;
           }
           closeCh.status = "SHUTOFF";
           closeCh.faultReason = null;
@@ -348,12 +348,12 @@ export default function Dashboard24() {
             // 다 쓴 통은 CLOSE(차단)로 토글 & SEMI S2 퍼지 완료 표시
             openCh.valveState = 1;
             openCh.status = "SHUTOFF";
-            openCh.remainingText = `🟢 N2퍼지완료 (${fromSide}통 안전교체가능)`;
+            openCh.remainingText = `퍼지완료 · 안전교체`;
 
             // 대기 중이던 만충 예비통을 OPEN(주공급)으로 즉시 토글!
             closeCh.valveState = 0;
             closeCh.status = "NORMAL";
-            closeCh.remainingText = `예상절체 22:30 (±15분 · ${toSide}통 공급중)`;
+            closeCh.remainingText = `예상절체 22:30 (±15분)`;
 
             setBanks((prevBanks) =>
               prevBanks.map((b, i) =>
@@ -362,10 +362,10 @@ export default function Dashboard24() {
             );
 
             showToast(
-              `🔄 [오토체인지 자동 토글] ${openCh.gasName}: ${fromSide}통(${nextOpenCal}bar 저압) CLOSE ➔ 예비 ${toSide}통(${closeCh.pressureBar}bar) OPEN 자동 절체 완료!`
+              `🔄 [오토체인지 자동절체] ${openCh.gasName}: ${fromSide}실린더(${nextOpenCal}bar 저압) 예비대기 ➔ ${toSide}실린더(${closeCh.pressureBar}bar) 공급중 자동절체 완료!`
             );
           } else {
-            // 아직 SV 기준압력 이상이면 정상/주의 상태 판정
+            // 아직 절체압력 이상이면 정상/주의 상태 판정
             openCh.status =
               nextOpenCal <= openCh.dangerBar
                 ? "DANGER"
@@ -375,8 +375,8 @@ export default function Dashboard24() {
             openCh.faultReason = null;
             openCh.remainingText =
               openCh.status === "WARN"
-                ? `예상절체 17:20 (±5분 · 곧 ${closeCh.side}통 절체)`
-                : `예상절체 21:45 (±15분 · ${openCh.side}통 공급중)`;
+                ? `예상절체 17:20 (절체임박)`
+                : `예상절체 21:45 (±15분)`;
           }
 
           // 22번 채널(마지막 채널) 25초 주기 4~20mA 센서 이상(SENSOR_FAULT) 시연
@@ -544,8 +544,8 @@ export default function Dashboard24() {
             status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
             remainingText:
               nextValveState === 1
-                ? `예비 대기 (${c.pressureBar}b)`
-                : `약 4시간 30분 (${c.side}통 공급중)`,
+                ? `만충 ${c.pressureBar}b · 기밀정상`
+                : `예상절체 21:45 (±15분)`,
           };
         }
         if (c.id === companionId) {
@@ -555,8 +555,8 @@ export default function Dashboard24() {
             status: companionNextState === 1 ? "SHUTOFF" : "NORMAL",
             remainingText:
               companionNextState === 1
-                ? `예비 대기 (${c.pressureBar}b)`
-                : `약 4시간 30분 (${c.side}통 공급중)`,
+                ? `만충 ${c.pressureBar}b · 기밀정상`
+                : `예상절체 21:45 (±15분)`,
           };
         }
         return c;

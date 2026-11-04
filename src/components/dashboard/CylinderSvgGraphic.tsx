@@ -54,7 +54,7 @@ export default function CylinderPairCard({
   const angleA = -120 + (pctA / 100) * 240;
   const angleB = -120 + (pctB / 100) * 240;
 
-  // 상태별 실린더 액체 색상 결정
+  // 상태별 실린더 액체 색상 결정 (중복 단어 없이 4글자 핵심 상태 배지로 정돈)
   const getCylinderColors = (ch: ChannelData) => {
     if (ch.status === "SENSOR_FAULT") {
       return {
@@ -62,7 +62,7 @@ export default function CylinderPairCard({
         bottom: "#6b21a8",
         stroke: "#a855f7",
         glow: "rgba(168,85,247,0.45)",
-        badge: "⚡ 센서이상",
+        badge: "⚡ 센서점검",
       };
     }
     if (ch.valveState === 1 || ch.status === "SHUTOFF") {
@@ -72,7 +72,7 @@ export default function CylinderPairCard({
         bottom: isDepleted ? "#1e293b" : "#334155",
         stroke: isDepleted ? "#ef4444" : "#94a3b8",
         glow: "none",
-        badge: isDepleted ? "🟢 퍼지완료·교체가능" : "🛡️ 예비대기(기밀정상)",
+        badge: isDepleted ? "🟢 교체가능" : "🛡️ 기밀정상",
       };
     }
     if (ch.status === "DANGER") {
@@ -98,7 +98,7 @@ export default function CylinderPairCard({
       bottom: "#0284c7",
       stroke: "#0ea5e9",
       glow: "rgba(14,165,233,0.35)",
-      badge: "정상 공급",
+      badge: "✅ 정상공급",
     };
   };
 
@@ -169,11 +169,11 @@ export default function CylinderPairCard({
         </div>
       </div>
 
-      {/* 2. 중앙 비주얼 모식도: [좌측 A실린더 계기판] + [중앙 자동절체기 & A/B 실린더 SVG] + [우측 B실린더 계기판] */}
-      <div className="mt-3 grid grid-cols-12 items-stretch gap-2 rounded-xl border border-slate-800/90 bg-slate-950 p-2.5">
+      {/* 2. 중앙 비주얼 모식도: [좌측 A실린더 계기판(4칸)] + [중앙 자동절체기 & A/B 실린더 SVG(3칸)] + [우측 B실린더 계기판(4칸)] */}
+      <div className="mt-3 grid grid-cols-11 items-stretch gap-2 rounded-xl border border-slate-800/90 bg-slate-950 p-2">
         {/* 좌측: A실린더 [CH-홀수] 현재압력 / 절체압력 / 예고압력 계기판 & 공급중/예비대기 버튼 (4칸) */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2.5 transition-all ${
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2 transition-all ${
             isAOpen
               ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
               : "border-slate-800 bg-slate-900/75 opacity-90"
@@ -198,8 +198,11 @@ export default function CylinderPairCard({
                 ⚙️
               </button>
             </div>
-            <div className="mt-1 truncate whitespace-nowrap text-[10.5px] font-bold text-slate-300">
-              {isAOpen ? "🟢 공급중" : "⚪ 예비대기"} · {colA.badge}
+            <div className="mt-1.5 flex items-center justify-between gap-1 whitespace-nowrap text-[11px] font-bold">
+              <span className={isAOpen ? "text-emerald-300" : "text-slate-300"}>
+                {isAOpen ? "🟢 공급중" : "⚪ 예비대기"}
+              </span>
+              <span className="text-slate-200">{colA.badge}</span>
             </div>
 
             {/* 현재압력 초대형 표시 (줄바꿈 없음) */}
@@ -244,7 +247,7 @@ export default function CylinderPairCard({
             </div>
           </div>
 
-          {/* 공급중 / 예비대기 원클릭 스위치 + 잔여시간 */}
+          {/* 공급중 / 예비대기 원클릭 스위치 + 잔여시간 (말줄임표 없이 전체 표시) */}
           <div className="mt-2">
             <button
               type="button"
@@ -260,17 +263,17 @@ export default function CylinderPairCard({
             >
               {isAOpen ? "공급중" : "예비대기"}
             </button>
-            <div className="mt-1 truncate whitespace-nowrap text-center text-[10px] font-semibold text-slate-400">
+            <div className="mt-1.5 rounded-md bg-slate-950/90 px-1.5 py-1 text-center text-[10.5px] font-bold text-slate-300 whitespace-nowrap">
               {chA.remainingText}
             </div>
           </div>
         </div>
 
-        {/* 중앙: 경쟁사 1+2번 스타일 [자동절체기 레귤레이터 + 피그테일 호스 + A/B 가스통 물높이 SVG 일러스트] (4칸) */}
+        {/* 중앙: [자동절체기 레귤레이터 + 피그테일 호스 + A/B 가스통 물높이 SVG 일러스트] (3칸) */}
         <div
           onClick={() => onSelectChannel(chA)}
           title="클릭 시 상세 트렌드 및 영점 보정 창 열기"
-          className="col-span-4 flex flex-col items-center justify-between cursor-pointer rounded-xl border border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 p-1.5"
+          className="col-span-3 flex flex-col items-center justify-between cursor-pointer rounded-xl border border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 p-1"
         >
           <svg
             viewBox="0 0 180 220"
@@ -588,7 +591,7 @@ export default function CylinderPairCard({
 
         {/* 우측: B실린더 [CH-짝수] 현재압력 / 절체압력 / 예고압력 계기판 & 공급중/예비대기 버튼 (4칸) */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2.5 transition-all ${
+          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-2 transition-all ${
             isBOpen
               ? "border-sky-400/80 bg-sky-950/20 shadow-[0_0_16px_rgba(56,189,248,0.12)]"
               : "border-slate-800 bg-slate-900/75 opacity-90"
@@ -613,8 +616,11 @@ export default function CylinderPairCard({
                 ⚙️
               </button>
             </div>
-            <div className="mt-1 truncate whitespace-nowrap text-[10.5px] font-bold text-slate-300">
-              {isBOpen ? "🟢 공급중" : "⚪ 예비대기"} · {colB.badge}
+            <div className="mt-1.5 flex items-center justify-between gap-1 whitespace-nowrap text-[11px] font-bold">
+              <span className={isBOpen ? "text-emerald-300" : "text-slate-300"}>
+                {isBOpen ? "🟢 공급중" : "⚪ 예비대기"}
+              </span>
+              <span className="text-slate-200">{colB.badge}</span>
             </div>
 
             {/* 현재압력 초대형 표시 (줄바꿈 없음) */}
@@ -659,7 +665,7 @@ export default function CylinderPairCard({
             </div>
           </div>
 
-          {/* 공급중 / 예비대기 원클릭 스위치 + 잔여시간 */}
+          {/* 공급중 / 예비대기 원클릭 스위치 + 잔여시간 (말줄임표 없이 전체 표시) */}
           <div className="mt-2">
             <button
               type="button"
@@ -675,7 +681,7 @@ export default function CylinderPairCard({
             >
               {isBOpen ? "공급중" : "예비대기"}
             </button>
-            <div className="mt-1 truncate whitespace-nowrap text-center text-[10px] font-semibold text-slate-400">
+            <div className="mt-1.5 rounded-md bg-slate-950/90 px-1.5 py-1 text-center text-[10.5px] font-bold text-slate-300 whitespace-nowrap">
               {chB.remainingText}
             </div>
           </div>

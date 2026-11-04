@@ -170,7 +170,7 @@ export function OneScreenCylinderCard({
               ? "수소저장소"
               : `오토 ${bankNum - 5}호`}
           </span>
-          <span className="truncate text-[11px] font-black text-white whitespace-nowrap">
+          <span className="text-[11px] font-black text-white whitespace-nowrap">
             {chA.gasName}
           </span>
         </div>
@@ -482,10 +482,10 @@ export function OneScreenCylinderCard({
         </div>
       </div>
 
-      {/* 하단: A/B실린더 잔여 사용시간 요약 (2열 분리로 텍스트 겹침 방지) */}
-      <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 px-0.5 font-mono">
-        <span className="truncate text-left whitespace-nowrap">A실린더: {chA.remainingText}</span>
-        <span className="truncate text-right whitespace-nowrap">B실린더: {chB.remainingText}</span>
+      {/* 하단: A/B실린더 잔여 사용시간 요약 (2열 분리로 텍스트 겹침 및 말줄임표 방지) */}
+      <div className="mt-1.5 grid grid-cols-2 gap-1 text-[9.5px] text-slate-300 px-0.5 font-mono">
+        <span className="rounded bg-slate-950/90 px-1 py-0.5 text-center whitespace-nowrap">{chA.remainingText}</span>
+        <span className="rounded bg-slate-950/90 px-1 py-0.5 text-center whitespace-nowrap">{chB.remainingText}</span>
       </div>
     </div>
   );
@@ -533,7 +533,7 @@ export function MasterAlarmCard({
           >
             {meta.bankCode}
           </span>
-          <span className="truncate text-sm font-extrabold text-white whitespace-nowrap">
+          <span className="text-sm font-extrabold text-white whitespace-nowrap">
             {chA.gasName}
           </span>
           <span className="shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-cyan-300 whitespace-nowrap">
@@ -646,7 +646,7 @@ export function MasterAlarmCard({
             </div>
           </div>
 
-          {/* 하단 공급중 / 예비대기 대형 버튼 & 상태 텍스트 */}
+          {/* 하단 공급중 / 예비대기 대형 버튼 & 상태 텍스트 (말줄임표 없이 전체 표시) */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <button
@@ -663,8 +663,8 @@ export function MasterAlarmCard({
               >
                 {isAOpen ? "공급중" : "예비대기"}
               </button>
-              <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono whitespace-nowrap">
-                A실린더: {chA.remainingText}
+              <div className="mt-1.5 rounded bg-slate-900/90 px-1.5 py-0.5 text-center text-[10px] font-bold text-slate-300 font-mono whitespace-nowrap">
+                {chA.remainingText}
               </div>
             </div>
 
@@ -683,8 +683,8 @@ export function MasterAlarmCard({
               >
                 {isBOpen ? "공급중" : "예비대기"}
               </button>
-              <div className="mt-1 truncate text-center text-[10px] text-slate-400 font-mono whitespace-nowrap">
-                B실린더: {chB.remainingText}
+              <div className="mt-1.5 rounded bg-slate-900/90 px-1.5 py-0.5 text-center text-[10px] font-bold text-slate-300 font-mono whitespace-nowrap">
+                {chB.remainingText}
               </div>
             </div>
           </div>
