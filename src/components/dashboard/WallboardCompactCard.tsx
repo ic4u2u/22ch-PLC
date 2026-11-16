@@ -130,7 +130,7 @@ export function OneScreenCylinderCard({
 
   return (
     <div
-      className={`flex flex-col justify-between rounded-2xl border-2 p-2.5 transition-all shadow-md ${
+      className={`h-full flex flex-col justify-between rounded-2xl border-2 p-2.5 transition-all shadow-md ${
         hasDanger
           ? "border-rose-500 bg-gradient-to-b from-rose-950/50 to-slate-950 animate-pulse"
           : hasFault
@@ -145,72 +145,77 @@ export function OneScreenCylinderCard({
         borderTopWidth: "5px",
       }}
     >
-      {/* 상단: [뱅크 명칭] + [가스명] + [A/B공급 하이라이트] */}
+      {/* 상단 2단 헤더: [1행] 뱅크명 + A/B 공급 배지 / [2행] 가스명 전체 표기 (가려짐·겹침 제로) */}
       <div
-        className="flex items-center justify-between gap-1.5 border-b-2 border-dashed pb-1.5"
+        className="space-y-1 border-b-2 border-dashed pb-1.5"
         style={{ borderBottomColor: `${chA.color || "#0ea5e9"}66` }}
       >
-        <div className="flex items-center gap-1.5 min-w-0">
+        <div className="flex items-center justify-between gap-1">
           <span
             className="shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-black text-white whitespace-nowrap"
             style={{ backgroundColor: chA.color || "#0284c7" }}
           >
             {meta.bankCode}
           </span>
-          <span className="text-xs font-black text-white whitespace-nowrap">
-            {chA.gasName}
+          <span
+            className={`shrink-0 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-black whitespace-nowrap ${
+              isAOpen
+                ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.65)] ring-1 ring-amber-200"
+                : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.65)] ring-1 ring-cyan-200"
+            }`}
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950" />
+            </span>
+            {isAOpen ? "◀ A공급" : "B공급 ▶"}
           </span>
         </div>
-        <span
-          className={`shrink-0 inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-black whitespace-nowrap ${
-            isAOpen
-              ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.65)] ring-1 ring-amber-200"
-              : "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(52,211,153,0.65)] ring-1 ring-cyan-200"
-          }`}
+        <div
+          className="text-xs sm:text-[13px] font-black text-white tracking-tight break-keep leading-tight"
+          title={chA.gasName}
         >
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950" />
-          </span>
-          {isAOpen ? "◀ A공급" : "B공급 ▶"}
-        </span>
+          {chA.gasName}
+        </div>
       </div>
 
       {/* 중단: [좌 A실린더 현재압력/공급중] + [중앙 자동절체기 & A/B 실린더 SVG] + [우 B실린더 현재압력/공급중] */}
       <div className="mt-1.5 grid grid-cols-12 items-center gap-1">
         {/* 좌측 A실린더 [CH-홀수] 요약 */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
+          className={`col-span-4 min-w-0 overflow-hidden flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
             isAOpen
               ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
               : "border-slate-800 bg-slate-950/80 opacity-75"
           }`}
         >
-          <div className="flex items-center justify-between gap-0.5">
+          <div className="flex items-center justify-between gap-1">
             <span
-              className={`rounded px-1 py-0.2 text-[9px] font-black whitespace-nowrap ${
+              className={`rounded px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${
                 isAOpen ? "bg-amber-400 text-slate-950" : "bg-slate-800 text-slate-300"
               }`}
             >
               A실린더
             </span>
-            <div className="flex items-center gap-0.5">
-              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
-                {formatChannelCode(chA.id)}
+            {isAOpen && (
+              <span className="relative flex h-2 w-2 shrink-0" title="현재 공급중">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              {isAOpen && (
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                </span>
-              )}
-            </div>
+            )}
           </div>
           <div
             onClick={() => onSelectChannel?.(chA)}
             className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
-            <div className="text-[9px] font-black text-cyan-400 whitespace-nowrap">현재압력</div>
+            <div className="mb-0.5 flex items-center justify-between gap-1">
+              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
+                {formatChannelCode(chA.id)}
+              </span>
+              <span className="text-[9px] font-black text-cyan-400 whitespace-nowrap">
+                현재압력
+              </span>
+            </div>
             {chA.status === "SENSOR_FAULT" ? (
               <div className="text-xs font-black text-purple-300 whitespace-nowrap">센서점검</div>
             ) : (
@@ -431,37 +436,39 @@ export function OneScreenCylinderCard({
 
         {/* 우측 B실린더 [CH-짝수] 요약 */}
         <div
-          className={`col-span-4 flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
+          className={`col-span-4 min-w-0 overflow-hidden flex flex-col justify-between rounded-xl border-2 p-1.5 transition-all ${
             isBOpen
               ? "border-emerald-400 bg-emerald-950/35 shadow-[0_0_14px_rgba(16,185,129,0.3)] ring-1 ring-emerald-400/70"
               : "border-slate-800 bg-slate-950/80 opacity-75"
           }`}
         >
-          <div className="flex items-center justify-between gap-0.5">
+          <div className="flex items-center justify-between gap-1">
             <span
-              className={`rounded px-1 py-0.2 text-[9px] font-black whitespace-nowrap ${
+              className={`rounded px-1.5 py-0.5 text-[9px] font-black whitespace-nowrap ${
                 isBOpen ? "bg-cyan-400 text-slate-950" : "bg-slate-800 text-slate-300"
               }`}
             >
               B실린더
             </span>
-            <div className="flex items-center gap-0.5">
-              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
-                {formatChannelCode(chB.id)}
+            {isBOpen && (
+              <span className="relative flex h-2 w-2 shrink-0" title="현재 공급중">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              {isBOpen && (
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-90" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                </span>
-              )}
-            </div>
+            )}
           </div>
           <div
             onClick={() => onSelectChannel?.(chB)}
             className="my-1 cursor-pointer overflow-hidden text-right font-mono"
           >
-            <div className="text-[9px] font-black text-cyan-400 whitespace-nowrap">현재압력</div>
+            <div className="mb-0.5 flex items-center justify-between gap-1">
+              <span className="font-mono text-[9px] font-bold text-sky-300 whitespace-nowrap">
+                {formatChannelCode(chB.id)}
+              </span>
+              <span className="text-[9px] font-black text-cyan-400 whitespace-nowrap">
+                현재압력
+              </span>
+            </div>
             {chB.status === "SENSOR_FAULT" ? (
               <div className="text-xs font-black text-purple-300 whitespace-nowrap">센서점검</div>
             ) : (

@@ -6,6 +6,8 @@ out/
 .env.local
 logs/*.db*
 logs/*.csv*
+logs/*.gz
+logs/.auth_secret
 logs/backups/
 *.log
 

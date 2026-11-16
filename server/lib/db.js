@@ -135,6 +135,7 @@ function createDefaultChannelConfigs() {
     const bankIdx = Math.floor(idx / 2);
     const side = idx % 2 === 0 ? "A" : "B";
     const gas = GAS_LIST[bankIdx];
+    const isAcetylene = bankIdx === 4; // 5번 뱅크(CH-09, CH-10): C2H2 아세틸렌 용해가스 안전 규격(만충 25bar)
     return {
       id: chId,
       bankId: `BANK-${String(bankIdx + 1).padStart(2, "0")}`,
@@ -143,9 +144,9 @@ function createDefaultChannelConfigs() {
       gasName: gas.name,
       gasCode: gas.code,
       color: gas.color,
-      maxBar: 150.0,
-      warnBar: 35.0,
-      dangerBar: 15.0,
+      maxBar: isAcetylene ? 25.0 : 150.0,
+      warnBar: isAcetylene ? 6.0 : 35.0,
+      dangerBar: isAcetylene ? 2.5 : 15.0,
       calibrationOffset: 0.0,
       pinX: side === "A" ? gas.pinAX : gas.pinBX,
       pinY: side === "A" ? gas.pinAY : gas.pinBY,
@@ -157,6 +158,7 @@ function createDefaultBankConfigs() {
   return Array.from({ length: BANK_COUNT }, (_, idx) => {
     const bankNum = idx + 1;
     const gas = GAS_LIST[idx];
+    const isAcetylene = idx === 4; // 5번 뱅크: 아세틸렌 용해가스 전용 안전 임계치
     return {
       id: `BANK-${String(bankNum).padStart(2, "0")}`,
       bankNumber: bankNum,
@@ -166,9 +168,9 @@ function createDefaultBankConfigs() {
       chB: idx * 2 + 2,
       activeSide: "A", // 현재 주 공급 실린더 ("A" 또는 "B")
       mode: 1, // 0: Auto, 1: Smart AI (기본), 2: Dual, 3: Moni
-      switchPressureBar: 20.0, // 교체(절체) 기준 압력 (bar)
-      hysteresisBar: 3.0, // Standby 유효 판정 히스테리시스 (3 bar)
-      warnPressureBar: 35.0, // 주의 기준 압력 (bar)
+      switchPressureBar: isAcetylene ? 3.0 : 20.0, // 교체(절체) 기준 압력 (bar)
+      hysteresisBar: isAcetylene ? 0.5 : 3.0, // Standby 유효 판정 히스테리시스 (bar)
+      warnPressureBar: isAcetylene ? 6.0 : 35.0, // 주의 기준 압력 (bar)
       runTimeSec: 5.0, // RUN Time (4.0 ~ 6.0s, 0.1단위)
       mxFixedSec: 2.5, // Auto 모드 고정 지연시간 MX (초)
       computedAiN: 1.8, // Smart AI 실시간 산출 지연시간 N (초)
@@ -177,17 +179,18 @@ function createDefaultBankConfigs() {
   });
 }
 
-// 마이그레이션 SQL 실행 및 22채널(11뱅크) 자동 마이그레이션/시딩
+// 마이그레이션 SQL 순번 실행 및 22채널(11뱅크) 자동 마이그레이션/시딩
 function initDatabase() {
-  const migrationFile = path.join(
-    process.cwd(),
-    "db",
-    "migrations",
-    "001_init_acsc_schema.sql"
-  );
-  if (fs.existsSync(migrationFile)) {
-    const sql = fs.readFileSync(migrationFile, "utf8");
-    db.exec(sql);
+  const migrationsDir = path.join(process.cwd(), "db", "migrations");
+  if (fs.existsSync(migrationsDir)) {
+    const sqlFiles = fs
+      .readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+    for (const file of sqlFiles) {
+      const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8");
+      db.exec(sql);
+    }
   }
 
   const defaultChannels = createDefaultChannelConfigs();
@@ -248,14 +251,37 @@ function initDatabase() {
         })
       );
     }
+
+    // [안전 보정 마이그레이션] 기존 DB에 5번 뱅크 아세틸렌(C2H2, CH-09/10)이 150bar로 잘못 저장되어 있으면 25bar 규격으로 자동 보정 (영점 보정값 보존)
+    try {
+      const savedChs = JSON.parse(getSettingStmt.get("channel_configs").value);
+      if (Array.isArray(savedChs) && savedChs[8] && Number(savedChs[8].maxBar) > 30) {
+        const patchedChs = savedChs.map((ch) =>
+          ch.id === 9 || ch.id === 10
+            ? { ...ch, maxBar: 25.0, warnBar: 6.0, dangerBar: 2.5 }
+            : ch
+        );
+        upsertSettingStmt.run("channel_configs", JSON.stringify(patchedChs));
+      }
+      const savedBksRow = getSettingStmt.get("bank_configs");
+      if (savedBksRow) {
+        const savedBks = JSON.parse(savedBksRow.value);
+        if (Array.isArray(savedBks) && savedBks[4] && Number(savedBks[4].switchPressureBar) > 10) {
+          const patchedBks = savedBks.map((bk) =>
+            bk.bankNumber === 5
+              ? { ...bk, switchPressureBar: 3.0, hysteresisBar: 0.5, warnPressureBar: 6.0 }
+              : bk
+          );
+          upsertSettingStmt.run("bank_configs", JSON.stringify(patchedBks));
+        }
+      }
+    } catch {}
   }
 
   if (!getSettingStmt.get("floorplan_bg")) {
     upsertSettingStmt.run("floorplan_bg", JSON.stringify({ dataUrl: "" }));
   }
-  if (!getSettingStmt.get("admin_pin")) {
-    upsertSettingStmt.run("admin_pin", JSON.stringify("1234"));
-  }
+  // 주의: 관리자 PIN은 평문 저장을 금지하며 server/lib/security.js에서 단방향 해시(admin_pin_hash)로 안전 초기화합니다.
 
   // 초기 목업(Mock) 이력 데이터 시딩 (빈 화면 방지 및 즉시 시연 지원)
   const auditCount = db.prepare("SELECT COUNT(*) as cnt FROM audit_logs").get().cnt;

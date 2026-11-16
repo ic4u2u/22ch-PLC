@@ -3,8 +3,10 @@
  * 역할: LS ELECTRIC XGB PLC + XBL-EMTA (Modbus TCP Server) 22채널(11뱅크) 시뮬레이터
  * 주소: 127.0.0.1:8502 (Unit ID: 1)
  *
- * - Offset 0 ~ 21   (%MW100 ~ %MW121): 22채널 압력 (스케일: 실제압력 * 10)
- * - Offset 100 ~ 121 (%MW200 ~ %MW221): 22채널 밸브 제어 (0: OPEN, 1: SHUTOFF)
+ * - Offset 0 ~ 21   (%MW100 ~ %MW121): 22채널 1차측 실린더 압력 (스케일: 실제압력 * 10)
+ * - Offset 100 ~ 121 (%MW200 ~ %MW221): 22채널 솔레노이드 밸브 제어 (0: OPEN 공급중, 1: SHUTOFF 예비대기)
+ * - 아세틸렌(5번 뱅크: CH09, CH10)은 용해가스 안전 규격(만충 24.0 bar) 적용
+ * - 안전 인터록 시연 지원: 2번 뱅크 예비통(CH04)은 초기 빈 통(8.0 bar) 상태로 두어 빈 통 절체 차단 검증 지원
  */
 
 const ModbusRTU = require("modbus-serial");
@@ -13,36 +15,49 @@ const HOST = process.env.MOCK_PLC_HOST || "127.0.0.1";
 const PORT = Number(process.env.PLC_MODBUS_PORT || 8502);
 const CHANNEL_COUNT = 22;
 
-// 22채널 내부 압력 배열 (초기값 1200 = 120.0 bar)
-// 홀수 채널(CH1, CH3, ..., CH21 -> index 0, 2, ..., 20)은 주 공급 실린더로 서서히 소모됨
-// 짝수 채널(CH2, CH4, ..., CH22 -> index 1, 3, ..., 21)은 예비(Standby) 실린더로 대기
-const pressures = Array.from({ length: CHANNEL_COUNT }, () => 1200);
+// 22채널 내부 압력 배열 (스케일 ×10: 1200 = 120.0 bar, 아세틸렌은 210 = 21.0 bar)
+const pressures = Array.from({ length: CHANNEL_COUNT }, (_, idx) => {
+  const isAcetylene = idx === 8 || idx === 9; // CH09, CH10 (5번 뱅크 아세틸렌)
+  const isPrimaryA = idx % 2 === 0;
+  if (idx === 3) return 80; // CH04 [B]: 빈 통(8.0 bar) 절체 차단 안전 인터록 시연용
+  if (isAcetylene) return isPrimaryA ? 210 : 240; // 21.0 bar (공급중) / 24.0 bar (만충대기)
+  return isPrimaryA ? 1200 : 1480; // 120.0 bar (공급중) / 148.0 bar (만충대기)
+});
 
-// 22채널 밸브 상태 배열 (0: OPEN, 1: SHUTOFF)
-const valves = Array.from({ length: CHANNEL_COUNT }, () => 0);
+// 22채널 밸브 상태 배열 (초기: A통=0 OPEN 공급중, B통=1 SHUTOFF 예비대기)
+const valves = Array.from({ length: CHANNEL_COUNT }, (_, idx) => (idx % 2 === 0 ? 0 : 1));
+
+// 빈 통 교체 대기 카운터
+const refillWaitTicks = Array.from({ length: CHANNEL_COUNT }, () => 0);
 
 // 22번 채널(addr === 21) 센서 고장(SENSOR_FAULT) 20초 주기 시뮬레이션 상태
 let faultMode22 = "NORMAL"; // "NORMAL" | "WIRE_BREAK" (0) | "NOISE_SPIKE" (1950)
 let tickCount = 0;
 
-// 1초 주기로 홀수 채널(1, 3, 5...21번 채널 -> index 0, 2, ..., 20) 압력 감소 및 자동 리필 시뮬레이션
+// 1초 주기로 현재 열려 있는(OPEN=0) 주공급 채널만 압력 소모 및 닫힌 빈 통 리필 시뮬레이션
 setInterval(() => {
   tickCount += 1;
 
   for (let i = 0; i < CHANNEL_COUNT; i++) {
-    const isOddChannelNumber = (i + 1) % 2 === 1; // CH01, CH03, ..., CH21
-    if (valves[i] === 0 && isOddChannelNumber) {
-      const dropStep = i === 0 ? 25 : i === 2 ? 15 : 4 + (i % 5);
-      pressures[i] = Math.max(0, pressures[i] - dropStep);
+    const isAcetylene = i === 8 || i === 9;
+    const minRefillTrigger = isAcetylene ? 35 : 180; // 3.5 bar / 18.0 bar 이하 빈 통
+    const fullChargeVal = isAcetylene ? 240 : 1480; // 만충 24.0 bar / 148.0 bar
 
-      // 70 (7.0 bar) 이하 도달 시 실린더 교체 모사를 위해 1500 (150.0 bar)으로 자동 리필
-      if (pressures[i] <= 70) {
-        pressures[i] = 1500;
+    if (valves[i] === 0) {
+      // 현재 공급 중인 열린 통만 가스 소모
+      const dropStep = isAcetylene ? 1 : i === 0 ? 22 : i === 2 ? 12 : 4 + (i % 4);
+      pressures[i] = Math.max(0, pressures[i] - dropStep);
+      refillWaitTicks[i] = 0;
+    } else if (i !== 3 && pressures[i] <= minRefillTrigger) {
+      // 절체되어 닫힌 빈 통은 작업자 용기 교체 모사를 위해 12초 후 새 만충 용기로 리필 (CH04는 인터록 테스트용 유지)
+      refillWaitTicks[i] += 1;
+      if (refillWaitTicks[i] >= 12) {
+        pressures[i] = fullChargeVal;
+        refillWaitTicks[i] = 0;
         console.log(
-          `[MOCK-PLC] 🔄 CH${String(i + 1).padStart(
-            2,
-            "0"
-          )} 실린더 교체 시뮬레이션: 7.0 bar 도달 -> 150.0 bar(1500) 자동 리필 완료`
+          `[MOCK-PLC] 🔄 CH${String(i + 1).padStart(2, "0")} 새 실린더 교체 시뮬레이션 완료 -> ${(
+            fullChargeVal / 10
+          ).toFixed(1)} bar 충전`
         );
       }
     }
@@ -59,13 +74,9 @@ setInterval(() => {
 
 // Modbus TCP Server Vector 정의
 const vector = {
-  getHoldingRegister: function (addr, unitID) {
-    // Offset 0 ~ 21: 22채널 압력 영역 (%MW100 ~ %MW121)
+  getHoldingRegister: function (addr) {
+    // Offset 0 ~ 21: 22채널 1차측 실린더 압력 영역 (%MW100 ~ %MW121)
     if (addr >= 0 && addr < CHANNEL_COUNT) {
-      // 밸브가 차단(1)된 채널은 압력 0 반환
-      if (valves[addr] === 1) {
-        return 0;
-      }
       // 22번 채널(addr === 21) SENSOR_FAULT 시뮬레이션
       if (addr === CHANNEL_COUNT - 1) {
         if (faultMode22 === "WIRE_BREAK") return 0; // 4~20mA 단선 급락
@@ -82,8 +93,8 @@ const vector = {
     return 0;
   },
 
-  getInputRegister: function (addr, unitID) {
-    return vector.getHoldingRegister(addr, unitID);
+  getInputRegister: function (addr) {
+    return vector.getHoldingRegister(addr);
   },
 
   setRegister: function (addr, value, unitID) {
@@ -93,11 +104,10 @@ const vector = {
       const normalized = value ? 1 : 0;
       valves[chIdx] = normalized;
       console.log(
-        `[MOCK-PLC] 🛠️ 밸브 제어 수신 (Unit ${unitID}) -> CH${String(
-          chIdx + 1
-        ).padStart(2, "0")} (%MW${200 + chIdx}) = ${
-          normalized === 0 ? "0 (OPEN)" : "1 (SHUTOFF)"
-        }`
+        `[MOCK-PLC] 🛠️ 밸브 제어 수신 (Unit ${unitID}) -> CH${String(chIdx + 1).padStart(
+          2,
+          "0"
+        )} (%MW${200 + chIdx}) = ${normalized === 0 ? "0 (OPEN)" : "1 (SHUTOFF)"}`
       );
       return;
     }
@@ -124,7 +134,7 @@ serverTCP.on("socketError", (err) => {
 console.log("==================================================================");
 console.log(`🚀 [ACSC 22채널 가상 PLC 서버] LS ELECTRIC XBL-EMTA 시뮬레이터 가동 완료`);
 console.log(`📡 접속 주소: ${HOST}:${PORT} (Modbus TCP, Unit ID: 1)`);
-console.log(`📊 압력 영역: Offset 0~21 (%MW100~%MW121, 22채널, 스케일: 실제압력 * 10)`);
-console.log(`🔧 밸브 영역: Offset 100~121 (%MW200~%MW221, 22채널, 0:OPEN / 1:SHUTOFF)`);
-console.log(`⚡ 특이 사항: 홀수 채널 실시간 소모/자동리필, CH22 20초 주기 SENSOR_FAULT 발생`);
+console.log(`📊 압력 영역: Offset 0~21 (%MW100~%MW121, 1차측 실압력 ×10, C2H2 25bar 규격 반영)`);
+console.log(`🔧 밸브 영역: Offset 100~121 (%MW200~%MW221, A통 OPEN / B통 SHUTOFF 대기)`);
+console.log(`🛡️ 안전 시연: CH04(2번뱅크 B통) 빈통(8.0bar) 절체차단 인터록 검증용 세팅`);
 console.log("==================================================================");

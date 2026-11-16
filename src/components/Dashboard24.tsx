@@ -67,11 +67,13 @@ export default function Dashboard24() {
   // 10번 스펙: FND 4단위 원클릭 변환기 (기본 1: Bar)
   const [unit, setUnit] = useState<PressureUnit>(1);
 
-  // PIN 잠금 상태 (기본 "1234", 해제 시 300초 카운트다운)
-  const [adminPin, setAdminPin] = useState("1234");
+  // 서버 서명 토큰 기반 관리자 잠금 상태 (평문 PIN 클라이언트 보유 금지, 해제 시 300초 카운트다운)
+  const authTokenRef = useRef<string>("");
+  const [isDefaultPin, setIsDefaultPin] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [unlockRemainSec, setUnlockRemainSec] = useState(0);
   const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [pinModalTab, setPinModalTab] = useState<"UNLOCK" | "CHANGE">("UNLOCK");
 
   // 한국어 TTS 음성안내 토글 상태
   const [ttsEnabled, setTtsEnabled] = useState(true);
@@ -136,8 +138,9 @@ export default function Dashboard24() {
     const timer = setInterval(() => {
       setUnlockRemainSec((prev) => {
         if (prev <= 1) {
+          authTokenRef.current = "";
           setIsUnlocked(false);
-          showToast("🔒 5분 경과로 관리자 잠금이 자동 활성화되었습니다.");
+          showToast("🔒 5분 경과로 관리자 세션이 만료되어 자동 잠금되었습니다.");
           return 0;
         }
         return prev - 1;
@@ -219,7 +222,22 @@ export default function Dashboard24() {
               if (p.settings?.fa_preset?.savedAt) {
                 setFaSavedAt(p.settings.fa_preset.savedAt.slice(0, 19).replace("T", " "));
               }
-              if (p.settings?.admin_pin) setAdminPin(p.settings.admin_pin);
+              if (p.settings?.isDefaultPin !== undefined) {
+                setIsDefaultPin(Boolean(p.settings.isDefaultPin));
+              }
+            } else if (msg.type === "AUTH_ERROR") {
+              authTokenRef.current = "";
+              setIsUnlocked(false);
+              setUnlockRemainSec(0);
+              showToast(msg.payload?.message || "⛔ 관리자 인증이 만료되었습니다. 다시 PIN을 입력해 주세요.");
+              fetchAllLogs();
+            } else if (msg.type === "SAFETY_INTERLOCK") {
+              playAlarmBeep("DANGER");
+              showToast(msg.payload?.message || "⛔ 안전 인터록에 의해 밸브 조작이 차단되었습니다.");
+              fetchAllLogs();
+            } else if (msg.type === "VALVE_SWITCH_OK") {
+              showToast(msg.payload?.message || "✅ 무중단 안전 절체가 완료되었습니다.");
+              fetchAllLogs();
             } else if (msg.type === "REALTIME_TICK") {
               const { diagnostics: diag, towerLamp: lamp, channels: chs, banks: bks } = msg.payload;
               if (diag) setDiagnostics(diag);
@@ -475,7 +493,13 @@ export default function Dashboard24() {
 
   const sendWsCommand = (type: string, payload: Record<string, unknown>) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type, payload }));
+      wsRef.current.send(
+        JSON.stringify({
+          type,
+          payload,
+          authToken: authTokenRef.current,
+        })
+      );
       return;
     }
     // Vercel 클라우드 시연 모드일 때 로컬 이력(감사로그/성적서/FA복원)에 즉시 반영
@@ -527,47 +551,67 @@ export default function Dashboard24() {
   const selectedChannel =
     channels.find((c) => c.id === selectedChannelId) || null;
 
-  // A ⇄ B 상호 토글(오토체인지) 밸브 제어 핸들러 (한쪽을 OPEN하면 같은 뱅크의 반대쪽은 자동으로 CLOSE 대기 상태로 전환하며 실제 압력은 보존)
+  // 안전 인터록 기반 A ⇄ B 무중단 순차 절체(Make-Before-Break) 밸브 제어 핸들러
   const handleToggleValve = (channelId: number, nextValveState: number) => {
     const bankIdx = Math.floor((channelId - 1) / 2);
     const pairChAId = bankIdx * 2 + 1;
     const pairChBId = bankIdx * 2 + 2;
-    const companionId = channelId === pairChAId ? pairChBId : pairChAId;
-    const companionNextState = nextValveState === 0 ? 1 : 0;
+    const targetVal = nextValveState ? 1 : 0;
+    const nextOpenId =
+      targetVal === 0 ? channelId : channelId === pairChAId ? pairChBId : pairChAId;
+    const companionId = nextOpenId === pairChAId ? pairChBId : pairChAId;
 
+    // 로컬 브릿지 연결 시: 서버의 안전 인터록(빈통 차단 & Make-Before-Break 순차 제어)으로 위임하여 실제 PLC와 100% 일치 보장
+    if (wsConnected) {
+      sendWsCommand("SET_VALVE", {
+        channelId,
+        valveState: targetVal,
+        reason: "관리자 수동 A⇄B 무중단 절체 요청",
+      });
+      return;
+    }
+
+    // 클라우드 단독 시연 모드일 때의 클라이언트 안전 인터록 검증
+    const nextOpenCh = channels.find((c) => c.id === nextOpenId);
+    if (nextOpenCh) {
+      if (nextOpenCh.status === "SENSOR_FAULT") {
+        playAlarmBeep("DANGER");
+        showToast(
+          `⛔ [안전 인터록 작동] ${nextOpenCh.name} 센서 이상 감지 상태에서는 절체가 차단됩니다!`
+        );
+        return;
+      }
+      if (nextOpenCh.pressureBar <= nextOpenCh.dangerBar) {
+        playAlarmBeep("DANGER");
+        showToast(
+          `⛔ [안전 인터록 작동] 전환 대상 ${nextOpenCh.name} 잔량(${nextOpenCh.pressureBar} bar)이 위험 기준 이하인 빈 통이어서 절체를 차단했습니다!`
+        );
+        return;
+      }
+    }
+
+    const newActiveSide: "A" | "B" = nextOpenId === pairChAId ? "A" : "B";
     setChannels((prev) =>
       prev.map((c) => {
-        if (c.id === channelId) {
+        if (c.id === nextOpenId) {
           return {
             ...c,
-            valveState: nextValveState,
-            status: nextValveState === 1 ? "SHUTOFF" : "NORMAL",
-            remainingText:
-              nextValveState === 1
-                ? `만충 ${c.pressureBar}b · 기밀정상`
-                : `예상절체 21:45 (±15분)`,
+            valveState: 0,
+            status: "NORMAL",
+            remainingText: "절체예상 21:45",
           };
         }
         if (c.id === companionId) {
           return {
             ...c,
-            valveState: companionNextState,
-            status: companionNextState === 1 ? "SHUTOFF" : "NORMAL",
-            remainingText:
-              companionNextState === 1
-                ? `만충 ${c.pressureBar}b · 기밀정상`
-                : `예상절체 21:45 (±15분)`,
+            valveState: 1,
+            status: "SHUTOFF",
+            remainingText: `예비대기 (${c.pressureBar}b · 기밀정상)`,
           };
         }
         return c;
       })
     );
-
-    const newActiveSide: "A" | "B" =
-      (channelId === pairChAId && nextValveState === 0) ||
-      (channelId === pairChBId && nextValveState === 1)
-        ? "A"
-        : "B";
 
     setBanks((prev) =>
       prev.map((b, idx) =>
@@ -575,14 +619,8 @@ export default function Dashboard24() {
       )
     );
 
-    sendWsCommand("SET_VALVE", {
-      channelId,
-      valveState: nextValveState,
-      actor: "ADMIN",
-      reason: `A⇄B 토글 절체 제어 (${newActiveSide}통 OPEN / 반대통 CLOSE 대기)`,
-    });
     showToast(
-      `🔄 BANK-${String(bankIdx + 1).padStart(2, "0")} 토글 완료: ${newActiveSide}통 [OPEN 공급중] ⇄ ${
+      `✅ BANK-${String(bankIdx + 1).padStart(2, "0")} 무중단 안전절체 완료: ${newActiveSide}통 [OPEN 공급중] ⇄ ${
         newActiveSide === "A" ? "B" : "A"
       }통 [CLOSE 예비대기]`
     );
@@ -590,6 +628,25 @@ export default function Dashboard24() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-12">
+      {/* 🚨 [Fail-Safe] 현장 PLC 통신 두절 긴급 전면 배너 (관리자 화면 & 대형 전광판 공통 즉시 표시) */}
+      {wsConnected && !diagnostics.plcConnected && (
+        <div className="no-print sticky top-0 z-50 flex flex-wrap items-center justify-between gap-2 border-b-2 border-rose-400 bg-rose-700 px-4 py-2.5 text-xs sm:text-sm font-black text-white shadow-2xl animate-pulse">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-white px-2 py-0.5 text-xs font-black text-rose-700">
+              FAIL-SAFE 작동중
+            </span>
+            <span>
+              🚨 [긴급] 현장 PLC 제어반({diagnostics.plcIp}:{diagnostics.plcPort}) 이더넷 통신 두절! 현재 압력값 갱신 및 원격 밸브 제어가 안전 잠금되었습니다. 제어반 전원 및 차폐 랜선을 즉시 점검하세요!
+            </span>
+          </div>
+          {diagnostics.lastError && (
+            <span className="font-mono text-xs text-rose-200">
+              원인: {diagnostics.lastError}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* 토스트 알림 팝업 */}
       {toastMsg && (
         <div className="no-print fixed bottom-5 right-5 z-50 max-w-md rounded-2xl border border-cyan-400/60 bg-slate-900/95 px-4 py-3 text-xs font-extrabold text-cyan-200 shadow-2xl">
@@ -599,7 +656,7 @@ export default function Dashboard24() {
 
       {/* ?view=wallboard 전용 전체화면 모드일 때는 상단 헤더와 탭을 숨기고 전광판 뷰만 렌더링 */}
       {isStandaloneWallboard ? (
-        <main className="mx-auto max-w-[1920px] p-4">
+        <main className="w-full p-2 sm:p-3">
           <WallboardView
             channels={channels}
             unit={unit}
@@ -623,12 +680,27 @@ export default function Dashboard24() {
             unlockRemainSec={unlockRemainSec}
             onClickPinToggle={() => {
               if (isUnlocked) {
+                const tok = authTokenRef.current;
+                authTokenRef.current = "";
                 setIsUnlocked(false);
                 setUnlockRemainSec(0);
-                showToast("🔒 관리자 잠금이 활성화되었습니다.");
+                if (wsConnected && tok && typeof window !== "undefined") {
+                  fetch(`http://${window.location.hostname || "localhost"}:4000/api/auth/logout`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: tok }),
+                  }).catch(() => {});
+                  setTimeout(fetchAllLogs, 300);
+                }
+                showToast("🔒 관리자 잠금이 활성화되었으며 서버 세션이 즉시 폐기되었습니다.");
               } else {
+                setPinModalTab("UNLOCK");
                 setPinModalOpen(true);
               }
+            }}
+            onOpenPinChange={() => {
+              setPinModalTab("CHANGE");
+              setPinModalOpen(true);
             }}
             ttsEnabled={ttsEnabled}
             onToggleTts={() => {
@@ -835,21 +907,28 @@ export default function Dashboard24() {
         diagnostics={diagnostics}
       />
 
-      {/* 모달 2: 유지보수자 4자리 PIN 인증 */}
+      {/* 모달 2: 서버 검증 기반 관리자 PIN 인증 및 비밀번호 변경 */}
       <PinAuthModal
         open={pinModalOpen}
+        initialTab={pinModalTab}
+        wsConnected={wsConnected}
+        isDefaultPin={isDefaultPin}
         onClose={() => setPinModalOpen(false)}
-        adminPin={adminPin}
-        onSuccessUnlock={() => {
+        onSuccessUnlock={({ token, expiresInSec, isDefaultPin: defFlag }) => {
+          authTokenRef.current = token;
+          setIsDefaultPin(defFlag);
           setIsUnlocked(true);
-          setUnlockRemainSec(300); // 5분(300초) 카운트다운
-          sendWsCommand("AUDIT_EVENT", {
-            actor: "ADMIN",
-            actionType: "PIN_UNLOCK",
-            target: "DASHBOARD",
-            detail: "유지보수자 4자리 PIN 잠금 해제 성공 (5분간 유효)",
-          });
-          showToast("🔓 관리자 PIN 인증 완료! 5분(300초) 동안 조작이 활성화됩니다.");
+          setUnlockRemainSec(expiresInSec);
+          setTimeout(fetchAllLogs, 300);
+          showToast("🔓 서버 관리자 인증 완료! 5분(300초) 동안 보안 세션이 활성화됩니다.");
+        }}
+        onPinChanged={({ token, expiresInSec, isDefaultPin: defFlag }) => {
+          authTokenRef.current = token;
+          setIsDefaultPin(defFlag);
+          setIsUnlocked(true);
+          setUnlockRemainSec(expiresInSec);
+          setTimeout(fetchAllLogs, 300);
+          showToast("🔑 새 관리자 PIN 번호가 단방향 암호화 저장되었습니다!");
         }}
       />
 

@@ -25,6 +25,7 @@ interface HeaderBarProps {
   isUnlocked: boolean;
   unlockRemainSec: number;
   onClickPinToggle: () => void;
+  onOpenPinChange?: () => void;
   ttsEnabled: boolean;
   onToggleTts: () => void;
   onTestVoice?: () => void;
@@ -52,6 +53,7 @@ export default function HeaderBar({
   isUnlocked,
   unlockRemainSec,
   onClickPinToggle,
+  onOpenPinChange,
   ttsEnabled,
   onToggleTts,
   onTestVoice,
@@ -215,23 +217,35 @@ export default function HeaderBar({
             ))}
           </div>
 
-          {/* 2. 유지보수자 4자리 PIN 잠금 버튼 */}
-          <button
-            type="button"
-            onClick={onClickPinToggle}
-            className={`min-h-[42px] flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all ${
-              isUnlocked
-                ? "border-amber-400/60 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
-                : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
-            }`}
-          >
-            <span>{isUnlocked ? "🔓 관리자 해제됨" : "🔒 관리자 PIN 잠금"}</span>
-            {isUnlocked && (
-              <span className="rounded bg-amber-400/20 px-1.5 py-0.5 font-mono text-amber-300">
-                {formatRemain(unlockRemainSec)}
-              </span>
+          {/* 2. 유지보수자 PIN 잠금 & PIN 변경 버튼 */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onClickPinToggle}
+              className={`min-h-[44px] flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition-all ${
+                isUnlocked
+                  ? "border-amber-400/60 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
+                  : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+              }`}
+            >
+              <span>{isUnlocked ? "🔓 관리자 해제됨" : "🔒 관리자 PIN 잠금"}</span>
+              {isUnlocked && (
+                <span className="rounded bg-amber-400/20 px-1.5 py-0.5 font-mono text-amber-300">
+                  {formatRemain(unlockRemainSec)}
+                </span>
+              )}
+            </button>
+            {onOpenPinChange && (
+              <button
+                type="button"
+                onClick={onOpenPinChange}
+                title="관리자 PIN 비밀번호 변경"
+                className="min-h-[44px] rounded-xl border border-slate-700 bg-slate-900 px-2.5 py-2 text-xs font-bold text-slate-300 hover:border-amber-400/50 hover:text-amber-200 transition-all"
+              >
+                🔑 PIN변경
+              </button>
             )}
-          </button>
+          </div>
 
           {/* 3. Qwen3-TTS 인간형 한국어 음성안내 토글 & 즉시 들어보기 */}
           <div className="flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-900 p-1">

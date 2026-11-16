@@ -115,13 +115,16 @@ async function runMaintenanceBackupAndCompress() {
       `무중단 온라인 DB 백업 완료: ${path.basename(backupFile)}`
     );
 
-    // 30일 경과 CSV 파일 자동 .gz 압축
+    // 30일 경과 CSV 파일 자동 .gz 압축 및 오래된 백업 DB 정리 (디스크 용량 고갈 방지)
     const files = fs.readdirSync(LOGS_DIR);
     const nowMs = Date.now();
     const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
 
     for (const file of files) {
-      if (file.startsWith("acsc_24ch_") && file.endsWith(".csv")) {
+      const isTargetCsv =
+        (file.startsWith("acsc_22ch_") || file.startsWith("acsc_24ch_")) &&
+        file.endsWith(".csv");
+      if (isTargetCsv) {
         const fullPath = path.join(LOGS_DIR, file);
         const stat = fs.statSync(fullPath);
         if (nowMs - stat.mtimeMs >= thirtyDaysMs) {
@@ -139,6 +142,18 @@ async function runMaintenanceBackupAndCompress() {
           }
         }
       }
+    }
+
+    // 백업 폴더 내 최근 30개 스냅샷만 유지하여 디스크 풀(Full) 안전 예방
+    const backupFiles = fs
+      .readdirSync(BACKUP_DIR)
+      .filter((f) => f.startsWith("acsc_history_backup_") && f.endsWith(".db"))
+      .sort()
+      .reverse();
+    for (const oldBackup of backupFiles.slice(30)) {
+      try {
+        fs.unlinkSync(path.join(BACKUP_DIR, oldBackup));
+      } catch {}
     }
   } catch (err) {
     console.error("[BACKUP-SCHEDULER] 백업/압축 중 오류:", err.message);

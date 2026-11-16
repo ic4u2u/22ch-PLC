@@ -28,6 +28,7 @@ import {
 
 export type WallboardMode =
   | "ONE_SCREEN"
+  | "PANORAMA_11"
   | "MASTER_ALARM"
   | "LARGE_CYLINDER"
   | "AUTO_ROLLING"
@@ -70,6 +71,7 @@ export default function WallboardView({
   const [fontScale, setFontScale] = useState<"NORMAL" | "LARGE">("NORMAL");
   const [themeStyle, setThemeStyle] = useState<ThemeStyle>("NEON_DARK");
   const [clockText, setClockText] = useState<string>("");
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const unitLabel = getUnitLabel(unit);
 
@@ -159,11 +161,36 @@ export default function WallboardView({
       c.status === "WARN"
   );
 
+  // 브라우저 전체화면(Fullscreen API) 및 ESC 키 동기화
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const handleFsChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFsChange);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const toggleFullscreen = () => {
     if (typeof document === "undefined") return;
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    } else {
+    const next = !isFullscreen;
+    setIsFullscreen(next);
+    if (next) {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      }
+    } else if (document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => {});
     }
   };
@@ -177,7 +204,11 @@ export default function WallboardView({
 
   return (
     <div
-      className={`min-h-[88vh] rounded-3xl border p-3 sm:p-4 shadow-2xl space-y-3 ${themeBg}`}
+      className={`${
+        isFullscreen
+          ? "fixed inset-0 z-50 w-screen h-screen overflow-y-auto xl:overflow-hidden rounded-none border-0 p-2.5 sm:p-3.5 flex flex-col gap-2.5"
+          : "min-h-[88vh] rounded-3xl border p-3 sm:p-4 shadow-2xl space-y-3"
+      } ${themeBg}`}
     >
       {/* =====================================================================
           상단 슬림 컨트롤 & 뷰 모드 선택 바 (한 화면에 22통이 다 들어가도록 슬림 설계)
@@ -205,10 +236,11 @@ export default function WallboardView({
           )}
         </div>
 
-        {/* 중앙: 5대 모니터 뷰 모드 원클릭 전환 탭 */}
+        {/* 중앙: 6대 모니터 뷰 모드 원클릭 전환 탭 */}
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
           {[
-            { id: "ONE_SCREEN", label: "🖥️ 1화면 전체(11뱅크·22실린더)" },
+            { id: "ONE_SCREEN", label: "🖥️ 1화면 전체(16:9 · 5+6)" },
+            { id: "PANORAMA_11", label: "🎞️ 11뱅크 파노라마" },
             { id: "MASTER_ALARM", label: "🎛️ 마스터 알람뷰" },
             { id: "LARGE_CYLINDER", label: "🛢️ 대형 실린더뷰" },
             { id: "AUTO_ROLLING", label: "🔄 구역 자동롤링" },
@@ -249,10 +281,14 @@ export default function WallboardView({
           <button
             type="button"
             onClick={toggleFullscreen}
-            title="브라우저 주소창 숨기고 TV 전체화면 전환"
-            className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-200 hover:bg-cyan-500 hover:text-slate-950"
+            title="상단 제어판을 숨기고 모니터 전체 화면에 꽉 차게 표시 (ESC로 종료)"
+            className={`rounded-xl border px-3 py-1.5 text-xs font-black transition-all ${
+              isFullscreen
+                ? "border-rose-400 bg-rose-500 text-white shadow-[0_0_12px_rgba(244,63,94,0.6)] hover:bg-rose-600"
+                : "border-cyan-400 bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_0_12px_rgba(6,182,212,0.45)] hover:brightness-110"
+            }`}
           >
-            ⛶ 전체화면
+            {isFullscreen ? "✕ 전체화면 종료" : "🖥️ 전체화면"}
           </button>
           <button
             type="button"
@@ -268,10 +304,17 @@ export default function WallboardView({
           {isStandaloneWallboard && onExitWallboard && (
             <button
               type="button"
-              onClick={onExitWallboard}
-              className="rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700"
+              onClick={() => {
+                if (!isUnlocked) {
+                  onRequestPin?.();
+                  return;
+                }
+                onExitWallboard();
+              }}
+              title="관리자 PIN 인증 후에만 제어판으로 전환할 수 있습니다"
+              className="min-h-[36px] rounded-xl border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700"
             >
-              🎛️ 제어판
+              {isUnlocked ? "🎛️ 제어판" : "🔒 제어판(PIN)"}
             </button>
           )}
         </div>
@@ -408,27 +451,35 @@ export default function WallboardView({
       )}
 
       {/* =====================================================================
-          [모드 1 : ONE_SCREEN (첫 화면 기본값)]
-          1920x1080 모니터 한 화면에 상단 5칸(가스캐비넷) + 하단 6칸(오토체인지) = 22통 전체 한눈에 배치!
+          [모드 1 : ONE_SCREEN (첫 화면 기본값 · 16:9 2단 꽉 찬 화면)]
+          상단 5칸(가스캐비닛) + 하단 6칸(오토체인지) = 11뱅크·22실린더 전체 한눈에 배치!
          ===================================================================== */}
       {viewMode === "ONE_SCREEN" && (
-        <div className="space-y-3">
+        <div className={isFullscreen ? "flex-1 min-h-0 flex flex-col gap-2.5" : "space-y-3"}>
           {/* 상단 1열: 🗄️ 제1구역: 가스캐비닛 5뱅크 (1~5번 뱅크 · 10실린더) — 5열 가로 한 줄 배치 */}
-          <section className="rounded-2xl border border-sky-500/40 bg-sky-950/10 p-2.5">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-sky-500 px-2.5 py-0.5 text-xs font-black text-slate-950 whitespace-nowrap">
+          <section
+            className={`rounded-2xl border border-sky-500/40 bg-sky-950/10 p-2.5 ${
+              isFullscreen ? "flex-1 min-h-0 flex flex-col justify-between" : ""
+            }`}
+          >
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 px-1">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <span className="rounded-lg bg-sky-500 px-2.5 py-0.5 text-xs font-black text-slate-950 break-keep">
                   🗄️ 제1구역: 가스캐비닛 5뱅크 (1~5호 · 10실린더)
                 </span>
-                <span className="text-xs font-bold text-sky-200 whitespace-nowrap">
-                  1번 뱅크 ~ 5번 뱅크 (고순도메탄 · 일반메탄 · 고순도수소 · 혼합가스 · 아세틸렌)
+                <span className="text-xs font-bold text-sky-200 break-keep">
+                  1번 ~ 5번 뱅크 (고순도메탄 · 일반메탄 · 고순도수소 · 혼합가스 · 아세틸렌)
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-sky-400 whitespace-nowrap">
-                CH-01 ~ CH-10 (5뱅크 한 줄 배치)
+              <span className="font-mono text-xs font-bold text-sky-400 shrink-0">
+                CH-01 ~ CH-10 (5뱅크)
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div
+              className={`grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 ${
+                isFullscreen ? "flex-1 min-h-0" : ""
+              }`}
+            >
               {cabinetPairs.map((pair) => (
                 <OneScreenCylinderCard
                   key={pair.bankId}
@@ -448,21 +499,29 @@ export default function WallboardView({
           </section>
 
           {/* 하단 2열: 🔄 제2·3구역: 오토체인지 6뱅크 (6~11번 뱅크 · 12실린더) — 6열 가로 한 줄 배치 */}
-          <section className="rounded-2xl border border-emerald-500/40 bg-emerald-950/10 p-2.5">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="rounded-lg bg-emerald-500 px-2.5 py-0.5 text-xs font-black text-slate-950 whitespace-nowrap">
+          <section
+            className={`rounded-2xl border border-emerald-500/40 bg-emerald-950/10 p-2.5 ${
+              isFullscreen ? "flex-1 min-h-0 flex flex-col justify-between" : ""
+            }`}
+          >
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 px-1">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <span className="rounded-lg bg-emerald-500 px-2.5 py-0.5 text-xs font-black text-slate-950 break-keep">
                   🔄 제2·3구역: 오토체인지 6뱅크 (1~6호 · 12실린더)
                 </span>
-                <span className="text-xs font-bold text-emerald-200 whitespace-nowrap">
-                  6번 뱅크 ~ 11번 뱅크 (고순도질소 · 일반질소 · 고순도헬륨 · 고순도아르곤 · 고순도산소 · 일반수소)
+                <span className="text-xs font-bold text-emerald-200 break-keep">
+                  6번 ~ 11번 뱅크 (고순도질소 · 일반질소 · 고순도헬륨 · 고순도아르곤 · 고순도산소 · 일반수소)
                 </span>
               </div>
-              <span className="font-mono text-xs font-bold text-emerald-400 whitespace-nowrap">
-                CH-11 ~ CH-22 (6뱅크 한 줄 배치)
+              <span className="font-mono text-xs font-bold text-emerald-400 shrink-0">
+                CH-11 ~ CH-22 (6뱅크)
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div
+              className={`grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 ${
+                isFullscreen ? "flex-1 min-h-0" : ""
+              }`}
+            >
               {autoChangePairs.map((pair) => (
                 <OneScreenCylinderCard
                   key={pair.bankId}
@@ -481,6 +540,52 @@ export default function WallboardView({
             </div>
           </section>
         </div>
+      )}
+
+      {/* =====================================================================
+          [모드 1-B : PANORAMA_11] 울트라와이드/와이드 모니터용 11뱅크 일렬 파노라마 뷰
+         ===================================================================== */}
+      {viewMode === "PANORAMA_11" && (
+        <section
+          className={`rounded-2xl border border-cyan-500/40 bg-slate-900/60 p-2.5 ${
+            isFullscreen ? "flex-1 min-h-0 flex flex-col justify-between" : ""
+          }`}
+        >
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 px-1">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <span className="rounded-lg bg-cyan-500 px-2.5 py-0.5 text-xs font-black text-slate-950 break-keep">
+                🎞️ 11뱅크 일렬 파노라마 뷰 (CH-01 ~ CH-22)
+              </span>
+              <span className="text-xs font-bold text-cyan-200 break-keep">
+                전 구역 1~11번 뱅크 한 줄 비교 모드 (울트라와이드·고해상도 최적화)
+              </span>
+            </div>
+            <span className="font-mono text-xs font-bold text-cyan-400 shrink-0">
+              11 BANKS · 22 CYLINDERS
+            </span>
+          </div>
+          <div
+            className={`grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-11 ${
+              isFullscreen ? "flex-1 min-h-0" : ""
+            }`}
+          >
+            {allPairs.map((pair) => (
+              <OneScreenCylinderCard
+                key={pair.bankId}
+                bankNum={pair.bankNum}
+                bankId={pair.bankId}
+                chA={pair.chA}
+                chB={pair.chB}
+                unit={unit}
+                fontScale={fontScale}
+                isUnlocked={isUnlocked}
+                onToggleValve={onToggleValve}
+                onSelectChannel={onSelectChannel}
+                onRequestPin={onRequestPin}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* =====================================================================
@@ -599,53 +704,16 @@ export default function WallboardView({
       )}
 
       {/* =====================================================================
-          [모드 5 : SPOTLIGHT_SPLIT] 상단 위험/경보 초대형 스포트라이트 + 하단 1화면 전체 뷰
+          [모드 5 : SPOTLIGHT_SPLIT] 상단 11뱅크 고정 그리드 + 하단 위험/경보 집중 스포트라이트
          ===================================================================== */}
       {viewMode === "SPOTLIGHT_SPLIT" && (
-        <div className="space-y-3">
-          <div className="rounded-2xl border-2 border-rose-500/80 bg-gradient-to-r from-rose-950/50 via-slate-900 to-purple-950/50 p-3.5">
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="text-sm font-black text-rose-300">
-                🚨 위험 저압 / 4~20mA 센서 고장 집중 스포트라이트 ({spotlightChannels.length}건)
-              </span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              {spotlightChannels.map((ch) => {
-                const bankNum = Math.ceil(ch.id / 2);
-                const meta = getBankFacilityMeta(bankNum);
-                return (
-                  <div
-                    key={ch.id}
-                    onClick={() => onSelectChannel?.(ch)}
-                    className="flex cursor-pointer items-center justify-between rounded-xl border border-rose-400/60 bg-slate-950/90 p-3"
-                  >
-                    <div>
-                      <span className="rounded bg-rose-500/20 px-2 py-0.5 text-[11px] font-black text-rose-300 whitespace-nowrap">
-                        {meta.bankCode} · {meta.shortBadge} · {ch.side}실린더
-                      </span>
-                      <div className="mt-1 text-base font-black text-white whitespace-nowrap">
-                        {ch.gasName} [{ch.side}실린더 · CH-{String(ch.id).padStart(2, "0")}]
-                      </div>
-                      <div className="text-xs text-slate-400 whitespace-nowrap">
-                        {ch.faultReason || ch.remainingText}
-                      </div>
-                    </div>
-                    <div className="font-mono text-3xl font-black text-rose-400 whitespace-nowrap">
-                      {ch.status === "SENSOR_FAULT"
-                        ? "센서점검"
-                        : `${formatPressureByUnit(
-                            ch.pressureBar,
-                            unit,
-                            ch.maxBar
-                          )} ${unitLabel}`}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+        <div className={isFullscreen ? "flex-1 min-h-0 flex flex-col gap-2.5" : "space-y-3"}>
+          {/* 상단: 전체 11뱅크 고정 배치 (경보 건수 변동에도 카드 위치가 절대 흔들리지 않음) */}
+          <div
+            className={`grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 ${
+              isFullscreen ? "flex-1 min-h-0" : ""
+            }`}
+          >
             {allPairs.map((pair) => (
               <OneScreenCylinderCard
                 key={pair.bankId}
@@ -662,6 +730,63 @@ export default function WallboardView({
               />
             ))}
           </div>
+
+          {/* 하단: 위험 저압 / 센서 고장 집중 스포트라이트 (0건일 때는 슬림 1줄 정상 배너) */}
+          {spotlightChannels.length === 0 ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-950/25 px-4 py-2.5">
+              <span className="text-xs sm:text-sm font-black text-emerald-300 break-keep">
+                ✅ 전 뱅크 정상 가동 중 — 위험 저압 · 4~20mA 센서 고장 집중 스포트라이트 (0건)
+              </span>
+              <span className="font-mono text-xs font-bold text-emerald-400/90">
+                ALL 22 CHANNELS NORMAL
+              </span>
+            </div>
+          ) : (
+            <div className="rounded-2xl border-2 border-rose-500/80 bg-gradient-to-r from-rose-950/50 via-slate-900 to-purple-950/50 p-3">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs sm:text-sm font-black text-rose-300 break-keep">
+                  🚨 위험 저압 / 4~20mA 센서 고장 집중 스포트라이트 ({spotlightChannels.length}건)
+                </span>
+                <span className="text-[11px] font-bold text-slate-300 break-keep">
+                  카드 클릭 시 해당 실린더 상세 트렌드 &amp; 조치 창 열기
+                </span>
+              </div>
+              <div className="grid max-h-[220px] grid-cols-1 gap-2.5 overflow-y-auto pr-1 md:grid-cols-3">
+                {spotlightChannels.map((ch) => {
+                  const bankNum = Math.ceil(ch.id / 2);
+                  const meta = getBankFacilityMeta(bankNum);
+                  return (
+                    <div
+                      key={ch.id}
+                      onClick={() => onSelectChannel?.(ch)}
+                      className="flex cursor-pointer items-center justify-between gap-2 rounded-xl border border-rose-400/60 bg-slate-950/90 p-3 hover:bg-rose-950/40 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <span className="inline-block rounded bg-rose-500/20 px-2 py-0.5 text-[11px] font-black text-rose-300 break-keep">
+                          {meta.bankCode} · {meta.shortBadge} · {ch.side}실린더
+                        </span>
+                        <div className="mt-1 text-sm sm:text-base font-black text-white break-keep">
+                          {ch.gasName} [{ch.side}실린더 · CH-{String(ch.id).padStart(2, "0")}]
+                        </div>
+                        <div className="text-xs text-slate-400 break-keep">
+                          {ch.faultReason || ch.remainingText}
+                        </div>
+                      </div>
+                      <div className="shrink-0 font-mono text-xl sm:text-2xl font-black text-rose-400 whitespace-nowrap">
+                        {ch.status === "SENSOR_FAULT"
+                          ? "센서점검"
+                          : `${formatPressureByUnit(
+                              ch.pressureBar,
+                              unit,
+                              ch.maxBar
+                            )} ${unitLabel}`}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -18,80 +18,8 @@ import {
   getUnitLabel,
 } from "./types";
 
-interface PinModalProps {
-  open: boolean;
-  onClose: () => void;
-  adminPin: string;
-  onSuccessUnlock: () => void;
-}
-
-export function PinAuthModal({
-  open,
-  onClose,
-  adminPin,
-  onSuccessUnlock,
-}: PinModalProps) {
-  const [pinInput, setPinInput] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setPinInput("");
-      setErrorMsg("");
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput === (adminPin || "1234")) {
-      onSuccessUnlock();
-      onClose();
-    } else {
-      setErrorMsg("PIN 번호가 일치하지 않습니다. (기본값: 1234)");
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-      <form
-        onSubmit={handleVerify}
-        className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl"
-      >
-        <h3 className="text-lg font-extrabold text-white">🔒 유지보수자 4자리 PIN 잠금 해제</h3>
-        <p className="mt-1 text-xs text-slate-400">
-          밸브 수동 개폐, 뱅크 설정, 영점 보정을 위해 PIN을 입력하세요. 해제 후 5분(300초) 뒤 자동 잠금됩니다.
-        </p>
-        <input
-          type="password"
-          maxLength={4}
-          autoFocus
-          value={pinInput}
-          onChange={(e) => setPinInput(e.target.value)}
-          placeholder="•••• (기본: 1234)"
-          className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-center font-mono text-2xl tracking-[0.5em] text-cyan-300 focus:border-cyan-400 focus:outline-none"
-        />
-        {errorMsg && <p className="mt-2 text-xs font-bold text-rose-400">{errorMsg}</p>}
-        <div className="mt-5 flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="min-h-[44px] flex-1 rounded-xl bg-slate-800 font-bold text-slate-300 hover:bg-slate-700"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            className="min-h-[44px] flex-1 rounded-xl bg-cyan-500 font-extrabold text-slate-950 hover:bg-cyan-400"
-          >
-            잠금 해제
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
+export { PinAuthModal } from "./PinAuthModal";
+export type { PinUnlockResult } from "./PinAuthModal";
 
 interface MobileAndFaModalProps {
   mode: "MOBILE" | "FA" | null;

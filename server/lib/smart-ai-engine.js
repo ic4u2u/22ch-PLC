@@ -140,17 +140,23 @@ function evaluateChannels(rawRegisters, valveRegisters, channelConfigs) {
     const remainingHours = Math.floor(remainingSec / 3600);
     const remainingMinutes = Math.floor((remainingSec % 3600) / 60);
 
+    const minDanger = Number(cfg.dangerBar || 15.0);
+    const cleanPressure = Math.max(0, calibratedBar);
+
     return {
       ...cfg,
       rawBar,
-      pressureBar: valveState === 1 ? 0 : Math.max(0, calibratedBar),
+      // 예비대기(valveState === 1) 실린더도 1차측 압력센서 잔량을 그대로 보존하여 빈 통 여부 및 기밀 상태를 실시간 감시
+      pressureBar: cleanPressure,
       valveState, // 0: OPEN, 1: SHUTOFF
       status, // NORMAL | WARN | DANGER | SHUTOFF | SENSOR_FAULT
       faultReason,
       dropRateBarPerSec: prev.dropRateBarPerSec,
       remainingText:
         valveState === 1
-          ? "밸브 차단됨"
+          ? cleanPressure <= minDanger
+            ? `빈 통 (${cleanPressure}b) · 교체필요`
+            : `예비대기 (${cleanPressure}b · 기밀정상)`
           : isSensorFault
           ? "센서 점검 필요"
           : `약 ${remainingHours}시간 ${remainingMinutes}분 남음`,
@@ -269,17 +275,18 @@ async function evaluateBanksAndSwitch(
         } else {
           const elapsed = Date.now() - bankSwitchTimers[bank.id].startedAt;
           if (elapsed >= bankSwitchTimers[bank.id].delayMs) {
-            // 예비 밸브 Open(0) 및 주 밸브 Shutoff(1) 자동 실행
+            // Make-Before-Break: 예비 밸브 먼저 Open(0) -> 350ms 오버랩 유지 -> 기존 주 밸브 Shutoff(1) 자동 실행
             const modeLabel = Number(bank.mode) === 1 ? `Smart AI (N=${computedAiN}s)` : `Auto (MX=${delaySec}s)`;
             await writeValveCallback(
               standbyCh.id - 1,
               0,
-              `${bank.id} ${modeLabel} 예비(${standbyCh.side}) 밸브 OPEN`
+              `${bank.id} ${modeLabel} 예비(${standbyCh.side}) 밸브 먼저 OPEN`
             );
+            await new Promise((r) => setTimeout(r, 350));
             await writeValveCallback(
               primaryCh.id - 1,
               1,
-              `${bank.id} ${modeLabel} 주(${primaryCh.side}) 밸브 SHUTOFF`
+              `${bank.id} ${modeLabel} 주(${primaryCh.side}) 밸브 안전 SHUTOFF`
             );
 
             const oldSide = bank.activeSide;
