@@ -21,18 +21,21 @@ import {
   speakKoreanAlarm,
 } from "./types";
 import CylinderPairCard from "./CylinderSvgGraphic";
+import FloorplanTab from "./FloorplanTab";
+import GasFilterBar from "./GasFilterBar";
 import {
   MasterAlarmCard,
   OneScreenCylinderCard,
 } from "./WallboardCompactCard";
 
 export type WallboardMode =
+  | "LARGE_CYLINDER"
   | "ONE_SCREEN"
+  | "FLOORPLAN"
+  | "SPOTLIGHT_SPLIT"
   | "PANORAMA_11"
   | "MASTER_ALARM"
-  | "LARGE_CYLINDER"
-  | "AUTO_ROLLING"
-  | "SPOTLIGHT_SPLIT";
+  | "AUTO_ROLLING";
 
 type ThemeStyle = "NEON_DARK" | "OLED_BLACK" | "INDUSTRIAL_STEEL";
 
@@ -43,6 +46,12 @@ interface WallboardViewProps {
   diagnostics: DiagnosticsData;
   isStandaloneWallboard: boolean;
   isUnlocked?: boolean;
+  floorplanBg?: string;
+  onSyncFloorplan?: (payload: {
+    floorplan_bg?: string;
+    channel_configs?: ChannelData[];
+    detail: string;
+  }) => void;
   onToggleValve?: (channelId: number, nextValveState: number) => void;
   onSelectChannel?: (ch: ChannelData) => void;
   onRequestPin?: () => void;
@@ -56,12 +65,15 @@ export default function WallboardView({
   diagnostics,
   isStandaloneWallboard,
   isUnlocked = false,
+  floorplanBg = "",
+  onSyncFloorplan,
   onToggleValve,
   onSelectChannel,
   onRequestPin,
   onExitWallboard,
 }: WallboardViewProps) {
-  const [viewMode, setViewMode] = useState<WallboardMode>("ONE_SCREEN");
+  const [viewMode, setViewMode] = useState<WallboardMode>("LARGE_CYLINDER");
+  const [selectedBankNums, setSelectedBankNums] = useState<number[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [rollingSec, setRollingSec] = useState<number>(8);
   const [rollingPaused, setRollingPaused] = useState<boolean>(false);
@@ -75,11 +87,16 @@ export default function WallboardView({
 
   const unitLabel = getUnitLabel(unit);
 
-  // 저장된 모니터 뷰 설정 불러오기
+  // 저장된 모니터 뷰 설정 및 선택 가스 불러오기 (v2.0 기본값: LARGE_CYLINDER)
   useEffect(() => {
     try {
-      const savedMode = localStorage.getItem("acsc_wb_mode") as WallboardMode;
+      const savedMode = localStorage.getItem("acsc_wb_mode_v2") as WallboardMode;
       if (savedMode) setViewMode(savedMode);
+      const savedBanks = localStorage.getItem("acsc_wb_selected_banks");
+      if (savedBanks) {
+        const parsed = JSON.parse(savedBanks);
+        if (Array.isArray(parsed)) setSelectedBankNums(parsed);
+      }
       const savedTheme = localStorage.getItem("acsc_wb_theme") as ThemeStyle;
       if (savedTheme) setThemeStyle(savedTheme);
       const savedScale = localStorage.getItem("acsc_wb_scale") as
@@ -92,7 +109,14 @@ export default function WallboardView({
   const updateMode = (m: WallboardMode) => {
     setViewMode(m);
     try {
-      localStorage.setItem("acsc_wb_mode", m);
+      localStorage.setItem("acsc_wb_mode_v2", m);
+    } catch {}
+  };
+
+  const updateSelectedBanks = (next: number[]) => {
+    setSelectedBankNums(next);
+    try {
+      localStorage.setItem("acsc_wb_selected_banks", JSON.stringify(next));
     } catch {}
   };
 
@@ -153,6 +177,10 @@ export default function WallboardView({
   const cabinetPairs = buildBankPairs(cabinetChannels);
   const autoChangePairs = buildBankPairs(autoChangeChannels);
   const allPairs = [...cabinetPairs, ...autoChangePairs];
+  const filteredPairs =
+    selectedBankNums.length === 0
+      ? allPairs
+      : allPairs.filter((p) => selectedBankNums.includes(p.bankNum));
 
   const spotlightChannels = channels.filter(
     (c) =>
@@ -202,25 +230,29 @@ export default function WallboardView({
       ? "bg-slate-900 border-slate-700"
       : "bg-slate-950 border-slate-800";
 
+  const isTightScreen = viewMode === "ONE_SCREEN" || viewMode === "PANORAMA_11";
+
   return (
     <div
       className={`${
         isFullscreen
-          ? "fixed inset-0 z-50 w-screen h-screen overflow-y-auto xl:overflow-hidden rounded-none border-0 p-2.5 sm:p-3.5 flex flex-col gap-2.5"
+          ? `fixed inset-0 z-50 w-screen h-screen overflow-y-auto ${
+              isTightScreen ? "xl:overflow-hidden" : ""
+            } rounded-none border-0 p-2.5 sm:p-3.5 flex flex-col gap-2.5`
           : "min-h-[88vh] rounded-3xl border p-3 sm:p-4 shadow-2xl space-y-3"
       } ${themeBg}`}
     >
       {/* =====================================================================
-          상단 슬림 컨트롤 & 뷰 모드 선택 바 (한 화면에 22통이 다 들어가도록 슬림 설계)
+          상단 슬림 컨트롤 & 뷰 모드 선택 바 (2원화 모니터링 전용 4대 핵심 뷰)
          ===================================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-800 bg-slate-900/95 px-3.5 py-2.5">
         {/* 좌측: 모니터 타이틀 + 경보 요약 배지 */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-lg bg-cyan-500 px-2.5 py-1 text-xs font-black text-slate-950">
-            📺 TV 전광판
+            📺 모니터링 관제
           </span>
-          <h2 className="text-sm sm:text-base font-black text-white">
-            특수가스 스마트 관제 전광판 (총 11뱅크 · 22실린더 | 가스캐비닛 5뱅크 · 오토체인지 6뱅크)
+          <h2 className="text-sm sm:text-base font-black text-white break-keep">
+            특수가스 스마트 모니터링 (11뱅크 · 22실린더)
           </h2>
           <span className="rounded-md bg-amber-400/20 border border-amber-400/50 px-2 py-0.5 font-mono text-[10px] font-extrabold text-amber-300">
             🕒 {APP_UPDATE_STAMP}
@@ -236,14 +268,12 @@ export default function WallboardView({
           )}
         </div>
 
-        {/* 중앙: 6대 모니터 뷰 모드 원클릭 전환 탭 */}
+        {/* 중앙: 모니터링 핵심 4대 뷰 (대형 실린더뷰 기본 + 공장 도면 뷰 통합) */}
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
           {[
-            { id: "ONE_SCREEN", label: "🖥️ 1화면 전체(16:9 · 5+6)" },
-            { id: "PANORAMA_11", label: "🎞️ 11뱅크 파노라마" },
-            { id: "MASTER_ALARM", label: "🎛️ 마스터 알람뷰" },
             { id: "LARGE_CYLINDER", label: "🛢️ 대형 실린더뷰" },
-            { id: "AUTO_ROLLING", label: "🔄 구역 자동롤링" },
+            { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },
+            { id: "ONE_SCREEN", label: "🖥️ 1화면 전체 (16:9)" },
             { id: "SPOTLIGHT_SPLIT", label: "🚨 경보 집중뷰" },
           ].map((m) => (
             <button
@@ -325,15 +355,30 @@ export default function WallboardView({
          ===================================================================== */}
       {settingsOpen && (
         <div className="grid grid-cols-1 gap-3 rounded-2xl border-2 border-cyan-500/50 bg-slate-900/95 p-4 md:grid-cols-4 shadow-2xl">
-          {/* 1. 모니터 뷰 모드 설명 및 선택 */}
+          {/* 1. 추가 모니터 레이아웃 모드 전환 */}
           <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
             <div className="text-xs font-black text-cyan-300 mb-2">
-              1️⃣ 모니터 레이아웃 모드
+              1️⃣ 확장 레이아웃 모드
             </div>
-            <div className="space-y-1 text-xs text-slate-300">
-              <p>• <strong>1화면 전체(22실린더)</strong>: 상단 5뱅크 + 하단 6뱅크를 스크롤 없이 1화면에 표시</p>
-              <p>• <strong>마스터 알람뷰</strong>: 벽걸이 마스터 알람기 스타일 (초대형 현재압력/절체압력/예고압력)</p>
-              <p>• <strong>구역 자동롤링</strong>: 가스캐비닛 5뱅크 ↔ 오토체인지 6뱅크 자동 순환</p>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: "PANORAMA_11", label: "🎞️ 11뱅크 파노라마(1줄)" },
+                { id: "MASTER_ALARM", label: "🎛️ 마스터 알람뷰" },
+                { id: "AUTO_ROLLING", label: "🔄 구역 자동롤링" },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => updateMode(m.id as WallboardMode)}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                    viewMode === m.id
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -451,7 +496,19 @@ export default function WallboardView({
       )}
 
       {/* =====================================================================
-          [모드 1 : ONE_SCREEN (첫 화면 기본값 · 16:9 2단 꽉 찬 화면)]
+          🎯 스마트 가스 선택 필터 바 (대형 실린더뷰 / 마스터 알람뷰에서 원하는 가스만 선택 모니터링)
+         ===================================================================== */}
+      {(viewMode === "LARGE_CYLINDER" || viewMode === "MASTER_ALARM") && (
+        <GasFilterBar
+          allPairs={allPairs}
+          selectedBankNums={selectedBankNums}
+          onChangeSelectedBanks={updateSelectedBanks}
+          onJumpToSpotlight={() => updateMode("SPOTLIGHT_SPLIT")}
+        />
+      )}
+
+      {/* =====================================================================
+          [모드 1 : ONE_SCREEN (16:9 2단 꽉 찬 화면)]
           상단 5칸(가스캐비닛) + 하단 6칸(오토체인지) = 11뱅크·22실린더 전체 한눈에 배치!
          ===================================================================== */}
       {viewMode === "ONE_SCREEN" && (
@@ -611,11 +668,22 @@ export default function WallboardView({
       )}
 
       {/* =====================================================================
-          [모드 3 : LARGE_CYLINDER] 대형 자동절체기 + 피그테일 호스 + A/B 가스통 상세 뷰
+          [모드 3 : LARGE_CYLINDER (v2.0 기본 뷰)] 대형 자동절체기 + 피그테일 호스 + A/B 가스통 상세 뷰
+          - 선택된 가스 수에 맞춰 그리드 열 수를 자동 최적화 (1개 집중 ~ 전체 11뱅크)
          ===================================================================== */}
       {viewMode === "LARGE_CYLINDER" && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-          {allPairs.map((pair) => (
+        <div
+          className={`grid gap-4 ${
+            filteredPairs.length === 1
+              ? "grid-cols-1 max-w-3xl mx-auto w-full"
+              : filteredPairs.length === 2
+              ? "grid-cols-1 lg:grid-cols-2"
+              : filteredPairs.length <= 4
+              ? "grid-cols-1 md:grid-cols-2"
+              : "grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3"
+          }`}
+        >
+          {filteredPairs.map((pair) => (
             <CylinderPairCard
               key={pair.bankId}
               bankNum={pair.bankNum}
@@ -630,6 +698,21 @@ export default function WallboardView({
             />
           ))}
         </div>
+      )}
+
+      {/* =====================================================================
+          [모드 3-B : FLOORPLAN] 공장 도면 뷰 (모니터링 시스템 내부 통합)
+         ===================================================================== */}
+      {viewMode === "FLOORPLAN" && (
+        <FloorplanTab
+          channels={channels}
+          unit={unit}
+          floorplanBg={floorplanBg}
+          isUnlocked={isUnlocked}
+          onSelectChannel={(ch) => onSelectChannel?.(ch)}
+          onRequestPin={() => onRequestPin?.()}
+          onSyncFloorplan={(payload) => onSyncFloorplan?.(payload)}
+        />
       )}
 
       {/* =====================================================================

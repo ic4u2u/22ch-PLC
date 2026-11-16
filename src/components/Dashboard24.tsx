@@ -48,20 +48,18 @@ import ChannelGridTab from "./dashboard/ChannelGridTab";
 import BankManifoldTab from "./dashboard/BankManifoldTab";
 import LeakTestTab from "./dashboard/LeakTestTab";
 import WallboardView from "./dashboard/WallboardView";
-import FloorplanTab from "./dashboard/FloorplanTab";
 import HistoryReportTab from "./dashboard/HistoryReportTab";
 import BottomLogsSection from "./dashboard/BottomLogsSection";
 
 type MainTab =
-  | "GRID"
-  | "MANIFOLD"
-  | "LEAK_TEST"
   | "WALLBOARD"
-  | "FLOORPLAN"
+  | "MANIFOLD"
+  | "GRID"
+  | "LEAK_TEST"
   | "HISTORY_REPORT";
 
 export default function Dashboard24() {
-  const [activeTab, setActiveTab] = useState<MainTab>("GRID");
+  const [activeTab, setActiveTab] = useState<MainTab>("WALLBOARD");
   const [isStandaloneWallboard, setIsStandaloneWallboard] = useState(false);
 
   // 10번 스펙: FND 4단위 원클릭 변환기 (기본 1: Bar)
@@ -664,6 +662,16 @@ export default function Dashboard24() {
             diagnostics={diagnostics}
             isStandaloneWallboard={true}
             isUnlocked={isUnlocked}
+            floorplanBg={floorplanBg}
+            onSyncFloorplan={(payload) => {
+              if (payload.floorplan_bg !== undefined) {
+                setFloorplanBg(payload.floorplan_bg);
+              }
+              if (payload.channel_configs) {
+                setChannels(payload.channel_configs);
+              }
+              sendWsCommand("UPDATE_FLOORPLAN", payload);
+            }}
             onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
             onRequestPin={() => setPinModalOpen(true)}
             onToggleValve={handleToggleValve}
@@ -768,29 +776,65 @@ export default function Dashboard24() {
           />
 
           <main className="mx-auto max-w-[1920px] px-4 pt-4">
-            {/* 2. 6대 메인 탭 네비게이션 */}
-            <nav className="no-print mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
-              {[
-                { id: "GRID", label: "🟢 11뱅크 · 22실린더 그리드" },
-                { id: "MANIFOLD", label: "🔀 11뱅크 A/B 자동절체 제어" },
-                { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
-                { id: "WALLBOARD", label: "📺 대형 전광판 TV 뷰" },
-                { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },
-                { id: "HISTORY_REPORT", label: "⏪ 과거 이력 & 📄 PDF 보고서" },
-              ].map((t) => (
+            {/* 2. 2원화 최상위 시스템 전환 네비게이션 (📺 모니터링 시스템 | 🎛️ 관제(제어·시험) 시스템) */}
+            <nav className="no-print mb-4 space-y-2 rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <button
-                  key={t.id}
                   type="button"
-                  onClick={() => setActiveTab(t.id as MainTab)}
-                  className={`min-h-[44px] flex-1 min-w-[150px] rounded-xl px-4 py-2 text-xs sm:text-sm font-extrabold transition-all ${
-                    activeTab === t.id
-                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20"
-                      : "text-slate-300 hover:bg-slate-800"
+                  onClick={() => setActiveTab("WALLBOARD")}
+                  className={`min-h-[46px] flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm sm:text-base font-black transition-all ${
+                    activeTab === "WALLBOARD"
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 ring-1 ring-cyan-300/60"
+                      : "border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800"
                   }`}
                 >
-                  {t.label}
+                  <span>📺 모니터링 시스템</span>
+                  <span className="hidden md:inline rounded-md bg-black/25 px-2 py-0.5 text-[11px] font-bold">
+                    대형 실린더뷰 · 공장 도면 · 전체화면
+                  </span>
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeTab === "WALLBOARD") setActiveTab("MANIFOLD");
+                  }}
+                  className={`min-h-[46px] flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm sm:text-base font-black transition-all ${
+                    activeTab !== "WALLBOARD"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-lg shadow-amber-500/25 ring-1 ring-amber-200/70"
+                      : "border border-slate-800 bg-slate-950 text-slate-300 hover:bg-slate-800"
+                  }`}
+                >
+                  <span>🎛️ 관제(제어·시험) 시스템</span>
+                  <span className="hidden md:inline rounded-md bg-black/20 px-2 py-0.5 text-[11px] font-bold">
+                    자동절체 제어 · 상세 그리드 · 기밀시험 · 이력
+                  </span>
+                </button>
+              </div>
+
+              {/* 관제(제어·시험) 시스템 선택 시에만 하위 4대 제어/시험 탭 노출 */}
+              {activeTab !== "WALLBOARD" && (
+                <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-2">
+                  {[
+                    { id: "MANIFOLD", label: "🔀 A/B 자동절체 제어" },
+                    { id: "GRID", label: "🟢 22실린더 상세 그리드" },
+                    { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
+                    { id: "HISTORY_REPORT", label: "⏪ 과거 이력 & 📄 PDF 보고서" },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setActiveTab(t.id as MainTab)}
+                      className={`min-h-[42px] flex-1 min-w-[150px] rounded-xl px-4 py-2 text-xs sm:text-sm font-extrabold transition-all ${
+                        activeTab === t.id
+                          ? "bg-amber-400 text-slate-950 shadow"
+                          : "bg-slate-950 text-slate-300 hover:bg-slate-800"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </nav>
 
             {/* 3. 선택된 메인 탭 렌더링 */}
@@ -852,20 +896,7 @@ export default function Dashboard24() {
                 diagnostics={diagnostics}
                 isStandaloneWallboard={false}
                 isUnlocked={isUnlocked}
-                onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
-                onRequestPin={() => setPinModalOpen(true)}
-                onToggleValve={handleToggleValve}
-              />
-            )}
-
-            {activeTab === "FLOORPLAN" && (
-              <FloorplanTab
-                channels={channels}
-                unit={unit}
                 floorplanBg={floorplanBg}
-                isUnlocked={isUnlocked}
-                onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
-                onRequestPin={() => setPinModalOpen(true)}
                 onSyncFloorplan={(payload) => {
                   if (payload.floorplan_bg !== undefined) {
                     setFloorplanBg(payload.floorplan_bg);
@@ -875,6 +906,9 @@ export default function Dashboard24() {
                   }
                   sendWsCommand("UPDATE_FLOORPLAN", payload);
                 }}
+                onSelectChannel={(ch) => setSelectedChannelId(ch.id)}
+                onRequestPin={() => setPinModalOpen(true)}
+                onToggleValve={handleToggleValve}
               />
             )}
 
