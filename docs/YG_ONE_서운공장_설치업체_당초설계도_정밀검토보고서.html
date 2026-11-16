@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YG-ONE 서운공장 — 설치업체 당초 설계도 정밀 기술검토 및 시공 보완 보고서</title>
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #cbd5e1;
+      --accent-primary: #1d4ed8;
+      --accent-primary-bg: #eff6ff;
+      --crit-color: #dc2626;
+      --crit-bg: #fef2f2;
+      --crit-border: #fecaca;
+      --maj-color: #d97706;
+      --maj-bg: #fffbeb;
+      --maj-border: #fde68a;
+      --ok-color: #059669;
+      --ok-bg: #ecfdf5;
+      --ok-border: #a7f3d0;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0b1120;
+      --bg-card: #111827;
+      --bg-subtle: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --accent-primary: #60a5fa;
+      --accent-primary-bg: rgba(59, 130, 246, 0.15);
+      --crit-color: #f87171;
+      --crit-bg: rgba(220, 38, 38, 0.14);
+      --crit-border: rgba(248, 113, 113, 0.35);
+      --maj-color: #fbbf24;
+      --maj-bg: rgba(217, 119, 6, 0.14);
+      --maj-border: rgba(251, 191, 36, 0.35);
+      --ok-color: #34d399;
+      --ok-bg: rgba(5, 150, 105, 0.14);
+      --ok-border: rgba(52, 211, 153, 0.35);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding-bottom: 64px;
+    }
+
+    /* 상단 고정 네비게이션 바 */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      padding: 12px 20px;
+    }
+    .topbar-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .audit-pill {
+      background: #dc2626;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .btn {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { filter: brightness(0.96); transform: translateY(-1px); }
+    .btn-primary {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #1e40af;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 28px auto 0;
+      padding: 0 20px;
+    }
+
+    /* 히어로 헤더 */
+    .hero-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      border-radius: 16px;
+      padding: 28px 32px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+    .hero-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .hero-chip {
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+    }
+    .hero-chip.warn {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid rgba(248, 113, 113, 0.5);
+      color: #fecaca;
+    }
+    .hero-card h1 {
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 10px;
+    }
+    .hero-desc {
+      color: #cbd5e1;
+      font-size: 15px;
+      max-width: 980px;
+    }
+
+    /* 요약 KPI 그리드 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi-card.crit { border-left: 5px solid #dc2626; }
+    .kpi-card.maj { border-left: 5px solid #d97706; }
+    .kpi-card.ok { border-left: 5px solid #059669; }
+    .kpi-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .kpi-val {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .kpi-card.crit .kpi-val { color: var(--crit-color); }
+    .kpi-card.maj .kpi-val { color: var(--maj-color); }
+    .kpi-card.ok .kpi-val { color: var(--ok-color); }
+    .kpi-sub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    /* 섹션 공통 */
+    .section-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* 도면 비교 탭 */
+    .tab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      min-height: 44px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #1e40af;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+    }
+    .tab-btn.tab-before.active {
+      background: #b91c1c;
+      border-color: #991b1b;
+      box-shadow: 0 4px 12px rgba(185, 28, 28, 0.25);
+    }
+
+    .diagram-stage {
+      background: #ffffff;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      overflow-x: auto;
+    }
+    .diagram-pane { display: none; }
+    .diagram-pane.active { display: block; }
+    .map-guide-bar {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: var(--accent-primary-bg);
+      color: var(--text-main);
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .quick-num-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .q-num {
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 8px;
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .q-num.crit { background: #dc2626; }
+    .q-num.maj { background: #d97706; }
+
+    /* 필터 바 */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .filter-btn {
+      min-height: 44px;
+      padding: 0 15px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: var(--text-main);
+      color: var(--bg-card);
+      border-color: var(--text-main);
+    }
+
+    /* 결함 상세 카드 */
+    .defect-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .defect-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 22px;
+      transition: box-shadow 0.25s, border-color 0.25s;
+    }
+    .defect-card.highlight-flash {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.28);
+    }
+    .defect-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .defect-num-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      flex: 1;
+      min-width: 260px;
+    }
+    .defect-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .num-crit { background: #dc2626; }
+    .num-maj { background: #d97706; }
+
+    .defect-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .sev-badge {
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .sev-crit { background: var(--crit-bg); color: var(--crit-color); border: 1px solid var(--crit-border); }
+    .sev-maj { background: var(--maj-bg); color: var(--maj-color); border: 1px solid var(--maj-border); }
+    .cat-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+    }
+    .area-txt {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .defect-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+    .btn-map-focus {
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .ba-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .ba-box {
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    .ba-before {
+      background: var(--crit-bg);
+      border: 1px solid var(--crit-border);
+    }
+    .ba-after {
+      background: var(--ok-bg);
+      border: 1px solid var(--ok-border);
+    }
+    .ba-label {
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .ba-before .ba-label { color: var(--crit-color); }
+    .ba-after .ba-label { color: var(--ok-color); }
+
+    .explain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .explain-item {
+      background: var(--bg-subtle);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13.8px;
+    }
+    .explain-title {
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--accent-primary);
+    }
+
+    .directive-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--accent-primary-bg);
+      border: 1px dashed var(--accent-primary);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .directive-text {
+      font-size: 13.8px;
+      font-weight: 700;
+      flex: 1;
+      min-width: 240px;
+    }
+    .btn-copy {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: none;
+      background: #1d4ed8;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* BOM 비교 테이블 */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 13px 15px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--bg-subtle);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    tr:last-child td { border-bottom: none; }
+    .td-wrong { color: var(--crit-color); font-weight: 700; text-decoration: line-through; }
+    .td-right { color: var(--ok-color); font-weight: 800; }
+
+    /* 체크리스트 */
+    .check-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-subtle);
+      cursor: pointer;
+      min-height: 48px;
+    }
+    .check-row input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      margin-top: 2px;
+      accent-color: #1d4ed8;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .check-row.checked {
+      background: var(--ok-bg);
+      border-color: var(--ok-border);
+    }
+    .check-row.checked span {
+      text-decoration: line-through;
+      opacity: 0.8;
+    }
+
+    .sign-box {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      font-size: 14px;
+    }
+    .sign-line {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      font-weight: 700;
+    }
+
+    /* 토스트 팝업 */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: all 0.22s ease;
+      z-index: 999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .hero-card { padding: 20px; }
+      .section-box { padding: 18px; }
+      .defect-card { padding: 16px; }
+    }
+
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; padding: 0; }
+      .topbar, .filter-bar, .btn-copy, .btn-map-focus, .map-guide-bar, .tab-bar { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      .hero-card { background: #f8fafc !important; color: #0f172a !important; border: 2px solid #0f172a !important; box-shadow: none !important; }
+      .hero-desc, .hero-chip { color: #0f172a !important; border: 1px solid #94a3b8 !important; }
+      .section-box, .defect-card, .kpi-card { box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; margin-bottom: 16px; }
+      .diagram-pane { display: block !important; margin-bottom: 18px; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-area">
+        <span class="audit-pill">설계 감리 · 시정 지시서</span>
+        <span class="brand-title">YG-ONE 서운공장(세진가스텍) 당초 설계도 정밀 분석보고서</span>
+      </div>
+      <div class="top-actions">
+        <button type="button" class="btn" onclick="copyAllDirectives()">📋 9대 시공 지시문 일괄 복사</button>
+        <button type="button" class="btn" onclick="toggleTheme()" id="themeBtn">🌙 다크 모드</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ A4 인쇄 / PDF 저장</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 히어로 요약 -->
+    <section class="hero-card">
+      <div class="hero-meta-row">
+        <span class="hero-chip warn">종합 판정: 원안 시공 불가 (착공 전 9개 항목 보완 필수)</span>
+        <span class="hero-chip">검토 대상: 설치업체 당초 설계도 (2026. 11. 11)</span>
+        <span class="hero-chip">확정 현장 조건: 모니터#1(50M) / 모니터#2(150M 타공장 · 실사용 4뱅크, 11뱅크 표출)</span>
+      </div>
+      <h1>설치업체 당초 설계도 정밀 기술검토 및 시공 보완 보고서</h1>
+      <p class="hero-desc">
+        설치업체가 제출한 초기 구성도를 전력·계장·통신 공학 기준으로 검증한 결과, <strong>① 디지털 영상선 T자 분기 및 50M/150M 전송 불능</strong>, <strong>② 방폭 캐비닛 20C 전선 코어 부족 및 120M 전압강하 미작동 위험</strong>, <strong>③ 전선관 물량 55% 과소 산정</strong> 등 총 9건의 결함이 확인되었습니다. 재시공 비용 손실을 막기 위해 본 보고서의 보완 사양으로 작업 지시 후 착공하시기 바랍니다.
+      </p>
+    </section>
+
+    <!-- 핵심 요약 KPI -->
+    <section class="kpi-grid">
+      <div class="kpi-card crit">
+        <div class="kpi-label">🔴 치명 결함 (Critical · 즉시 수정 필수)</div>
+        <div class="kpi-val">총 6건 적발</div>
+        <div class="kpi-sub">관리자 모니터 누락, T자 분기·50M 무연장, 150M 거리초과·낙뢰위험, 20C 코어 부족, 120M 전압강하·공압선 오류, CD관 절반 부족</div>
+      </div>
+      <div class="kpi-card maj">
+        <div class="kpi-label">🟠 주의 보완 (Major · 노이즈·운영 리스크)</div>
+        <div class="kpi-val">총 3건 적발</div>
+        <div class="kpi-sub">150M 공장 4↔11뱅크 화면분리 불가, AC 5LINE 비차폐 노이즈, PLC↔PC 이더넷 직결 규격 미명시</div>
+      </div>
+      <div class="kpi-card ok">
+        <div class="kpi-label">✅ 최우선 권장 해결책 (Rev 5.0 표준안)</div>
+        <div class="kpi-val">하이브리드 최적 구성</div>
+        <div class="kpi-sub">50M 방: PC 확장화면 연장기 직결 + 150M 타공장: 사내망(또는 광케이블 200M) + 미니PC로 11뱅크 표출 및 추후 4뱅크 즉시 전환 보장</div>
+      </div>
+    </section>
+
+    <!-- Section 1: 인터랙티브 도면 비교 뷰어 -->
+    <section class="section-box" id="map-section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">🔍 1. 당초 설계도 결함 핀포인트 맵 vs 보완 완료 표준 설계도</h2>
+          <p class="section-sub">도면 위의 <strong>① ~ ⑨ 번호 배지</strong>를 클릭하시면 아래 해당 결함의 정밀 해부 및 시공 지시문으로 즉시 이동합니다.</p>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button type="button" class="tab-btn tab-before active" onclick="switchDiagramTab('before', this)">❌ [Before] 설치업체 당초 설계도 (9대 결함 표시)</button>
+        <button type="button" class="tab-btn" onclick="switchDiagramTab('after-hyb', this)">✅ [After 1순위 추천] 50M 연장 + 150M 광/사내망 미니PC 하이브리드안</button>
+        <button type="button" class="tab-btn" onclick="switchDiagramTab('after-net', this)">🌐 [After 2순위 대안] 50M/150M 전 구역 웹 네트워크 독립안</button>
+      </div>
+
+      <div class="diagram-stage">
+        <div id="pane-before" class="diagram-pane active">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 891 648" width="100%" height="auto" role="img" aria-label="설치업체 당초 설계도 9대 결함 위치 분석 맵">
+  <defs>
+    <style>
+      .zone-red { fill: rgba(239, 68, 68, 0.08); stroke: #dc2626; stroke-width: 2.2; stroke-dasharray: 6 4; rx: 6; transition: fill 0.2s; }
+      .zone-amber { fill: rgba(245, 158, 11, 0.09); stroke: #d97706; stroke-width: 2.2; stroke-dasharray: 6 4; rx: 6; transition: fill 0.2s; }
+      .defect-hotspot:hover .zone-red { fill: rgba(239, 68, 68, 0.22); stroke-width: 3; }
+      .defect-hotspot:hover .zone-amber { fill: rgba(245, 158, 11, 0.24); stroke-width: 3; }
+      .badge-red { fill: #dc2626; stroke: #ffffff; stroke-width: 2; }
+      .badge-amber { fill: #d97706; stroke: #ffffff; stroke-width: 2; }
+      .badge-num { fill: #ffffff; font-family: 'Pretendard', 'Malgun Gothic', Arial, sans-serif; font-size: 13px; font-weight: 800; text-anchor: middle; dominant-baseline: central; }
+      .tag-box { fill: #991b1b; stroke: #ffffff; stroke-width: 1.5; rx: 5; }
+      .tag-box-amber { fill: #92400e; stroke: #ffffff; stroke-width: 1.5; rx: 5; }
+      .tag-txt { fill: #ffffff; font-family: 'Pretendard', 'Malgun Gothic', sans-serif; font-size: 11px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+      .leader-red { stroke: #dc2626; stroke-width: 1.8; fill: none; }
+      .leader-amber { stroke: #d97706; stroke-width: 1.8; fill: none; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="891" height="648" fill="#ffffff" />
+  <image href="data:image/png;base64,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" x="0" y="0" width="891" height="648" />
+
+  <!-- 1: 관리자 모니터 누락 -->
+  <g onclick="jumpToDefect(1)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="415" y="452" width="104" height="62" />
+    <text x="467" y="476" fill="#dc2626" font-family="Malgun Gothic" font-size="11" font-weight="800" text-anchor="middle">[누락 구간]</text>
+    <text x="467" y="494" fill="#dc2626" font-family="Malgun Gothic" font-size="10.5" font-weight="700" text-anchor="middle">관리자 모니터 없음</text>
+    <line class="leader-red" x1="467" y1="514" x2="467" y2="536" />
+    <rect class="tag-box" x="396" y="536" width="142" height="24" />
+    <circle class="badge-red" cx="396" cy="548" r="13" />
+    <text class="badge-num" x="396" y="548">1</text>
+    <text class="tag-txt" x="472" y="548">관리자 모니터 누락!</text>
+  </g>
+
+  <!-- 2: T자 분기 불가 & 50M 모니터#1 연장기 누락 -->
+  <g onclick="jumpToDefect(2)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="572" y="405" width="238" height="98" />
+    <line class="leader-red" x1="690" y1="503" x2="690" y2="526" />
+    <rect class="tag-box" x="598" y="526" width="188" height="24" />
+    <circle class="badge-red" cx="598" cy="538" r="13" />
+    <text class="badge-num" x="598" y="538">2</text>
+    <text class="tag-txt" x="697" y="538">T자 분기 불가 · 50M 무연장!</text>
+  </g>
+
+  <!-- 3: 약 100M 오기재(실제 150M) & 직렬 증폭 불가 -->
+  <g onclick="jumpToDefect(3)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="582" y="142" width="122" height="258" />
+    <line class="leader-red" x1="704" y1="262" x2="726" y2="262" />
+    <rect class="tag-box" x="726" y="250" width="156" height="24" />
+    <circle class="badge-red" cx="726" cy="262" r="13" />
+    <text class="badge-num" x="726" y="262">3</text>
+    <text class="tag-txt" x="809" y="262">150M 한계초과·낙뢰위험</text>
+  </g>
+
+  <!-- 4: 75" 모니터#2 (4뱅크 사용처 -> 11뱅크 요구 -> 추후 변경 대응 불가) -->
+  <g onclick="jumpToDefect(4)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-amber" x="678" y="106" width="132" height="52" />
+    <line class="leader-amber" x1="744" y1="106" x2="744" y2="84" />
+    <rect class="tag-box-amber" x="664" y="60" width="178" height="24" />
+    <circle class="badge-amber" cx="664" cy="72" r="13" />
+    <text class="badge-num" x="664" y="72">4</text>
+    <text class="tag-txt" x="758" y="72">4↔11뱅크 화면분리 불가</text>
+  </g>
+
+  <!-- 5: 인증케비넷 5LINE 24AWG 20C 코어 부족 -->
+  <g onclick="jumpToDefect(5)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="56" y="263" width="206" height="36" />
+    <line class="leader-red" x1="158" y1="263" x2="158" y2="244" />
+    <rect class="tag-box" x="72" y="220" width="178" height="24" />
+    <circle class="badge-red" cx="72" cy="232" r="13" />
+    <text class="badge-num" x="72" y="232">5</text>
+    <text class="tag-txt" x="166" y="232">20C 가닥수 부족(결선불가)</text>
+  </g>
+
+  <!-- 6: 외부 H2 24AWG 8C/120M 전압강하 & 파란 공압선 오류 -->
+  <g onclick="jumpToDefect(6)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="132" y="362" width="253" height="122" />
+    <line class="leader-red" x1="334" y1="484" x2="334" y2="578" />
+    <rect class="tag-box" x="272" y="578" width="196" height="24" />
+    <circle class="badge-red" cx="272" cy="590" r="13" />
+    <text class="badge-num" x="272" y="590">6</text>
+    <text class="tag-txt" x="375" y="590">120M 전압강하·공압선 오류</text>
+  </g>
+
+  <!-- 7: AC 5LINE LAN 5가닥 비차폐 노이즈 -->
+  <g onclick="jumpToDefect(7)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-amber" x="170" y="160" width="195" height="36" />
+    <line class="leader-amber" x1="268" y1="160" x2="268" y2="140" />
+    <rect class="tag-box-amber" x="184" y="116" width="172" height="24" />
+    <circle class="badge-amber" cx="184" cy="128" r="13" />
+    <text class="badge-num" x="184" y="128">7</text>
+    <text class="tag-txt" x="275" y="128">비차폐 UTP 노이즈 위험</text>
+  </g>
+
+  <!-- 8: PLC - PC 점선 통신 모호 (PLC 다리 아래 빈 여백으로 인출하여 원본 글자 가림 0%) -->
+  <g onclick="jumpToDefect(8)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-amber" x="444" y="254" width="26" height="140" />
+    <line class="leader-amber" x1="470" y1="376" x2="492" y2="376" />
+    <rect class="tag-box-amber" x="492" y="364" width="84" height="24" />
+    <circle class="badge-amber" cx="492" cy="376" r="13" />
+    <text class="badge-num" x="492" y="376">8</text>
+    <text class="tag-txt" x="539" y="376">통신 미명시</text>
+  </g>
+
+  <!-- 9: 구입물품 BOM 수량 절반 부족 -->
+  <g onclick="jumpToDefect(9)" style="cursor:pointer" class="defect-hotspot">
+    <rect class="zone-red" x="3" y="498" width="248" height="146" />
+    <line class="leader-red" x1="251" y1="622" x2="272" y2="622" />
+    <rect class="tag-box" x="272" y="610" width="176" height="24" />
+    <circle class="badge-red" cx="272" cy="622" r="13" />
+    <text class="badge-num" x="272" y="622">9</text>
+    <text class="tag-txt" x="365" y="622">전선관 200M 절반 부족!</text>
+  </g>
+</svg>
+        </div>
+        <div id="pane-after-hyb" class="diagram-pane">
+          <svg viewBox="0 0 1920 1280" width="1920" height="1280" style="font-family: 'Malgun Gothic', sans-serif;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="v5h_cadGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e2e8f0" stroke-width="0.7" />
+    </pattern>
+    <pattern id="v5h_cadGridMajor" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="url(#v5h_cadGrid)" />
+      <path d="M 120 0 L 0 0 0 120" fill="none" stroke="#cbd5e1" stroke-width="1.1" />
+    </pattern>
+
+    <filter id="v5h_cardShadow" x="-5%" y="-5%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+    <filter id="v5h_badgeShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+
+    <marker id="v5h_arrSlate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#334155" />
+    </marker>
+    <marker id="v5h_arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#dc2626" />
+    </marker>
+    <marker id="v5h_arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#0284c7" />
+    </marker>
+    <marker id="v5h_arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#059669" />
+    </marker>
+    <marker id="v5h_arrPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#7c3aed" />
+    </marker>
+    <marker id="v5h_arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#d97706" />
+    </marker>
+
+    <linearGradient id="v5h_headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="55%" stop-color="#065f46" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="v5h_plcGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="v5h_tvGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+
+  <!-- 배경 & 프레임 -->
+  <rect x="0" y="0" width="1920" height="1280" fill="#f1f5f9" />
+  <rect x="20" y="20" width="1880" height="1240" rx="8" fill="url(#v5h_cadGridMajor)" stroke="#0f172a" stroke-width="3" />
+  <rect x="28" y="28" width="1864" height="1224" rx="4" fill="none" stroke="#475569" stroke-width="1" />
+
+  <!-- 상단 타이틀 바 -->
+  <rect x="28" y="28" width="1864" height="86" fill="url(#v5h_headerGrad)" />
+  <rect x="46" y="45" width="320" height="26" rx="13" fill="#10b981" />
+  <text x="206" y="63" fill="#0f172a" font-size="12.2" font-weight="900" text-anchor="middle">★ 1순위 최우선 추천 · 50M/150M 하이브리드 최적안</text>
+
+  <text x="380" y="65" fill="#ffffff" font-size="21.5" font-weight="900" letter-spacing="-0.5">YG-ONE 서운공장 — 거리(50M / 150M 타공장) &amp; 4→11뱅크 대응 최적 구성도</text>
+  <text x="380" y="94" fill="#cbd5e1" font-size="12.5" font-weight="600">핵심 설계: [50M 방A: PC 확장화면 직결(11뱅크 고정)] + [150M 4뱅크 사용공장: 광컨버터/사내망 + 미니PC로 11뱅크 표출 &amp; 추후 4뱅크 즉시전환 보장!]</text>
+
+  <rect x="1604" y="42" width="268" height="58" rx="8" fill="rgba(15,23,42,0.75)" stroke="#64748b" stroke-width="1.5" />
+  <text x="1738" y="64" fill="#38bdf8" font-size="12.3" font-weight="800" text-anchor="middle">재검토 설계일 : 2026. 11. 12 (Rev 5.0 · 최적안)</text>
+  <text x="1738" y="86" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">DWG-YG-22CH-V5-HYB | 50M·150M 확정</text>
+
+  <!-- ZONE 1 & ZONE 2 컨테이너 -->
+  <rect x="44" y="132" width="446" height="786" rx="14" fill="#ffffff" fill-opacity="0.85" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4" />
+  <rect x="44" y="132" width="446" height="40" rx="12" fill="#e2e8f0" />
+  <text x="62" y="157" fill="#0f172a" font-size="15" font-weight="900">① 현장 특수가스 설비 구역 (총 11뱅크 · 22채널)</text>
+
+  <rect x="502" y="136" width="276" height="32" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" />
+  <text x="640" y="157" fill="#92400e" font-size="12.5" font-weight="800" text-anchor="middle">현장 계장 배선 구간 (전선관 포설)</text>
+
+  <rect x="790" y="132" width="468" height="786" rx="14" fill="#ffffff" fill-opacity="0.92" stroke="#0284c7" stroke-width="2.2" />
+  <rect x="790" y="132" width="468" height="40" rx="12" fill="#0284c7" />
+  <text x="810" y="157" fill="#ffffff" font-size="15" font-weight="900">② 메인 제어반(PLC) 및 서버실 (관리자석 · 0~1.5M)</text>
+
+  <rect x="1268" y="136" width="190" height="32" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" />
+  <text x="1363" y="157" fill="#5b21b6" font-size="12.2" font-weight="800" text-anchor="middle">거리별 전송 (150M / 50M)</text>
+
+  <!-- ZONE 1 내부 설비 카드 -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="60" y="192" width="414" height="160" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2.5" />
+    <rect x="60" y="192" width="414" height="36" rx="10" fill="#ecfdf5" />
+    <text x="76" y="216" fill="#065f46" font-size="15" font-weight="900">AC 5LINE (벽면 오토체인지 5뱅크)</text>
+    <rect x="370" y="199" width="92" height="22" rx="6" fill="#059669" />
+    <text x="416" y="214" fill="#ffffff" font-size="11.3" font-weight="800" text-anchor="middle">CH 11 ~ 20</text>
+    <text x="76" y="252" fill="#1e293b" font-size="12.2" font-weight="700">• 비방폭 5뱅크(10통): P-N2, G-N2, He, Ar, O2</text>
+    <text x="76" y="276" fill="#1e293b" font-size="12.2" font-weight="700">• 계장: 4~20mA 압력센서 10EA + 솔밸브 10EA</text>
+    <text x="76" y="300" fill="#047857" font-size="11.8" font-weight="700">• 라인당 센서2 + 밸브2 (CAT6 S-FTP 차폐선 5가닥)</text>
+    <text x="76" y="324" fill="#64748b" font-size="11.2" font-weight="600">• 솔밸브 코일 역기전력 방지 다이오드(1N4007) 부착</text>
+  </g>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="60" y="388" width="414" height="172" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2.5" />
+    <rect x="60" y="388" width="414" height="36" rx="10" fill="#fffbeb" />
+    <text x="76" y="412" fill="#92400e" font-size="15" font-weight="900">인증케비넷 5LINE (방폭 캐비넷 5뱅크)</text>
+    <rect x="370" y="395" width="92" height="22" rx="6" fill="#d97706" />
+    <text x="416" y="410" fill="#ffffff" font-size="11.3" font-weight="800" text-anchor="middle">CH 01 ~ 10</text>
+    <text x="76" y="448" fill="#1e293b" font-size="12.2" font-weight="700">• 가연성 방폭 5뱅크(10통): P-CH4, G-CH4, P-H2,</text>
+    <text x="88" y="468" fill="#475569" font-size="12" font-weight="600">MIX(Ar+H2), C2H2(아세틸렌)</text>
+    <text x="76" y="492" fill="#1e293b" font-size="12.2" font-weight="700">• 계장: 방폭 압력센서 10EA + 공압 솔밸브 10EA</text>
+    <rect x="74" y="508" width="386" height="36" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+    <text x="267" y="531" fill="#b91c1c" font-size="11.2" font-weight="800" text-anchor="middle">필수수정: 20C 코어 부족 → 16C(센서)+16C(밸브) 분리!</text>
+  </g>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="60" y="606" width="204" height="282" rx="12" fill="#ffffff" stroke="#dc2626" stroke-width="2.5" />
+    <rect x="60" y="606" width="204" height="36" rx="10" fill="#fef2f2" />
+    <text x="162" y="629" fill="#991b1b" font-size="15" font-weight="900" text-anchor="middle">외부 H2 저장소</text>
+    <rect x="74" y="652" width="176" height="24" rx="6" fill="#fee2e2" />
+    <text x="162" y="668" fill="#991b1b" font-size="11.5" font-weight="800" text-anchor="middle">BANK 11 · CH 21~22 (2통)</text>
+    <text x="74" y="698" fill="#1e293b" font-size="12" font-weight="700">• 일반 수소: G-H2 (N35)</text>
+    <text x="74" y="722" fill="#1e293b" font-size="12" font-weight="700">• 방폭 압력센서 × 2EA</text>
+    <text x="74" y="746" fill="#1e293b" font-size="12" font-weight="700">• 공압 구동 밸브 × 2EA</text>
+    <text x="74" y="778" fill="#dc2626" font-size="11" font-weight="700">* 수소 방폭 위해 전기 코일은</text>
+    <text x="74" y="795" fill="#dc2626" font-size="11" font-weight="700">  비방폭 SOL.BOX로 외부 격리</text>
+    <rect x="74" y="818" width="176" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" />
+    <text x="162" y="838" fill="#334155" font-size="10.8" font-weight="700" text-anchor="middle">옥외 자외선 노출 구간</text>
+    <text x="162" y="856" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">강제전선관/방수후렉시블 권장</text>
+  </g>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="322" y="670" width="152" height="192" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="2.5" />
+    <rect x="322" y="670" width="152" height="36" rx="10" fill="#0284c7" />
+    <text x="398" y="693" fill="#ffffff" font-size="15" font-weight="900" text-anchor="middle">SOL. BOX</text>
+    <text x="398" y="726" fill="#0c4a6e" font-size="11.5" font-weight="800" text-anchor="middle">(솔레노이드 분기함)</text>
+    <text x="334" y="754" fill="#334155" font-size="11.2" font-weight="600">• 비방폭 안전구역 설치</text>
+    <text x="334" y="776" fill="#334155" font-size="11.2" font-weight="600">• 공압 솔밸브 2EA 내장</text>
+    <text x="334" y="798" fill="#334155" font-size="11.2" font-weight="600">• 센서 중계 단자대</text>
+    <rect x="334" y="816" width="128" height="28" rx="6" fill="#e0f2fe" />
+    <text x="398" y="834" fill="#0369a1" font-size="11" font-weight="800" text-anchor="middle">외함: 방수 HI-BOX</text>
+  </g>
+
+  <line x1="264" y1="730" x2="320" y2="730" stroke="#334155" stroke-width="3" marker-end="url(#v5h_arrSlate)" />
+  <rect x="267" y="700" width="52" height="20" rx="4" fill="#ffffff" stroke="#94a3b8" />
+  <text x="293" y="714" fill="#0f172a" font-size="10" font-weight="800" text-anchor="middle">센서선</text>
+
+  <line x1="322" y1="800" x2="266" y2="800" stroke="#0284c7" stroke-width="4" marker-end="url(#v5h_arrBlue)" />
+  <rect x="267" y="809" width="52" height="20" rx="4" fill="#e0f2fe" stroke="#0284c7" />
+  <text x="293" y="823" fill="#0369a1" font-size="10" font-weight="800" text-anchor="middle">공압튜브</text>
+
+  <!-- ZONE 2 상단: Main CONTROL (LS PLC) -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="808" y="188" width="432" height="286" rx="12" fill="url(#v5h_plcGrad)" stroke="#1d4ed8" stroke-width="3" />
+    <rect x="808" y="188" width="432" height="42" rx="10" fill="#1e3a8a" />
+    <text x="1024" y="215" fill="#ffffff" font-size="16.5" font-weight="900" text-anchor="middle">Main CONTROL (LS PLC 통합 제어반)</text>
+
+    <rect x="824" y="242" width="400" height="90" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5" />
+    <text x="1024" y="263" fill="#1e3a8a" font-size="12" font-weight="900" text-anchor="middle">LS ELECTRIC XGB 5단 모듈 (11뱅크 · 22CH 압력수집 + 밸브제어)</text>
+
+    <rect x="836" y="274" width="94" height="46" rx="6" fill="#0284c7" />
+    <text x="883" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBC-DR30SU</text>
+    <text x="883" y="311" fill="#e0f2fe" font-size="10" font-weight="600" text-anchor="middle">CPU+릴레이12점</text>
+
+    <rect x="936" y="274" width="102" height="46" rx="6" fill="#059669" />
+    <text x="987" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBF-AD08A ×3</text>
+    <text x="987" y="311" fill="#d1fae5" font-size="10" font-weight="600" text-anchor="middle">4~20mA 24채널</text>
+
+    <rect x="1044" y="274" width="82" height="46" rx="6" fill="#d97706" />
+    <text x="1085" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBF-RY16A</text>
+    <text x="1085" y="311" fill="#fef3c7" font-size="10" font-weight="600" text-anchor="middle">추가릴레이16점</text>
+
+    <rect x="1132" y="274" width="80" height="46" rx="6" fill="#7c3aed" />
+    <text x="1172" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBL-EMTA</text>
+    <text x="1172" y="311" fill="#ede9fe" font-size="10" font-weight="600" text-anchor="middle">이더넷 통신</text>
+
+    <text x="828" y="358" fill="#1e293b" font-size="11.8" font-weight="700">• PLC 고정 IP: 192.168.0.50 (Modbus TCP 502 / XGT 2004)</text>
+    <text x="828" y="381" fill="#1e293b" font-size="11.8" font-weight="700">• 150M 별도공장은 총 11뱅크 중 [실사용 4개 뱅크] 배관 분기 공급</text>
+    <text x="828" y="404" fill="#1e293b" font-size="11.8" font-weight="700">• 외함: 옥내용 철제 방진 제어반 (600×700×200mm, 스탠드형)</text>
+
+    <rect x="826" y="422" width="396" height="36" rx="6" fill="#dbeafe" stroke="#60a5fa" />
+    <text x="1024" y="445" fill="#1d4ed8" font-size="11.8" font-weight="800" text-anchor="middle">메모리 맵: 압력 읽기 %MW100~121 / 밸브 제어 %MW200~221</text>
+  </g>
+
+  <!-- 설비 ➔ PLC 배선 -->
+  <line x1="474" y1="262" x2="804" y2="262" stroke="#334155" stroke-width="3.5" marker-end="url(#v5h_arrSlate)" />
+  <g filter="url(#v5h_badgeShadow)">
+    <rect x="502" y="202" width="276" height="48" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8" />
+    <text x="640" y="222" fill="#0f172a" font-size="12" font-weight="800" text-anchor="middle">CAT6 S-FTP 차폐선 5가닥 / 60M</text>
+    <text x="640" y="241" fill="#059669" font-size="11" font-weight="800" text-anchor="middle">(원안 LAN 5가닥 → 알루미늄 차폐 적용)</text>
+  </g>
+
+  <line x1="474" y1="452" x2="762" y2="452" stroke="#d97706" stroke-width="3.5" />
+  <line x1="762" y1="452" x2="762" y2="352" stroke="#d97706" stroke-width="3.5" />
+  <line x1="762" y1="352" x2="804" y2="352" stroke="#d97706" stroke-width="3.5" marker-end="url(#v5h_arrAmber)" />
+  <g filter="url(#v5h_badgeShadow)">
+    <rect x="500" y="380" width="252" height="60" rx="8" fill="#fffbeb" stroke="#dc2626" stroke-width="2" />
+    <text x="626" y="400" fill="#991b1c" font-size="11.5" font-weight="900" text-anchor="middle">원안 20C 부족 → 분리 증설 (60M)</text>
+    <text x="626" y="418" fill="#0f172a" font-size="11.5" font-weight="800" text-anchor="middle">CVV-SB 0.5SQ 16C (센서 차폐)</text>
+    <text x="626" y="434" fill="#0369a1" font-size="11.2" font-weight="800" text-anchor="middle">+ CVV 0.75SQ 16C (밸브 제어)</text>
+  </g>
+
+  <line x1="474" y1="730" x2="736" y2="730" stroke="#334155" stroke-width="3.5" />
+  <line x1="736" y1="730" x2="736" y2="406" stroke="#334155" stroke-width="3.5" />
+  <line x1="736" y1="406" x2="804" y2="406" stroke="#334155" stroke-width="3.5" marker-end="url(#v5h_arrSlate)" />
+
+  <line x1="808" y1="436" x2="754" y2="436" stroke="#0284c7" stroke-width="3.5" />
+  <line x1="754" y1="436" x2="754" y2="790" stroke="#0284c7" stroke-width="3.5" />
+  <line x1="754" y1="790" x2="478" y2="790" stroke="#0284c7" stroke-width="3.5" marker-end="url(#v5h_arrBlue)" />
+
+  <g filter="url(#v5h_badgeShadow)">
+    <rect x="500" y="652" width="226" height="64" rx="8" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
+    <text x="613" y="672" fill="#0f172a" font-size="12" font-weight="800" text-anchor="middle">CVV-SB 0.75SQ 8C / 120M</text>
+    <text x="613" y="690" fill="#475569" font-size="10.8" font-weight="700" text-anchor="middle">(4~20mA 센서 + SOL 밸브 구동)</text>
+    <text x="613" y="707" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">장거리 전압강하 방지 규격 상향</text>
+  </g>
+
+  <!-- PLC ➔ PC 이더넷 직결 -->
+  <line x1="957" y1="474" x2="957" y2="544" stroke="#7c3aed" stroke-width="4.5" marker-start="url(#v5h_arrPurple)" marker-end="url(#v5h_arrPurple)" />
+  <rect x="970" y="488" width="258" height="42" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" />
+  <text x="1099" y="506" fill="#5b21b6" font-size="11.3" font-weight="900" text-anchor="middle">LAN 1 : CAT6 S-FTP 차폐 랜선 1:1 직결</text>
+  <text x="1099" y="523" fill="#6d28d9" font-size="10.5" font-weight="700" text-anchor="middle">0.5초 실시간 양방향 폴링 (지연 1~3ms)</text>
+
+  
+  <!-- 관제 메인 서버 PC (50M 직결 + 150M 타공장 네트워크 분리) -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="808" y="548" width="298" height="192" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="2.8" />
+    <rect x="808" y="548" width="298" height="36" rx="10" fill="#0f172a" />
+    <text x="957" y="571" fill="#ffffff" font-size="15.5" font-weight="900" text-anchor="middle">통합 관제 메인 서버 PC</text>
+
+    <text x="822" y="604" fill="#1e293b" font-size="11.5" font-weight="800">• LAN 1 (PLC 직결): 192.168.0.100 (GW 비움)</text>
+    <text x="822" y="624" fill="#1e293b" font-size="11.5" font-weight="800">• Node 브릿지(4000) + Next 웹서버(3000)</text>
+    <text x="822" y="644" fill="#059669" font-size="11.3" font-weight="800">• 50M은 영상직결(PC절감) + 150M은 네트워크!</text>
+
+    <rect x="820" y="658" width="86" height="68" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+    <text x="863" y="677" fill="#0369a1" font-size="11" font-weight="900" text-anchor="middle">HDMI 단자</text>
+    <text x="863" y="695" fill="#0c4a6e" font-size="10" font-weight="700" text-anchor="middle">↓ 1.5M 직결</text>
+    <text x="863" y="712" fill="#0369a1" font-size="10" font-weight="800" text-anchor="middle">관리용모니터</text>
+
+    <rect x="913" y="658" width="88" height="68" rx="7" fill="#dcfce7" stroke="#059669" stroke-width="1.5" />
+    <text x="957" y="677" fill="#065f46" font-size="11" font-weight="900" text-anchor="middle">DP 단자</text>
+    <text x="957" y="695" fill="#064e3b" font-size="10" font-weight="700" text-anchor="middle">→ 50M 연장</text>
+    <text x="957" y="712" fill="#059669" font-size="10" font-weight="800" text-anchor="middle">방A 모니터#1</text>
+
+    <rect x="1008" y="658" width="86" height="68" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" />
+    <text x="1051" y="677" fill="#5b21b6" font-size="11" font-weight="900" text-anchor="middle">LAN 2 단자</text>
+    <text x="1051" y="695" fill="#4c1d95" font-size="10" font-weight="700" text-anchor="middle">→ 150M 광/망</text>
+    <text x="1051" y="712" fill="#6d28d9" font-size="10" font-weight="800" text-anchor="middle">타공장 TV#2</text>
+  </g>
+
+  <!-- USB 경광등 / 광컨버터(허브) / 50M PoC 송신기 -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1120" y="548" width="122" height="56" rx="9" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8" />
+    <text x="1181" y="570" fill="#9f1239" font-size="11.3" font-weight="900" text-anchor="middle">USB 3색 경광등</text>
+    <text x="1181" y="588" fill="#be123c" font-size="10" font-weight="700" text-anchor="middle">위험 시 점멸+부저</text>
+  </g>
+  <line x1="1106" y1="576" x2="1118" y2="576" stroke="#e11d48" stroke-width="2.5" marker-end="url(#v5h_arrRed)" />
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1120" y="612" width="122" height="62" rx="9" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8" />
+    <text x="1181" y="633" fill="#5b21b6" font-size="11" font-weight="900" text-anchor="middle">기가허브 + 광컨버터</text>
+    <text x="1181" y="651" fill="#6d28d9" font-size="9.8" font-weight="800" text-anchor="middle">150M 공장 광통신 송출</text>
+    <text x="1181" y="666" fill="#059669" font-size="9.3" font-weight="700" text-anchor="middle">(사내망 있으면 생략!)</text>
+  </g>
+  <line x1="1106" y1="643" x2="1118" y2="643" stroke="#7c3aed" stroke-width="3" marker-end="url(#v5h_arrPurple)" />
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1120" y="682" width="122" height="58" rx="9" fill="#ecfdf5" stroke="#059669" stroke-width="1.8" />
+    <text x="1181" y="703" fill="#065f46" font-size="10.8" font-weight="900" text-anchor="middle">50M 전송단 (선택)</text>
+    <text x="1181" y="720" fill="#047857" font-size="9.6" font-weight="800" text-anchor="middle">PoC 연장TX 또는 광HDMI</text>
+  </g>
+  <line x1="1106" y1="711" x2="1118" y2="711" stroke="#059669" stroke-width="3" marker-end="url(#v5h_arrGreen)" />
+
+  <!-- 관리자 업무용 모니터 -->
+  <line x1="863" y1="740" x2="863" y2="782" stroke="#0284c7" stroke-width="4" marker-end="url(#v5h_arrBlue)" />
+  <rect x="874" y="750" width="124" height="22" rx="5" fill="#e0f2fe" />
+  <text x="936" y="765" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">HDMI 직결 (약 1.5M)</text>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="808" y="786" width="432" height="114" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="3" />
+    <rect x="808" y="786" width="432" height="34" rx="9" fill="#0284c7" />
+    <text x="1024" y="808" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">관리자 업무용 모니터 (24&quot;~27&quot; · 메인 서버석 1.5M)</text>
+    <text x="822" y="842" fill="#0f172a" font-size="11.8" font-weight="800">• Windows 주 모니터(0,0): 일반 사무 업무 + 11뱅크 마스터 제어창</text>
+    <text x="822" y="864" fill="#0369a1" font-size="11.5" font-weight="800">• 보조 확장화면(1920,0)은 50M 방A 모니터#1에 11뱅크 전광판 자동 표출</text>
+    <text x="822" y="886" fill="#64748b" font-size="10.2" font-weight="600">* 22채널 전체 밸브 제어 권한(PIN 해제)은 메인 서버실 관리자가 통합 보유</text>
+  </g>
+
+  <!-- ==================== 상단 150M 선로 (서버 ➔ 150M 별도 사용처 공장) ==================== -->
+  <line x1="1242" y1="643" x2="1295" y2="643" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1295" y1="643" x2="1295" y2="335" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1295" y1="335" x2="1478" y2="335" stroke="#7c3aed" stroke-width="4.5" marker-start="url(#v5h_arrPurple)" marker-end="url(#v5h_arrPurple)" />
+
+  <g filter="url(#v5h_badgeShadow)">
+    <rect x="1268" y="182" width="190" height="138" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="2.4" />
+    <rect x="1268" y="182" width="190" height="28" rx="8" fill="#6d28d9" />
+    <text x="1363" y="201" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">공장B 경로 : 150M (실200M)</text>
+    <text x="1363" y="224" fill="#dc2626" font-size="10.5" font-weight="900" text-anchor="middle">! 일반 랜선 100m 한계 초과 구간</text>
+    <text x="1363" y="244" fill="#0f172a" font-size="11" font-weight="800" text-anchor="middle">① 기존 사내 공장간 망(배선0원)</text>
+    <text x="1363" y="263" fill="#5b21b6" font-size="11" font-weight="800" text-anchor="middle">② 신규시: 2코어 광케이블 200M</text>
+    <text x="1363" y="281" fill="#4c1d95" font-size="10.3" font-weight="700" text-anchor="middle">+ 광 미디어 컨버터 (낙뢰·노이즈 0%)</text>
+    <text x="1363" y="302" fill="#64748b" font-size="9.8" font-weight="700" text-anchor="middle">(CAT6 사용시 80m 중간허브 필수)</text>
+  </g>
+
+  <!-- ==================== 하단 50M 선로 (서버 ➔ 50M 방A 제1모니터실) ==================== -->
+  <line x1="1242" y1="711" x2="1320" y2="711" stroke="#059669" stroke-width="4.5" />
+  <line x1="1320" y1="711" x2="1320" y2="755" stroke="#059669" stroke-width="4.5" />
+  <line x1="1320" y1="755" x2="1478" y2="755" stroke="#059669" stroke-width="4.5" marker-end="url(#v5h_arrGreen)" />
+
+  <g filter="url(#v5h_badgeShadow)">
+    <rect x="1268" y="772" width="190" height="118" rx="10" fill="#ffffff" stroke="#059669" stroke-width="2.2" />
+    <rect x="1268" y="772" width="190" height="26" rx="8" fill="#059669" />
+    <text x="1363" y="790" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">방A 경로 : 거리 50M</text>
+    <text x="1363" y="814" fill="#0f172a" font-size="11.2" font-weight="800" text-anchor="middle">CAT6 차폐선 + 1:1 PoC 연장기</text>
+    <text x="1363" y="833" fill="#047857" font-size="10.5" font-weight="800" text-anchor="middle">(또는 무전원 광HDMI 50M 직결)</text>
+    <text x="1363" y="853" fill="#0284c7" font-size="10.5" font-weight="800" text-anchor="middle">✓ 미니PC 불필요 (예산 절감!)</text>
+    <text x="1363" y="872" fill="#64748b" font-size="10" font-weight="700" text-anchor="middle">*좁은 배관은 CAT6 PoC가 입선 유리</text>
+  </g>
+
+  <!-- ==================== 우측 상단: 150M 별도 공장 (4뱅크 사용 / 11뱅크 모니터링 요청) ==================== -->
+  <rect x="1468" y="132" width="408" height="384" rx="14" fill="#ffffff" fill-opacity="0.95" stroke="#7c3aed" stroke-width="2.8" />
+  <rect x="1468" y="132" width="408" height="40" rx="12" fill="#6d28d9" />
+  <text x="1672" y="157" fill="#ffffff" font-size="14" font-weight="900" text-anchor="middle">③-B 별도 수요처 공장 [거리 150M · 4개 뱅크 사용처]</text>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1486" y="184" width="372" height="106" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" />
+    <text x="1672" y="207" fill="#4c1d95" font-size="13.2" font-weight="900" text-anchor="middle">광컨버터(또는 사내망) + 초소형 미니 PC (TV 뒤 장착)</text>
+    <text x="1500" y="229" fill="#059669" font-size="11.2" font-weight="800">• [현재 요청 충족] 11뱅크(22채널) 전체 전광판 뷰 즉시 표출!</text>
+    <text x="1500" y="249" fill="#dc2626" font-size="11.2" font-weight="900">• [신의 한 수] 추후 &quot;다시 우리 4개 뱅크만 보여달라&quot; 재변경 시</text>
+    <text x="1512" y="267" fill="#b91c1c" font-size="10.8" font-weight="800">배선·장비 공사 0원! 웹 주소만 바꿔 1초 만에 4뱅크 전용뷰 전환!</text>
+    <text x="1500" y="284" fill="#475569" font-size="10.3" font-weight="700">• PIN 잠금으로 타 공정(나머지 7개 뱅크) 밸브 오조작 100% 방지</text>
+  </g>
+
+  <line x1="1672" y1="290" x2="1672" y2="318" stroke="#7c3aed" stroke-width="4" marker-end="url(#v5h_arrPurple)" />
+  <rect x="1684" y="294" width="110" height="18" rx="4" fill="#ede9fe" />
+  <text x="1739" y="307" fill="#5b21b6" font-size="10.2" font-weight="800" text-anchor="middle">HDMI 1.5M 직결</text>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1486" y="322" width="372" height="180" rx="12" fill="url(#v5h_tvGrad)" stroke="#a78bfa" stroke-width="3" />
+    <rect x="1500" y="333" width="344" height="28" rx="6" fill="#7c3aed" />
+    <text x="1672" y="352" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">75&quot; 대형 모니터 #2 (150M 공장 · 4뱅크 사용)</text>
+    <text x="1672" y="382" fill="#fde047" font-size="12.2" font-weight="800" text-anchor="middle">현재: 11뱅크 전체 모니터링 ↔ 추후: 4뱅크 맞춤뷰 자유전환</text>
+    <text x="1504" y="407" fill="#e2e8f0" font-size="11.2" font-weight="600">• 150M~200M 장거리에서도 디지털 4K 원본 화질 100% 유지</text>
+    <text x="1504" y="428" fill="#e2e8f0" font-size="11.2" font-weight="600">• 미사용 7개 뱅크 알람 피로도 발생 시 해당 공장 4뱅크만 필터 가능!</text>
+    <text x="1504" y="449" fill="#6ee7b7" font-size="11.2" font-weight="700">• 필요 시 해당 공장 담당자에게만 음성경보(TTS)·확인 권한 부여</text>
+    <rect x="1622" y="476" width="100" height="12" rx="4" fill="#475569" />
+  </g>
+
+  <!-- 물리적 공간 분리선 -->
+  <line x1="1468" y1="532" x2="1876" y2="532" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" />
+  <rect x="1504" y="519" width="336" height="26" rx="13" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" />
+  <text x="1672" y="536" fill="#b91c1c" font-size="10.8" font-weight="900" text-anchor="middle">▲ 별도 공장 B (150M)  |  서로 다른 건물·공간  |  ▼ 방 A (50M)</text>
+
+  <!-- ==================== 우측 하단: 50M 방 A (제1모니터실) ==================== -->
+  <rect x="1468" y="554" width="408" height="364" rx="14" fill="#ffffff" fill-opacity="0.95" stroke="#059669" stroke-width="2.5" />
+  <rect x="1468" y="554" width="408" height="40" rx="12" fill="#059669" />
+  <text x="1672" y="579" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">③-A 제1모니터실 [별도 방 A · 거리 50M]</text>
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1486" y="608" width="372" height="82" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2" />
+    <text x="1672" y="630" fill="#065f46" font-size="13.2" font-weight="900" text-anchor="middle">무전원 PoC 수신기 RX (또는 광HDMI 50M 직결)</text>
+    <text x="1500" y="652" fill="#1e293b" font-size="11.2" font-weight="700">• 50M(실포설 65M)는 CAT6 1:1 PoC 연장기 사용 시 배관 입선 최상!</text>
+    <text x="1500" y="672" fill="#047857" font-size="11.2" font-weight="800">• 항상 11뱅크 전체를 보는 곳이므로 메인PC 확장화면으로 비용 절감</text>
+  </g>
+  <line x1="1672" y1="690" x2="1672" y2="718" stroke="#059669" stroke-width="4" marker-end="url(#v5h_arrGreen)" />
+
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1486" y="722" width="372" height="178" rx="12" fill="url(#v5h_tvGrad)" stroke="#34d399" stroke-width="3" />
+    <rect x="1500" y="734" width="344" height="28" rx="6" fill="#059669" />
+    <text x="1672" y="753" fill="#ffffff" font-size="15" font-weight="900" text-anchor="middle">75&quot; 대형 모니터 #1 (50M 제1모니터실)</text>
+    <text x="1672" y="784" fill="#6ee7b7" font-size="12.5" font-weight="800" text-anchor="middle">11뱅크(22채널) 전체 초대형 숫자판 전광판 고정</text>
+    <text x="1504" y="809" fill="#e2e8f0" font-size="11.3" font-weight="600">• 메인 서버 PC의 확장 모니터(1920,0)로 부팅 즉시 자동 표출</text>
+    <text x="1504" y="830" fill="#e2e8f0" font-size="11.3" font-weight="600">• 22채널 전 계통 실시간 압력 FND + 위험 채널 스포트라이트</text>
+    <text x="1504" y="851" fill="#fde047" font-size="11.3" font-weight="700">• TV 뒷면 무전원 수신(PoC)으로 어댑터 없이 깔끔하게 마감!</text>
+    <rect x="1622" y="872" width="100" height="12" rx="4" fill="#475569" />
+  </g>
+
+
+  
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="44" y="940" width="966" height="294" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2" />
+    <rect x="44" y="940" width="966" height="36" rx="10" fill="#065f46" />
+    <text x="62" y="964" fill="#ffffff" font-size="14.2" font-weight="900">★ 최종 확정 권장 구입물품(BOM) — [50M 방A + 150M 별도공장(4뱅크 사용) 조건 반영]</text>
+
+    <rect x="56" y="984" width="942" height="28" fill="#e2e8f0" />
+    <text x="80" y="1003" fill="#0f172a" font-size="11.5" font-weight="900" text-anchor="middle">순번</text>
+    <text x="195" y="1003" fill="#0f172a" font-size="11.5" font-weight="900" text-anchor="middle">구분 품목</text>
+    <text x="460" y="1003" fill="#0f172a" font-size="11.5" font-weight="900" text-anchor="middle">최종 권장 발주 규격 및 수량</text>
+    <text x="805" y="1003" fill="#0f172a" font-size="11.5" font-weight="900" text-anchor="middle">설계 반영 사유 (50M / 150M 거리 상향 완벽 반영)</text>
+
+    <line x1="56" y1="1044" x2="998" y2="1044" stroke="#e2e8f0" />
+    <text x="80" y="1030" fill="#dc2626" font-size="11" font-weight="900" text-anchor="middle">1</text>
+    <text x="110" y="1030" fill="#b91c1c" font-size="11" font-weight="800">CD 36관 (원안 200M)</text>
+    <text x="296" y="1030" fill="#dc2626" font-size="11" font-weight="800">난연 CD 36 × 8~9롤(400~450M) + 콘넥타 45EA</text>
+    <text x="622" y="1030" fill="#b91c1c" font-size="10.6" font-weight="800">설비(240M) + 방A(50M) + 타공장(150M) = 총 440M 소요 반영!</text>
+
+    <line x1="56" y1="1076" x2="998" y2="1076" stroke="#e2e8f0" />
+    <text x="80" y="1064" fill="#334155" font-size="11" font-weight="800" text-anchor="middle">2</text>
+    <text x="110" y="1064" fill="#0f172a" font-size="11" font-weight="700">계장용 차폐전선</text>
+    <text x="296" y="1064" fill="#0369a1" font-size="11" font-weight="800">캐비닛: 16C×2줄 분리 / H2: 0.75SQ 8C / AC: CAT6</text>
+    <text x="622" y="1064" fill="#475569" font-size="10.6" font-weight="700">캐비닛 20C 코어 부족 해결 + 외부 H2 120M 전압강하 완벽 방지</text>
+
+    <line x1="56" y1="1108" x2="998" y2="1108" stroke="#e2e8f0" />
+    <text x="80" y="1096" fill="#059669" font-size="11" font-weight="900" text-anchor="middle">3 (50M)</text>
+    <text x="110" y="1096" fill="#047857" font-size="11" font-weight="800">방A(50M) 연결재</text>
+    <text x="296" y="1096" fill="#059669" font-size="11" font-weight="800">70~100M급 1:1 PoC 연장기 + Active젠더 (또는 광HDMI)</text>
+    <text x="622" y="1096" fill="#065f46" font-size="10.6" font-weight="700">50M 배관에는 얇은 CAT6 랜선 포설 후 무전원 PoC 연장기가 입선 최고</text>
+
+    <line x1="56" y1="1140" x2="998" y2="1140" stroke="#e2e8f0" />
+    <text x="80" y="1128" fill="#7c3aed" font-size="11" font-weight="900" text-anchor="middle">4 (150M)</text>
+    <text x="110" y="1128" fill="#5b21b6" font-size="11" font-weight="800">150M 공장 선로</text>
+    <text x="296" y="1128" fill="#6d28d9" font-size="11" font-weight="800">옥외용 2코어 광점퍼코드(200M) + 광컨버터 1쌍</text>
+    <text x="622" y="1128" fill="#4c1d95" font-size="10.6" font-weight="800">150M+(실200M) 한계 돌파 &amp; 공장 간 유도낙뢰 0%! (사내망 있으면 생략)</text>
+
+    <line x1="56" y1="1172" x2="998" y2="1172" stroke="#e2e8f0" />
+    <text x="80" y="1160" fill="#7c3aed" font-size="11" font-weight="900" text-anchor="middle">5 (150M)</text>
+    <text x="110" y="1160" fill="#5b21b6" font-size="11" font-weight="800">150M 공장 단말</text>
+    <text x="296" y="1160" fill="#6d28d9" font-size="11" font-weight="800">초소형 미니PC (Intel N100) 1대 + 5포트 기가허브</text>
+    <text x="622" y="1160" fill="#dc2626" font-size="10.6" font-weight="800">현재 11뱅크 전체 표출 + 추후 &quot;4뱅크만 표시&quot; 재요청 시 즉시 전환 보장!</text>
+
+    <text x="80" y="1194" fill="#334155" font-size="11" font-weight="800" text-anchor="middle">6</text>
+    <text x="110" y="1194" fill="#0f172a" font-size="11" font-weight="700">제어 함체 2종</text>
+    <text x="296" y="1194" fill="#0369a1" font-size="11" font-weight="800">외부 SOL.BOX 방수 HI-BOX + 실내 PLC 철제함(600×700)</text>
+    <text x="622" y="1194" fill="#475569" font-size="10.6" font-weight="600">옥외 수소 솔밸브 분기함과 실내 5단 모듈 제어반 함체 분리 제작</text>
+
+    <rect x="56" y="1204" width="942" height="22" rx="4" fill="#ecfdf5" />
+    <text x="527" y="1219" fill="#065f46" font-size="10.4" font-weight="800" text-anchor="middle">★ 핵심 포인트: 4개 뱅크만 쓰는 150M 공장은 가동 후 타 공정 알람 때문에 &quot;다시 4뱅크만 보여달라&quot;고 할 확률이 99%입니다. 미니PC만이 이를 무공사로 해결합니다!</text>
+  </g>
+
+  <!-- 하단 범례 -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1026" y="940" width="438" height="294" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2" />
+    <rect x="1026" y="940" width="438" height="36" rx="10" fill="#334155" />
+    <text x="1046" y="964" fill="#ffffff" font-size="14.5" font-weight="900">배선 규격 및 거리별 신호 범례 (Legend)</text>
+    
+    <line x1="1044" y1="1004" x2="1108" y2="1004" stroke="#334155" stroke-width="4" marker-end="url(#v5h_arrSlate)" />
+    <text x="1120" y="1009" fill="#0f172a" font-size="12" font-weight="800">현장 계장선 (4~20mA 센서 / 솔밸브 제어)</text>
+
+    <line x1="1044" y1="1042" x2="1108" y2="1042" stroke="#d97706" stroke-width="4" marker-end="url(#v5h_arrAmber)" />
+    <text x="1120" y="1047" fill="#0f172a" font-size="12" font-weight="800">방폭 캐비닛 다심 차폐선 (16C×2 분리)</text>
+
+    <line x1="1044" y1="1080" x2="1108" y2="1080" stroke="#0284c7" stroke-width="4" marker-end="url(#v5h_arrBlue)" />
+    <text x="1120" y="1085" fill="#0f172a" font-size="12" font-weight="800">공압 튜브(SOL.BOX) / 로컬 HDMI(1.5M)</text>
+
+    <line x1="1044" y1="1118" x2="1108" y2="1118" stroke="#059669" stroke-width="4.5" marker-end="url(#v5h_arrGreen)" />
+    <text x="1120" y="1123" fill="#0f172a" font-size="12" font-weight="800">방A(50M): CAT6 PoC 연장 또는 광HDMI</text>
+
+    <line x1="1044" y1="1156" x2="1108" y2="1156" stroke="#7c3aed" stroke-width="4.5" marker-end="url(#v5h_arrPurple)" />
+    <text x="1120" y="1161" fill="#0f172a" font-size="12" font-weight="800">타공장(150M): 광점퍼코드(200M) / 사내망 LAN</text>
+    <rect x="1042" y="1182" width="406" height="38" rx="6" fill="#f1f5f9" stroke="#cbd5e1" />
+    <text x="1245" y="1199" fill="#334155" font-size="10.8" font-weight="800" text-anchor="middle">확정 거리: 관리석(1.5M) + 방A(50M) + 타공장B(150M·4뱅크사용)</text>
+    <text x="1245" y="1215" fill="#0284c7" font-size="10.6" font-weight="700" text-anchor="middle">표출 정책: 현재 전 구역 11뱅크 통합 표출 (추후 4뱅크 필터 대응)</text>
+  </g>
+
+  <!-- 표제란 -->
+  <g filter="url(#v5h_cardShadow)">
+    <rect x="1480" y="940" width="396" height="294" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="2.5" />
+    <rect x="1480" y="940" width="396" height="40" rx="10" fill="#0f172a" />
+    <text x="1678" y="966" fill="#38bdf8" font-size="15" font-weight="900" text-anchor="middle">ENGINEERING TITLE BLOCK</text>
+
+    <line x1="1480" y1="1018" x2="1876" y2="1018" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1056" x2="1876" y2="1056" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1094" x2="1876" y2="1094" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1132" x2="1876" y2="1132" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1170" x2="1876" y2="1170" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1596" y1="980" x2="1596" y2="1170" stroke="#cbd5e1" stroke-width="1.5" />
+
+    <text x="1538" y="1004" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">사 업 장 명</text>
+    <text x="1736" y="1004" fill="#0f172a" font-size="13" font-weight="900" text-anchor="middle">YG-ONE 서운공장</text>
+
+    <text x="1538" y="1042" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">설비 / 시공</text>
+    <text x="1736" y="1042" fill="#0f172a" font-size="13" font-weight="900" text-anchor="middle">세진가스텍 / ACSC 스마트관제</text>
+
+    <text x="1538" y="1080" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">모니터 거리</text>
+    <text x="1736" y="1080" fill="#dc2626" font-size="11.8" font-weight="900" text-anchor="middle">방A: 50M / 별도공장B: 150M (4뱅크)</text>
+
+    <text x="1538" y="1118" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">전 송 방 식</text>
+    <text x="1736" y="1118" fill="#059669" font-size="11" font-weight="800" text-anchor="middle">50M 직결연장 + 150M 광/사내망 미니PC</text>
+
+    <text x="1538" y="1156" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">설계 / 개정</text>
+    <text x="1736" y="1156" fill="#334155" font-size="12" font-weight="800" text-anchor="middle">2026. 11. 12 | Rev 5.0 · 최적안</text>
+
+    <rect x="1494" y="1182" width="368" height="40" rx="8" fill="#ecfdf5" stroke="#6ee7b7" />
+    <text x="1678" y="1199" fill="#065f46" font-size="11.5" font-weight="900" text-anchor="middle">50M · 150M(4→11뱅크) 최종 조건 반영 완료</text>
+    <text x="1678" y="1215" fill="#047857" font-size="10.5" font-weight="700" text-anchor="middle">문서번호: DWG-YG-22CH-V5-HYB</text>
+  </g>
+</svg>
+        </div>
+        <div id="pane-after-net" class="diagram-pane">
+          <svg viewBox="0 0 1920 1280" width="1920" height="1280" style="font-family: 'Malgun Gothic', sans-serif;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="v5n_cadGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#e2e8f0" stroke-width="0.7" />
+    </pattern>
+    <pattern id="v5n_cadGridMajor" width="120" height="120" patternUnits="userSpaceOnUse">
+      <rect width="120" height="120" fill="url(#v5n_cadGrid)" />
+      <path d="M 120 0 L 0 0 0 120" fill="none" stroke="#cbd5e1" stroke-width="1.1" />
+    </pattern>
+
+    <filter id="v5n_cardShadow" x="-5%" y="-5%" width="110%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.08" />
+    </filter>
+    <filter id="v5n_badgeShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.12" />
+    </filter>
+
+    <marker id="v5n_arrSlate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#334155" />
+    </marker>
+    <marker id="v5n_arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#dc2626" />
+    </marker>
+    <marker id="v5n_arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#0284c7" />
+    </marker>
+    <marker id="v5n_arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#059669" />
+    </marker>
+    <marker id="v5n_arrPurple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#7c3aed" />
+    </marker>
+    <marker id="v5n_arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#d97706" />
+    </marker>
+
+    <linearGradient id="v5n_headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="55%" stop-color="#312e81" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="v5n_plcGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" />
+      <stop offset="100%" stop-color="#dbeafe" />
+    </linearGradient>
+    <linearGradient id="v5n_tvGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+  </defs>
+
+  <!-- 배경 & 프레임 -->
+  <rect x="0" y="0" width="1920" height="1280" fill="#f1f5f9" />
+  <rect x="20" y="20" width="1880" height="1240" rx="8" fill="url(#v5n_cadGridMajor)" stroke="#0f172a" stroke-width="3" />
+  <rect x="28" y="28" width="1864" height="1224" rx="4" fill="none" stroke="#475569" stroke-width="1" />
+
+  <!-- 상단 타이틀 바 -->
+  <rect x="28" y="28" width="1864" height="86" fill="url(#v5n_headerGrad)" />
+  <rect x="46" y="45" width="320" height="26" rx="13" fill="#8b5cf6" />
+  <text x="206" y="63" fill="#ffffff" font-size="12.2" font-weight="900" text-anchor="middle">2순위 완전 독립형 · 50M LAN + 150M 광네트워크안</text>
+
+  <text x="380" y="65" fill="#ffffff" font-size="21.5" font-weight="900" letter-spacing="-0.5">YG-ONE 서운공장 — 50M / 150M 전 구역 웹 네트워크 + 미니PC 독립 관제 구성도</text>
+  <text x="380" y="94" fill="#cbd5e1" font-size="12.5" font-weight="600">핵심 설계: 50M 방A(CAT6)와 150M 별도공장(광케이블/사내망) 모두 미니PC 배치 → 11뱅크 전체뷰 ↔ 공장별 맞춤 4뱅크뷰 언제든 1초 독립 전환!</text>
+
+  <rect x="1604" y="42" width="268" height="58" rx="8" fill="rgba(15,23,42,0.75)" stroke="#64748b" stroke-width="1.5" />
+  <text x="1738" y="64" fill="#38bdf8" font-size="12.3" font-weight="800" text-anchor="middle">재검토 설계일 : 2026. 11. 12 (Rev 5.0 · 독립안)</text>
+  <text x="1738" y="86" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">DWG-YG-22CH-V5-NET | 50M·150M 확정</text>
+
+  <!-- ZONE 1 & ZONE 2 컨테이너 -->
+  <rect x="44" y="132" width="446" height="786" rx="14" fill="#ffffff" fill-opacity="0.85" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 4" />
+  <rect x="44" y="132" width="446" height="40" rx="12" fill="#e2e8f0" />
+  <text x="62" y="157" fill="#0f172a" font-size="15" font-weight="900">① 현장 특수가스 설비 구역 (총 11뱅크 · 22채널)</text>
+
+  <rect x="502" y="136" width="276" height="32" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5" />
+  <text x="640" y="157" fill="#92400e" font-size="12.5" font-weight="800" text-anchor="middle">현장 계장 배선 구간 (전선관 포설)</text>
+
+  <rect x="790" y="132" width="468" height="786" rx="14" fill="#ffffff" fill-opacity="0.92" stroke="#0284c7" stroke-width="2.2" />
+  <rect x="790" y="132" width="468" height="40" rx="12" fill="#0284c7" />
+  <text x="810" y="157" fill="#ffffff" font-size="15" font-weight="900">② 메인 제어반(PLC) 및 서버실 (관리자석 · 0~1.5M)</text>
+
+  <rect x="1268" y="136" width="190" height="32" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5" />
+  <text x="1363" y="157" fill="#5b21b6" font-size="12.2" font-weight="800" text-anchor="middle">거리별 전송 (150M / 50M)</text>
+
+  <!-- ZONE 1 내부 설비 카드 -->
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="60" y="192" width="414" height="160" rx="12" fill="#ffffff" stroke="#059669" stroke-width="2.5" />
+    <rect x="60" y="192" width="414" height="36" rx="10" fill="#ecfdf5" />
+    <text x="76" y="216" fill="#065f46" font-size="15" font-weight="900">AC 5LINE (벽면 오토체인지 5뱅크)</text>
+    <rect x="370" y="199" width="92" height="22" rx="6" fill="#059669" />
+    <text x="416" y="214" fill="#ffffff" font-size="11.3" font-weight="800" text-anchor="middle">CH 11 ~ 20</text>
+    <text x="76" y="252" fill="#1e293b" font-size="12.2" font-weight="700">• 비방폭 5뱅크(10통): P-N2, G-N2, He, Ar, O2</text>
+    <text x="76" y="276" fill="#1e293b" font-size="12.2" font-weight="700">• 계장: 4~20mA 압력센서 10EA + 솔밸브 10EA</text>
+    <text x="76" y="300" fill="#047857" font-size="11.8" font-weight="700">• 라인당 센서2 + 밸브2 (CAT6 S-FTP 차폐선 5가닥)</text>
+    <text x="76" y="324" fill="#64748b" font-size="11.2" font-weight="600">• 솔밸브 코일 역기전력 방지 다이오드(1N4007) 부착</text>
+  </g>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="60" y="388" width="414" height="172" rx="12" fill="#ffffff" stroke="#d97706" stroke-width="2.5" />
+    <rect x="60" y="388" width="414" height="36" rx="10" fill="#fffbeb" />
+    <text x="76" y="412" fill="#92400e" font-size="15" font-weight="900">인증케비넷 5LINE (방폭 캐비넷 5뱅크)</text>
+    <rect x="370" y="395" width="92" height="22" rx="6" fill="#d97706" />
+    <text x="416" y="410" fill="#ffffff" font-size="11.3" font-weight="800" text-anchor="middle">CH 01 ~ 10</text>
+    <text x="76" y="448" fill="#1e293b" font-size="12.2" font-weight="700">• 가연성 방폭 5뱅크(10통): P-CH4, G-CH4, P-H2,</text>
+    <text x="88" y="468" fill="#475569" font-size="12" font-weight="600">MIX(Ar+H2), C2H2(아세틸렌)</text>
+    <text x="76" y="492" fill="#1e293b" font-size="12.2" font-weight="700">• 계장: 방폭 압력센서 10EA + 공압 솔밸브 10EA</text>
+    <rect x="74" y="508" width="386" height="36" rx="6" fill="#fef2f2" stroke="#fca5a5" />
+    <text x="267" y="531" fill="#b91c1c" font-size="11.2" font-weight="800" text-anchor="middle">필수수정: 20C 코어 부족 → 16C(센서)+16C(밸브) 분리!</text>
+  </g>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="60" y="606" width="204" height="282" rx="12" fill="#ffffff" stroke="#dc2626" stroke-width="2.5" />
+    <rect x="60" y="606" width="204" height="36" rx="10" fill="#fef2f2" />
+    <text x="162" y="629" fill="#991b1b" font-size="15" font-weight="900" text-anchor="middle">외부 H2 저장소</text>
+    <rect x="74" y="652" width="176" height="24" rx="6" fill="#fee2e2" />
+    <text x="162" y="668" fill="#991b1b" font-size="11.5" font-weight="800" text-anchor="middle">BANK 11 · CH 21~22 (2통)</text>
+    <text x="74" y="698" fill="#1e293b" font-size="12" font-weight="700">• 일반 수소: G-H2 (N35)</text>
+    <text x="74" y="722" fill="#1e293b" font-size="12" font-weight="700">• 방폭 압력센서 × 2EA</text>
+    <text x="74" y="746" fill="#1e293b" font-size="12" font-weight="700">• 공압 구동 밸브 × 2EA</text>
+    <text x="74" y="778" fill="#dc2626" font-size="11" font-weight="700">* 수소 방폭 위해 전기 코일은</text>
+    <text x="74" y="795" fill="#dc2626" font-size="11" font-weight="700">  비방폭 SOL.BOX로 외부 격리</text>
+    <rect x="74" y="818" width="176" height="50" rx="6" fill="#f8fafc" stroke="#cbd5e1" />
+    <text x="162" y="838" fill="#334155" font-size="10.8" font-weight="700" text-anchor="middle">옥외 자외선 노출 구간</text>
+    <text x="162" y="856" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">강제전선관/방수후렉시블 권장</text>
+  </g>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="322" y="670" width="152" height="192" rx="12" fill="#f0f9ff" stroke="#0284c7" stroke-width="2.5" />
+    <rect x="322" y="670" width="152" height="36" rx="10" fill="#0284c7" />
+    <text x="398" y="693" fill="#ffffff" font-size="15" font-weight="900" text-anchor="middle">SOL. BOX</text>
+    <text x="398" y="726" fill="#0c4a6e" font-size="11.5" font-weight="800" text-anchor="middle">(솔레노이드 분기함)</text>
+    <text x="334" y="754" fill="#334155" font-size="11.2" font-weight="600">• 비방폭 안전구역 설치</text>
+    <text x="334" y="776" fill="#334155" font-size="11.2" font-weight="600">• 공압 솔밸브 2EA 내장</text>
+    <text x="334" y="798" fill="#334155" font-size="11.2" font-weight="600">• 센서 중계 단자대</text>
+    <rect x="334" y="816" width="128" height="28" rx="6" fill="#e0f2fe" />
+    <text x="398" y="834" fill="#0369a1" font-size="11" font-weight="800" text-anchor="middle">외함: 방수 HI-BOX</text>
+  </g>
+
+  <line x1="264" y1="730" x2="320" y2="730" stroke="#334155" stroke-width="3" marker-end="url(#v5n_arrSlate)" />
+  <rect x="267" y="700" width="52" height="20" rx="4" fill="#ffffff" stroke="#94a3b8" />
+  <text x="293" y="714" fill="#0f172a" font-size="10" font-weight="800" text-anchor="middle">센서선</text>
+
+  <line x1="322" y1="800" x2="266" y2="800" stroke="#0284c7" stroke-width="4" marker-end="url(#v5n_arrBlue)" />
+  <rect x="267" y="809" width="52" height="20" rx="4" fill="#e0f2fe" stroke="#0284c7" />
+  <text x="293" y="823" fill="#0369a1" font-size="10" font-weight="800" text-anchor="middle">공압튜브</text>
+
+  <!-- ZONE 2 상단: Main CONTROL (LS PLC) -->
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="808" y="188" width="432" height="286" rx="12" fill="url(#v5n_plcGrad)" stroke="#1d4ed8" stroke-width="3" />
+    <rect x="808" y="188" width="432" height="42" rx="10" fill="#1e3a8a" />
+    <text x="1024" y="215" fill="#ffffff" font-size="16.5" font-weight="900" text-anchor="middle">Main CONTROL (LS PLC 통합 제어반)</text>
+
+    <rect x="824" y="242" width="400" height="90" rx="8" fill="#ffffff" stroke="#93c5fd" stroke-width="1.5" />
+    <text x="1024" y="263" fill="#1e3a8a" font-size="12" font-weight="900" text-anchor="middle">LS ELECTRIC XGB 5단 모듈 (11뱅크 · 22CH 압력수집 + 밸브제어)</text>
+
+    <rect x="836" y="274" width="94" height="46" rx="6" fill="#0284c7" />
+    <text x="883" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBC-DR30SU</text>
+    <text x="883" y="311" fill="#e0f2fe" font-size="10" font-weight="600" text-anchor="middle">CPU+릴레이12점</text>
+
+    <rect x="936" y="274" width="102" height="46" rx="6" fill="#059669" />
+    <text x="987" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBF-AD08A ×3</text>
+    <text x="987" y="311" fill="#d1fae5" font-size="10" font-weight="600" text-anchor="middle">4~20mA 24채널</text>
+
+    <rect x="1044" y="274" width="82" height="46" rx="6" fill="#d97706" />
+    <text x="1085" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBF-RY16A</text>
+    <text x="1085" y="311" fill="#fef3c7" font-size="10" font-weight="600" text-anchor="middle">추가릴레이16점</text>
+
+    <rect x="1132" y="274" width="80" height="46" rx="6" fill="#7c3aed" />
+    <text x="1172" y="294" fill="#ffffff" font-size="11" font-weight="800" text-anchor="middle">XBL-EMTA</text>
+    <text x="1172" y="311" fill="#ede9fe" font-size="10" font-weight="600" text-anchor="middle">이더넷 통신</text>
+
+    <text x="828" y="358" fill="#1e293b" font-size="11.8" font-weight="700">• PLC 고정 IP: 192.168.0.50 (Modbus TCP 502 / XGT 2004)</text>
+    <text x="828" y="381" fill="#1e293b" font-size="11.8" font-weight="700">• 150M 별도공장은 총 11뱅크 중 [실사용 4개 뱅크] 배관 분기 공급</text>
+    <text x="828" y="404" fill="#1e293b" font-size="11.8" font-weight="700">• 외함: 옥내용 철제 방진 제어반 (600×700×200mm, 스탠드형)</text>
+
+    <rect x="826" y="422" width="396" height="36" rx="6" fill="#dbeafe" stroke="#60a5fa" />
+    <text x="1024" y="445" fill="#1d4ed8" font-size="11.8" font-weight="800" text-anchor="middle">메모리 맵: 압력 읽기 %MW100~121 / 밸브 제어 %MW200~221</text>
+  </g>
+
+  <!-- 설비 ➔ PLC 배선 -->
+  <line x1="474" y1="262" x2="804" y2="262" stroke="#334155" stroke-width="3.5" marker-end="url(#v5n_arrSlate)" />
+  <g filter="url(#v5n_badgeShadow)">
+    <rect x="502" y="202" width="276" height="48" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8" />
+    <text x="640" y="222" fill="#0f172a" font-size="12" font-weight="800" text-anchor="middle">CAT6 S-FTP 차폐선 5가닥 / 60M</text>
+    <text x="640" y="241" fill="#059669" font-size="11" font-weight="800" text-anchor="middle">(원안 LAN 5가닥 → 알루미늄 차폐 적용)</text>
+  </g>
+
+  <line x1="474" y1="452" x2="762" y2="452" stroke="#d97706" stroke-width="3.5" />
+  <line x1="762" y1="452" x2="762" y2="352" stroke="#d97706" stroke-width="3.5" />
+  <line x1="762" y1="352" x2="804" y2="352" stroke="#d97706" stroke-width="3.5" marker-end="url(#v5n_arrAmber)" />
+  <g filter="url(#v5n_badgeShadow)">
+    <rect x="500" y="380" width="252" height="60" rx="8" fill="#fffbeb" stroke="#dc2626" stroke-width="2" />
+    <text x="626" y="400" fill="#991b1c" font-size="11.5" font-weight="900" text-anchor="middle">원안 20C 부족 → 분리 증설 (60M)</text>
+    <text x="626" y="418" fill="#0f172a" font-size="11.5" font-weight="800" text-anchor="middle">CVV-SB 0.5SQ 16C (센서 차폐)</text>
+    <text x="626" y="434" fill="#0369a1" font-size="11.2" font-weight="800" text-anchor="middle">+ CVV 0.75SQ 16C (밸브 제어)</text>
+  </g>
+
+  <line x1="474" y1="730" x2="736" y2="730" stroke="#334155" stroke-width="3.5" />
+  <line x1="736" y1="730" x2="736" y2="406" stroke="#334155" stroke-width="3.5" />
+  <line x1="736" y1="406" x2="804" y2="406" stroke="#334155" stroke-width="3.5" marker-end="url(#v5n_arrSlate)" />
+
+  <line x1="808" y1="436" x2="754" y2="436" stroke="#0284c7" stroke-width="3.5" />
+  <line x1="754" y1="436" x2="754" y2="790" stroke="#0284c7" stroke-width="3.5" />
+  <line x1="754" y1="790" x2="478" y2="790" stroke="#0284c7" stroke-width="3.5" marker-end="url(#v5n_arrBlue)" />
+
+  <g filter="url(#v5n_badgeShadow)">
+    <rect x="500" y="652" width="226" height="64" rx="8" fill="#ffffff" stroke="#334155" stroke-width="1.8" />
+    <text x="613" y="672" fill="#0f172a" font-size="12" font-weight="800" text-anchor="middle">CVV-SB 0.75SQ 8C / 120M</text>
+    <text x="613" y="690" fill="#475569" font-size="10.8" font-weight="700" text-anchor="middle">(4~20mA 센서 + SOL 밸브 구동)</text>
+    <text x="613" y="707" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">장거리 전압강하 방지 규격 상향</text>
+  </g>
+
+  <!-- PLC ➔ PC 이더넷 직결 -->
+  <line x1="957" y1="474" x2="957" y2="544" stroke="#7c3aed" stroke-width="4.5" marker-start="url(#v5n_arrPurple)" marker-end="url(#v5n_arrPurple)" />
+  <rect x="970" y="488" width="258" height="42" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" />
+  <text x="1099" y="506" fill="#5b21b6" font-size="11.3" font-weight="900" text-anchor="middle">LAN 1 : CAT6 S-FTP 차폐 랜선 1:1 직결</text>
+  <text x="1099" y="523" fill="#6d28d9" font-size="10.5" font-weight="700" text-anchor="middle">0.5초 실시간 양방향 폴링 (지연 1~3ms)</text>
+
+  
+  <!-- 관제 메인 서버 PC (전 구간 IP 네트워크 통합) -->
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="808" y="548" width="298" height="192" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="2.8" />
+    <rect x="808" y="548" width="298" height="36" rx="10" fill="#0f172a" />
+    <text x="957" y="571" fill="#ffffff" font-size="15.5" font-weight="900" text-anchor="middle">현장 메인 관제 서버 PC</text>
+
+    <text x="822" y="604" fill="#1e293b" font-size="11.5" font-weight="800">• LAN 1 (PLC 직결): 192.168.0.100 (GW 비움)</text>
+    <text x="822" y="624" fill="#1e293b" font-size="11.5" font-weight="800">• 중앙 웹서버(3000) + WebSocket 브릿지(4000)</text>
+    <text x="822" y="644" fill="#6d28d9" font-size="11.3" font-weight="800">• 오직 관리 모니터 1대만 직결 (마우스 이탈 0%!)</text>
+
+    <rect x="822" y="660" width="130" height="64" rx="7" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5" />
+    <text x="887" y="681" fill="#0369a1" font-size="11.5" font-weight="900" text-anchor="middle">HDMI 단독 출력</text>
+    <text x="887" y="700" fill="#0c4a6e" font-size="10.5" font-weight="700" text-anchor="middle">↓ 1.5M 직결</text>
+    <text x="887" y="715" fill="#0369a1" font-size="10.5" font-weight="800" text-anchor="middle">관리자 업무모니터</text>
+
+    <rect x="962" y="660" width="130" height="64" rx="7" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5" />
+    <text x="1027" y="681" fill="#5b21b6" font-size="11.5" font-weight="900" text-anchor="middle">LAN 2 포트</text>
+    <text x="1027" y="700" fill="#4c1d95" font-size="10.5" font-weight="700" text-anchor="middle">→ 기가비트 스위치</text>
+    <text x="1027" y="715" fill="#6d28d9" font-size="10.5" font-weight="800" text-anchor="middle">50M + 150M 통합</text>
+  </g>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1120" y="548" width="122" height="62" rx="9" fill="#fff1f2" stroke="#e11d48" stroke-width="1.8" />
+    <text x="1181" y="572" fill="#9f1239" font-size="11.3" font-weight="900" text-anchor="middle">USB 3색 경광등</text>
+    <text x="1181" y="592" fill="#be123c" font-size="10" font-weight="700" text-anchor="middle">현장 위험 경보</text>
+  </g>
+  <line x1="1106" y1="579" x2="1118" y2="579" stroke="#e11d48" stroke-width="2.5" marker-end="url(#v5n_arrRed)" />
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1120" y="618" width="122" height="122" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2.2" />
+    <rect x="1120" y="618" width="122" height="28" rx="8" fill="#6d28d9" />
+    <text x="1181" y="637" fill="#ffffff" font-size="11" font-weight="900" text-anchor="middle">기가비트 허브</text>
+    <text x="1130" y="663" fill="#4c1d95" font-size="9.8" font-weight="800">• P1: 메인 서버PC</text>
+    <text x="1130" y="682" fill="#4c1d95" font-size="9.8" font-weight="800">• P2: 광컨버터(150M)</text>
+    <text x="1130" y="701" fill="#4c1d95" font-size="9.8" font-weight="800">• P3: 방A LAN(50M)</text>
+    <text x="1130" y="720" fill="#059669" font-size="9.8" font-weight="800">• P4: 사내 인트라넷</text>
+  </g>
+  <line x1="1106" y1="680" x2="1118" y2="680" stroke="#7c3aed" stroke-width="3.5" marker-end="url(#v5n_arrPurple)" />
+
+  <line x1="887" y1="740" x2="887" y2="782" stroke="#0284c7" stroke-width="4" marker-end="url(#v5n_arrBlue)" />
+  <rect x="898" y="750" width="134" height="22" rx="5" fill="#e0f2fe" />
+  <text x="965" y="765" fill="#0369a1" font-size="10.8" font-weight="800" text-anchor="middle">HDMI 단독 직결 (1.5M)</text>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="808" y="786" width="432" height="114" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="3" />
+    <rect x="808" y="786" width="432" height="34" rx="9" fill="#0284c7" />
+    <text x="1024" y="808" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">관리자 업무용 모니터 (완전 독립 단일 모니터)</text>
+    <text x="822" y="842" fill="#0f172a" font-size="11.8" font-weight="800">• 확장 모니터 불필요 → 마우스 커서가 다른 방 TV로 넘어갈 일 0%!</text>
+    <text x="822" y="864" fill="#0369a1" font-size="11.8" font-weight="800">• 사내 네트워크망이 방A·공장B에 이미 있다면 배선 공사비 전액 0원!</text>
+    <text x="822" y="886" fill="#64748b" font-size="10.3" font-weight="600">* 3대의 모니터가 표준 웹 브라우저(0.5초 실시간 동기화)로 각자 독립 작동</text>
+  </g>
+
+  <!-- 상단 150M 광/사내망 선로 -->
+  <line x1="1242" y1="655" x2="1295" y2="655" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1295" y1="655" x2="1295" y2="235" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1295" y1="235" x2="1478" y2="235" stroke="#7c3aed" stroke-width="4.5" marker-start="url(#v5n_arrPurple)" marker-end="url(#v5n_arrPurple)" />
+
+  <g filter="url(#v5n_badgeShadow)">
+    <rect x="1268" y="260" width="190" height="118" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="2.2" />
+    <rect x="1268" y="260" width="190" height="26" rx="8" fill="#7c3aed" />
+    <text x="1363" y="278" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">공장B 선로 : 150M</text>
+    <text x="1363" y="302" fill="#0f172a" font-size="11.2" font-weight="800" text-anchor="middle">사내 공장간 인트라넷망 활용</text>
+    <text x="1363" y="321" fill="#5b21b6" font-size="10.8" font-weight="800" text-anchor="middle">또는 2코어 광점퍼코드 200M</text>
+    <text x="1363" y="341" fill="#059669" font-size="10.5" font-weight="800" text-anchor="middle">✓ 거리 한계 무제한 (최대 20km)</text>
+    <text x="1363" y="360" fill="#64748b" font-size="10" font-weight="700" text-anchor="middle">✓ 낙뢰 서지·전압차 완벽 절연</text>
+  </g>
+
+  <!-- 하단 50M CAT6 LAN 선로 -->
+  <line x1="1242" y1="705" x2="1320" y2="705" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1320" y1="705" x2="1320" y2="650" stroke="#7c3aed" stroke-width="4.5" />
+  <line x1="1320" y1="650" x2="1478" y2="650" stroke="#7c3aed" stroke-width="4.5" marker-start="url(#v5n_arrPurple)" marker-end="url(#v5n_arrPurple)" />
+
+  <g filter="url(#v5n_badgeShadow)">
+    <rect x="1268" y="768" width="190" height="114" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="2.2" />
+    <rect x="1268" y="768" width="190" height="26" rx="8" fill="#7c3aed" />
+    <text x="1363" y="786" fill="#ffffff" font-size="12" font-weight="900" text-anchor="middle">방A 선로 : 50M</text>
+    <text x="1363" y="810" fill="#0f172a" font-size="11.5" font-weight="800" text-anchor="middle">CAT6 S-FTP 랜선 1가닥</text>
+    <text x="1363" y="829" fill="#5b21b6" font-size="10.5" font-weight="800" text-anchor="middle">(표준 100m 이내 → 리피터 불필요!)</text>
+    <text x="1363" y="850" fill="#059669" font-size="10.5" font-weight="800" text-anchor="middle">✓ 50m 구부러진 배관도 쉽게 입선</text>
+    <text x="1363" y="869" fill="#64748b" font-size="10" font-weight="700" text-anchor="middle">*사내 랜포트 있으면 배선 생략!</text>
+  </g>
+
+  <!-- 우측 상단 150M 별도 공장 -->
+  <rect x="1468" y="132" width="408" height="384" rx="14" fill="#ffffff" fill-opacity="0.95" stroke="#7c3aed" stroke-width="2.8" />
+  <rect x="1468" y="132" width="408" height="40" rx="12" fill="#6d28d9" />
+  <text x="1672" y="157" fill="#ffffff" font-size="14" font-weight="900" text-anchor="middle">③-B 별도 수요처 공장 [거리 150M · 4개 뱅크 사용처]</text>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1486" y="184" width="372" height="96" rx="10" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" />
+    <text x="1672" y="208" fill="#4c1d95" font-size="13.2" font-weight="900" text-anchor="middle">공장B 전용 미니 PC #2 (N100 / TV 뒤 장착)</text>
+    <text x="1500" y="232" fill="#059669" font-size="11.2" font-weight="800">• 현재 요구: 11뱅크 전체 모니터링 (/?view=wallboard)</text>
+    <text x="1500" y="253" fill="#dc2626" font-size="11.2" font-weight="800">• 추후 요구 변경 시: 실사용 4개 뱅크 전용뷰로 1초 즉시 전환!</text>
+    <text x="1500" y="272" fill="#475569" font-size="10.5" font-weight="700">• 관리자 PIN 잠금으로 타 공정 가스 밸브 오조작 완벽 방지</text>
+  </g>
+  <line x1="1672" y1="280" x2="1672" y2="318" stroke="#0284c7" stroke-width="4" marker-end="url(#v5n_arrBlue)" />
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1486" y="322" width="372" height="180" rx="12" fill="url(#v5n_tvGrad)" stroke="#38bdf8" stroke-width="3" />
+    <rect x="1500" y="333" width="344" height="28" rx="6" fill="#0284c7" />
+    <text x="1672" y="352" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">75&quot; 대형 모니터 #2 [150M 타공장 독립뷰]</text>
+    <text x="1672" y="382" fill="#fde047" font-size="12.2" font-weight="800" text-anchor="middle">11뱅크 전체뷰 또는 4뱅크 맞춤뷰 100% 자유 설정</text>
+    <text x="1504" y="407" fill="#e2e8f0" font-size="11.2" font-weight="600">• 방A 화면과 무관하게 해당 공장 요구사항에 맞춰 개별 운영</text>
+    <text x="1504" y="428" fill="#e2e8f0" font-size="11.2" font-weight="600">• 필요 시 무선 마우스 연결하여 해당 공장 알람 확인 가능</text>
+    <text x="1504" y="449" fill="#6ee7b7" font-size="11.2" font-weight="700">• 한국어 음성경보(TTS) TV 스피커 직접 출력 지원</text>
+    <rect x="1622" y="476" width="100" height="12" rx="4" fill="#475569" />
+  </g>
+
+  <line x1="1468" y1="532" x2="1876" y2="532" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" />
+  <rect x="1504" y="519" width="336" height="26" rx="13" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" />
+  <text x="1672" y="536" fill="#b91c1c" font-size="10.8" font-weight="900" text-anchor="middle">▲ 별도 공장 B (150M)  |  서로 다른 건물·공간  |  ▼ 방 A (50M)</text>
+
+  <!-- 우측 하단 50M 방A -->
+  <rect x="1468" y="554" width="408" height="364" rx="14" fill="#ffffff" fill-opacity="0.95" stroke="#059669" stroke-width="2.5" />
+  <rect x="1468" y="554" width="408" height="40" rx="12" fill="#059669" />
+  <text x="1672" y="579" fill="#ffffff" font-size="14.5" font-weight="900" text-anchor="middle">③-A 제1모니터실 [별도 방 A · 거리 50M]</text>
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1486" y="608" width="372" height="82" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2" />
+    <text x="1672" y="630" fill="#065f46" font-size="13.2" font-weight="900" text-anchor="middle">방A 전용 미니 PC #1 (N100 / TV 뒤 장착)</text>
+    <text x="1500" y="652" fill="#1e293b" font-size="11.2" font-weight="700">• 50M CAT6 랜선 연결 → http://192.168.x.x:3000/?view=wallboard</text>
+    <text x="1500" y="672" fill="#047857" font-size="11.2" font-weight="800">• 방A에서도 필요시 마우스 조작 및 6탭 상세 화면 전환 가능!</text>
+  </g>
+  <line x1="1672" y1="690" x2="1672" y2="718" stroke="#059669" stroke-width="4" marker-end="url(#v5n_arrGreen)" />
+
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1486" y="722" width="372" height="178" rx="12" fill="url(#v5n_tvGrad)" stroke="#34d399" stroke-width="3" />
+    <rect x="1500" y="734" width="344" height="28" rx="6" fill="#059669" />
+    <text x="1672" y="753" fill="#ffffff" font-size="15" font-weight="900" text-anchor="middle">75&quot; 대형 모니터 #1 [50M 독립 전광판뷰]</text>
+    <text x="1672" y="784" fill="#6ee7b7" font-size="12.5" font-weight="800" text-anchor="middle">11뱅크 전체 초대형 숫자판 + 한국어 음성경보</text>
+    <text x="1504" y="809" fill="#e2e8f0" font-size="11.3" font-weight="600">• 150M 공장B가 4뱅크로 화면을 바꿔도 방A는 11뱅크 전체 유지!</text>
+    <text x="1504" y="830" fill="#e2e8f0" font-size="11.3" font-weight="600">• 메인 서버 PC 재부팅·엑셀 작업과 화면 간섭 전혀 없음</text>
+    <text x="1504" y="851" fill="#fde047" font-size="11.3" font-weight="700">• 향후 모니터를 4대, 5대로 늘려도 랜선만 꽂으면 무한 확장!</text>
+    <rect x="1622" y="872" width="100" height="12" rx="4" fill="#475569" />
+  </g>
+
+
+  
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="44" y="940" width="966" height="294" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2" />
+    <rect x="44" y="940" width="966" height="36" rx="10" fill="#312e81" />
+    <text x="62" y="964" fill="#ffffff" font-size="14.5" font-weight="900">[2순위 완전 IP 네트워크안] 왜 '사내 전산망'이 깔려 있을 때 이 방식이 압도적으로 유리한가?</text>
+
+    <rect x="56" y="988" width="942" height="154" rx="8" fill="#f8fafc" stroke="#cbd5e1" />
+    <text x="74" y="1016" fill="#0f172a" font-size="12.5" font-weight="900">1. 공장 건물 간 이미 연결된 '사내 인터넷망(공유기/스위치망)'을 그대로 타면 50M + 150M 배선 공사가 0원입니다!</text>
+    <text x="84" y="1040" fill="#334155" font-size="11.5" font-weight="700">• 150M 떨어진 별도 공장으로 전선관(CD관)을 파고 넘어가려면 인건비와 배관 자재비만 수십~수백만 원이 소요됩니다.</text>
+    <text x="84" y="1062" fill="#5b21b6" font-size="11.5" font-weight="800">• 반면 두 공장 벽면에 같은 회사 공유기망 랜포트가 이미 나와 있다면, 미니PC만 TV 뒤에 달고 꽂는 순간 배선 공사 없이 즉시 개통됩니다!</text>
+
+    <text x="74" y="1094" fill="#0f172a" font-size="12.5" font-weight="900">2. 3개 공간(서버실 1.5M / 방A 50M / 타공장 150M) 모두 100% 독립된 맞춤형 화면과 권한 설정 가능!</text>
+    <text x="84" y="1118" fill="#059669" font-size="11.5" font-weight="800">• 서버실=마스터제어 / 50M 방A=11뱅크 전체 전광판 / 150M 공장=현재 11뱅크 전체(추후 원할 시 해당 공장 4뱅크 전용뷰로 개별 변경!)</text>
+
+    <rect x="56" y="1156" width="942" height="62" rx="6" fill="#f5f3ff" stroke="#c4b5fd" />
+    <text x="527" y="1180" fill="#4c1d95" font-size="11.8" font-weight="900" text-anchor="middle">★ 사내망 미포설 구역이라 선을 새로 깔아야 한다면? → 50M 구간은 [CAT6 1줄], 150M 구간은 [2코어 광점퍼코드 200M + 광컨버터]로 연결!</text>
+    <text x="527" y="1202" fill="#6d28d9" font-size="11" font-weight="800" text-anchor="middle">장비 추가비(미니PC 2대 약 40만원)는 배관 인건비 절감액과 향후 유지보수 출장비 절감으로 100% 이상 회수됩니다.</text>
+  </g>
+
+  <!-- 하단 범례 -->
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1026" y="940" width="438" height="294" rx="12" fill="#ffffff" stroke="#334155" stroke-width="2" />
+    <rect x="1026" y="940" width="438" height="36" rx="10" fill="#334155" />
+    <text x="1046" y="964" fill="#ffffff" font-size="14.5" font-weight="900">배선 규격 및 거리별 신호 범례 (Legend)</text>
+    
+    <line x1="1044" y1="1004" x2="1108" y2="1004" stroke="#334155" stroke-width="4" marker-end="url(#v5n_arrSlate)" />
+    <text x="1120" y="1009" fill="#0f172a" font-size="12" font-weight="800">현장 계장선 (4~20mA 센서 / 솔밸브 제어)</text>
+
+    <line x1="1044" y1="1042" x2="1108" y2="1042" stroke="#d97706" stroke-width="4" marker-end="url(#v5n_arrAmber)" />
+    <text x="1120" y="1047" fill="#0f172a" font-size="12" font-weight="800">방폭 캐비닛 다심 차폐선 (16C×2 분리)</text>
+
+    <line x1="1044" y1="1080" x2="1108" y2="1080" stroke="#7c3aed" stroke-width="4.5" marker-end="url(#v5n_arrPurple)" />
+    <text x="1120" y="1085" fill="#0f172a" font-size="12" font-weight="800">이더넷 네트워크 (50M CAT6 / 150M 광·사내망)</text>
+
+    <line x1="1044" y1="1118" x2="1108" y2="1118" stroke="#0284c7" stroke-width="4" marker-end="url(#v5n_arrBlue)" />
+    <text x="1120" y="1123" fill="#0f172a" font-size="12" font-weight="800">단거리 HDMI 1.5M (관리석 / 150M 공장 TV)</text>
+
+    <line x1="1044" y1="1156" x2="1108" y2="1156" stroke="#059669" stroke-width="4" marker-end="url(#v5n_arrGreen)" />
+    <text x="1120" y="1161" fill="#0f172a" font-size="12" font-weight="800">단거리 HDMI 1.5M (50M 방A 미니PC → TV)</text>
+    <rect x="1042" y="1182" width="406" height="38" rx="6" fill="#f1f5f9" stroke="#cbd5e1" />
+    <text x="1245" y="1199" fill="#334155" font-size="10.8" font-weight="800" text-anchor="middle">확정 거리: 관리석(1.5M) + 방A(50M) + 타공장B(150M·4뱅크사용)</text>
+    <text x="1245" y="1215" fill="#0284c7" font-size="10.6" font-weight="700" text-anchor="middle">표출 정책: 현재 전 구역 11뱅크 통합 표출 (추후 4뱅크 필터 대응)</text>
+  </g>
+
+  <!-- 표제란 -->
+  <g filter="url(#v5n_cardShadow)">
+    <rect x="1480" y="940" width="396" height="294" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="2.5" />
+    <rect x="1480" y="940" width="396" height="40" rx="10" fill="#0f172a" />
+    <text x="1678" y="966" fill="#38bdf8" font-size="15" font-weight="900" text-anchor="middle">ENGINEERING TITLE BLOCK</text>
+
+    <line x1="1480" y1="1018" x2="1876" y2="1018" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1056" x2="1876" y2="1056" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1094" x2="1876" y2="1094" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1132" x2="1876" y2="1132" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1480" y1="1170" x2="1876" y2="1170" stroke="#cbd5e1" stroke-width="1.5" />
+    <line x1="1596" y1="980" x2="1596" y2="1170" stroke="#cbd5e1" stroke-width="1.5" />
+
+    <text x="1538" y="1004" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">사 업 장 명</text>
+    <text x="1736" y="1004" fill="#0f172a" font-size="13" font-weight="900" text-anchor="middle">YG-ONE 서운공장</text>
+
+    <text x="1538" y="1042" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">설비 / 시공</text>
+    <text x="1736" y="1042" fill="#0f172a" font-size="13" font-weight="900" text-anchor="middle">세진가스텍 / ACSC 스마트관제</text>
+
+    <text x="1538" y="1080" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">모니터 거리</text>
+    <text x="1736" y="1080" fill="#dc2626" font-size="11.8" font-weight="900" text-anchor="middle">방A: 50M / 별도공장B: 150M (4뱅크)</text>
+
+    <text x="1538" y="1118" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">전 송 방 식</text>
+    <text x="1736" y="1118" fill="#059669" font-size="11" font-weight="800" text-anchor="middle">50M LAN + 150M 광/사내망 (3개소 독립PC)</text>
+
+    <text x="1538" y="1156" fill="#475569" font-size="12" font-weight="800" text-anchor="middle">설계 / 개정</text>
+    <text x="1736" y="1156" fill="#334155" font-size="12" font-weight="800" text-anchor="middle">2026. 11. 12 | Rev 5.0 · 독립안</text>
+
+    <rect x="1494" y="1182" width="368" height="40" rx="8" fill="#ecfdf5" stroke="#6ee7b7" />
+    <text x="1678" y="1199" fill="#065f46" font-size="11.5" font-weight="900" text-anchor="middle">50M · 150M(4→11뱅크) 최종 조건 반영 완료</text>
+    <text x="1678" y="1215" fill="#047857" font-size="10.5" font-weight="700" text-anchor="middle">문서번호: DWG-YG-22CH-V5-NET</text>
+  </g>
+</svg>
+        </div>
+      </div>
+
+      <div class="map-guide-bar">
+        <span>👆 번호를 누르면 상세 원인과 수정 지시문으로 바로 이동합니다:</span>
+        <div class="quick-num-btns">
+          <button type="button" class="q-num crit" onclick="jumpToDefect(1)">1</button>
+          <button type="button" class="q-num crit" onclick="jumpToDefect(2)">2</button>
+          <button type="button" class="q-num crit" onclick="jumpToDefect(3)">3</button>
+          <button type="button" class="q-num maj" onclick="jumpToDefect(4)">4</button>
+          <button type="button" class="q-num crit" onclick="jumpToDefect(5)">5</button>
+          <button type="button" class="q-num crit" onclick="jumpToDefect(6)">6</button>
+          <button type="button" class="q-num maj" onclick="jumpToDefect(7)">7</button>
+          <button type="button" class="q-num maj" onclick="jumpToDefect(8)">8</button>
+          <button type="button" class="q-num crit" onclick="jumpToDefect(9)">9</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: 9대 결함 정밀 해부 -->
+    <section class="section-box">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">🛠️ 2. 영역별 9대 설계 결함 정밀 해부 및 수정 지시서</h2>
+          <p class="section-sub">초보자도 이해하기 쉬운 원리 해설과 설치업체 엔지니어가 즉시 납득할 수 있는 정량적 공학 근거를 함께 정리했습니다.</p>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button type="button" class="filter-btn active" onclick="filterDefects('all', this)">전체 보기 (9건)</button>
+        <button type="button" class="filter-btn" onclick="filterDefects('critical', this)">🔴 치명 결함만 (6건)</button>
+        <button type="button" class="filter-btn" onclick="filterDefects('major', this)">🟠 주의 보완만 (3건)</button>
+        <button type="button" class="filter-btn" onclick="filterDefects('video', this)">📺 모니터·영상 구간 (4건)</button>
+        <button type="button" class="filter-btn" onclick="filterDefects('field', this)">⚡ 현장 계장·배선 구간 (4건)</button>
+        <button type="button" class="filter-btn" onclick="filterDefects('bom', this)">📦 구입물품 BOM (1건)</button>
+      </div>
+
+      <div class="defect-list" id="defectList">
+        
+  <article class="defect-card" id="defect-1" data-severity="critical" data-category="video">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">1</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">영상·네트워크</span>
+            <span class="area-txt">우측 하단 · 서버실 구간</span>
+          </div>
+          <h3 class="defect-title">관리자 업무용 모니터(24"~27") 설계 누락</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(1)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>PC에서 오직 현장 75인치 모니터 방향으로만 선이 연결되어 있고, 정작 서버실 PC 앞 관리자가 볼 기본 모니터가 도면에 없음</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>메인 서버 PC HDMI 포트에 관리자 업무용 모니터(24"~27", 1.5M 직결) 1대 필수 배치</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>방송국 조정실에 정작 PD가 보고 조작할 모니터는 놔두지 않고, 저 멀리 대기실 대형 TV에만 화면을 보낸 것과 같습니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>통합 관제 소프트웨어는 관리자 화면(/?view=control, 6개 탭 제어·설정·이력 조회·PIN 잠금 해제)과 현장 전광판 화면(/?view=wallboard, 읽기 전용 초대형 숫자판)이 분리 운영되도록 설계되어 있습니다. 서버실 모니터가 없으면 초기 IP 세팅, 경보 임계값 조정, 긴급 밸브 제어가 불가능합니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-1">[보완지시 1] 메인 서버 PC 옆(1.5m 이내)에 관리자 조작 및 일반 사무 겸용 24~27인치 모니터 1대를 HDMI 직결로 추가 반영 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(1)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-2" data-severity="critical" data-category="video">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">2</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">영상·네트워크</span>
+            <span class="area-txt">우측 하단 · 75" 모니터#1 (50M) 구간</span>
+          </div>
+          <h3 class="defect-title">디지털 케이블 T자 분기 불가 및 50M 구간 연장기(증폭기) 누락</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(2)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>PC 출력선 하나를 중간에서 T자로 갈라 아래쪽 75" 모니터#1(50M 거리)에는 증폭기 없이 직결하고, 위쪽으로만 증폭기를 설치함</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>T자 병렬 결선 절대 금지! PC 보조 출력(DP 단자)에서 Active 변환젠더 + 1:1 무전원 PoC 랜선 연장기(또는 50M 광 HDMI)로 75" 모니터#1에 단독 연결</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>전등 전선이나 수도관은 중간을 잘라 T자로 연결해도 흐르지만, 디지털 영상(HDMI)은 1:1 고속 암호 통신이라 선을 까서 두 갈래로 잇는 순간 양쪽 화면이 모두 깨져 아무것도 나오지 않습니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>일반 구리 HDMI 케이블의 최대 전송 한계는 10~15m입니다. 50m(실제 천장 입선 시 약 65m) 거리를 별도 연장기(HDBaseT 수신기 또는 광 변환 칩셋) 없이 직결하면 고주파 감쇠(Attenuation)로 인해 100% 블랙아웃(신호 없음)이 발생합니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-2">[보완지시 2] 디지털 영상선은 T자 분기가 불가하므로, 50m 거리의 75인치 모니터#1 구간에도 CAT6 S-FTP 차폐선 + 1:1 무전원 PoC 연장기 세트(또는 무전원 광 HDMI 50m)를 단독 구성 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(2)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-3" data-severity="critical" data-category="video">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">3</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">영상·네트워크</span>
+            <span class="area-txt">우측 상단 · 75" 모니터#2 (150M 타공장) 구간</span>
+          </div>
+          <h3 class="defect-title">150M 거리 축소 표기(약 100M) 및 별도 공장 간 구리선 증폭기 한계 초과·낙뢰 위험</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(3)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>모니터#1 부근에서 모니터#2까지 "약 100M" 구리선 직렬 증폭기(TX-RX) 연결로 표기함</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>150M 별도 공장 구간은 [기존 사내 인트라넷망 활용(배선비 0원)] 또는 [옥외용 2코어 광점퍼코드 200M + 기가비트 광 미디어 컨버터 1쌍]으로 전기적 완벽 절연 구성</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>서로 떨어진 두 공장 건물 사이에 200m짜리 구리 철사를 매달아 놓으면, 여름철 천둥·번개가 칠 때 그 구리선이 거대한 피뢰침 역할을 하여 양쪽 끝의 고가 컴퓨터와 75인치 대형 TV 기판을 한방에 태워버립니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>도면 거리 150m는 수직 입상 및 천장 트레이 우회 반영 시 실 배선 길이가 180~200m에 달합니다. 일반 이더넷(100m 한계) 및 구리선 HDBaseT 영상 증폭기(직선 100~150m 한계)로는 신호가 끊겨 작동하지 않습니다. 또한 별도 공장 건물 간 접지 전위차(Ground Loop)와 유도 서지를 원천 차단하려면 유리섬유 기반 광케이블(또는 기존 건물 간 광 스위치 사내망)이 필수입니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-3">[보완지시 3] 75인치 모니터#2는 150m(실포설 200m) 별도 공장에 위치하므로 구리선 증폭기 사용을 금지하며, 기존 사내 전산망을 활용하거나 옥외용 2코어 광점퍼코드(200m) + 광 미디어 컨버터 1쌍으로 변경 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(3)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-4" data-severity="major" data-category="video">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-maj">4</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-maj">주의 보완 (노이즈·운영리스크)</span>
+            <span class="cat-badge">영상·네트워크</span>
+            <span class="area-txt">우측 상단 · 150M 별도 공장 운영 정책</span>
+          </div>
+          <h3 class="defect-title">실사용 4뱅크 공장의 "4뱅크 → 11뱅크 전체 요청(추후 재변경 유력)" 대응 불가</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(4)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>하드웨어 증폭기로 모니터#1과 모니터#2에 물리적으로 똑같은 복제 화면만 강제 송출</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>150M 공장 75" TV 뒷면에 초소형 미니PC(N100) 장착 → 현재는 전체 11뱅크 전광판(/?view=wallboard) 표출, 추후 요청 시 배선 변경 없이 해당 공장 4뱅크 전용뷰로 즉시 전환</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>150m 공장은 11개 가스 라인 중 4개만 쓰는데 11개 전체 알람을 띄워놓으면, 남의 공장 7개 라인 가스가 떨어질 때마다 하루 종일 빨간 경보가 깜빡여 정작 자기네 가스 경보를 무시하는 "양치기 소년 효과(알람 피로도)"가 발생합니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>가동 1~2주 내 현장 작업자들이 "헷갈리니 예전 말대로 우리 공장 4개 뱅크만 보여달라"고 재요청할 확률이 극히 높습니다. 단순 영상 증폭기 방식은 두 TV 화면을 분리할 수 없어 장비를 철거·재구축해야 하지만, 미니PC 웹 접속 방식은 현재 11뱅크 동일 표출 요구를 100% 충족하면서도 추후 인터넷 주소 파라미터 변경만으로 1초 만에 4뱅크 맞춤 화면으로 전환됩니다. (PIN 잠금으로 타 공장 밸브 오조작도 원천 차단)</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-4">[보완지시 4] 150m 타공장 75인치 모니터 뒤에는 초소형 미니PC(Intel N100급)를 설치하여 웹 전광판(11뱅크 전체 표출 및 추후 4뱅크 필터링 즉시 전환 가능) 구조로 시공 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(4)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-5" data-severity="critical" data-category="field">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">5</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">현장 계장·전력</span>
+            <span class="area-txt">좌측 중단 · 인증케비넷 5LINE (60M) 구간</span>
+          </div>
+          <h3 class="defect-title">24AWG 20C 케이블 전선 가닥 수(코어) 절대 부족 및 센서·밸브 노이즈 혼선</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(5)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>인증케비넷 5LINE(방폭 5뱅크 = 10통) 구간에 "24AWG 20C 케이블 / 60M" 단 1줄만 배선</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>[센서 전용] CVV-SB 0.5SQ 16C(알루미늄 차폐) 1줄 + [밸브 제어용] CVV 0.75SQ 16C 1줄 (각 70M, 총 2줄 분리 포설)</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>22명이 타야 하는 출퇴근 버스에 20인승 미니버스 1대만 배차한 격입니다. 현장에서 전선 피복을 벗기는 순간 선 가닥 수가 모자라 결선 자체가 불가능해집니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>방폭 캐비닛 5뱅크(10채널)는 4~20mA 압력센서 10개 + 공압 솔레노이드 밸브 10개로 구성됩니다. 센서 신호선(10쌍 또는 공통 묶음 시 최소 11코어)과 밸브 구동선(10채널 + 공통선 최소 11코어 + 예비선)을 합치면 최소 24~32코어가 필수입니다. 특히 미세 아날로그 전류(4~20mA) 선과 DC 24V 밸브 코일 전원선을 비차폐 단일 케이블에 함께 넣으면 밸브 개폐 시 전자기 유도 노이즈로 압력값이 급등락합니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-5">[보완지시 5] 인증케비넷 5LINE 구간은 20C 단선으로 결선이 불가하므로, 센서용 차폐 케이블(CVV-SB 0.5SQ 16C) 1줄과 밸브용 제어 케이블(CVV 0.75SQ 16C) 1줄로 분리 포설 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(5)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-6" data-severity="critical" data-category="field">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">6</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">현장 계장·전력</span>
+            <span class="area-txt">좌측 하단 · 외부 H2 저장소 & SOL. BOX (120M) 구간</span>
+          </div>
+          <h3 class="defect-title">120M 장거리 24AWG(0.2SQ) 전압강하로 인한 밸브 미작동 위험 및 파란색 공압선 오결선</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(6)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>120M 장거리에 초세선 "24AWG 8C 케이블" 적용 + 파란색 선(공압 라인 추정)이 SOL. BOX에서 전기 판넬인 Main CONTROL(PLC)까지 연결됨</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>120M 구간 전선을 굵은 차폐 제어선 "CVV-SB 0.75SQ 8C (실포설 140M)"로 상향 + 구동용 공압 튜브는 현장 에어 배관에서 SOL. BOX로 직결(PLC 판넬 진입 금지)</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>120m나 떨어진 텃밭에 물을 주는데 빨대처럼 얇은 호스(24AWG)를 연결하면 끝에서는 수압이 다 떨어져 물이 쫄쫄 흐르는 것과 같습니다. 추운 겨울철에는 전압 부족으로 외부 수소 밸브가 열리지 않는 대형 사고로 이어집니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>24AWG(단면적 약 0.205mm²) 구리선의 120m 왕복(240m) 선로 저항은 R = ρ×(2L/A) ≈ 20.2Ω에 달합니다. 솔레노이드 밸브 2개 동시 구동 및 기동 돌입전류 발생 시 선로 전압강하가 커져 코일 흡입력 부족이 발생합니다. 단면적을 약 3.7배 키운 0.75SQ(왕복 저항 약 5.6Ω) 차폐선으로 상향해야 안전하며, 수소 방폭 구역 특성상 전기 솔밸브는 비방폭 안전구역의 방수 SOL. BOX에 격리 설치하고 PLC로는 전기 제어선만 인입해야 합니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-6">[보완지시 6] 외부 H2 저장소~PLC(120m) 구간은 전압강하 방지를 위해 CVV-SB 0.75SQ 8C 이상으로 상향하고, 파란색 공압 에어 라인은 PLC 전기 판넬이 아닌 현장 공압 배관에서 SOL. BOX로 공급되도록 수정 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(6)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-7" data-severity="major" data-category="field">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-maj">7</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-maj">주의 보완 (노이즈·운영리스크)</span>
+            <span class="cat-badge">현장 계장·전력</span>
+            <span class="area-txt">좌측 상단 · AC 5LINE (60M) 구간</span>
+          </div>
+          <h3 class="defect-title">AC 5LINE "LAN 5가닥" 차폐 규격 미지정 및 역기전력 방지 소자 누락</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(7)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>단순히 "LAN 5가닥 / 60M"으로만 표기되어 일반 비차폐 인터넷선(UTP) 시공 우려</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>알루미늄 호일 차폐 규격인 "CAT6 S-FTP 차폐 랜선 5가닥(각 70M)" 명시 + 솔밸브 코일 양단 역기전력 흡수 다이오드(1N4007) 부착</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>공장 천장에는 대형 모터와 인버터에서 강한 전자파 소음이 쏟아집니다. 차폐막 없는 일반 랜선(UTP)은 우산 없이 소나기 속을 걷는 것과 같아서 압력 센서 숫자가 수시로 출렁이게 됩니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>비방폭 오토체인지 5뱅크(라인당 센서 2 + 솔밸브 2)를 8가닥 랜선 5줄로 배선하는 아이디어 자체는 경제적이나, 반드시 외부 알루미늄 차폐막(S-FTP/FTP)이 있는 CAT6 케이블을 써서 제어반 접지에 물려야 합니다. 또한 릴레이 접점 보호 및 노이즈 억제를 위해 각 솔밸브 DC 24V 코일 단자에 플라이백 다이오드(1N4007)를 병렬 취부해야 PLC 출력 카드 수명이 보장됩니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-7">[보완지시 7] AC 5LINE 구간 랜선 5가닥은 일반 UTP 사용을 금하며 반드시 알루미늄 차폐형 CAT6 S-FTP 케이블을 적용하고, 솔밸브 코일마다 역기전력 방지 다이오드(1N4007)를 취부 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(7)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-8" data-severity="major" data-category="field">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-maj">8</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-maj">주의 보완 (노이즈·운영리스크)</span>
+            <span class="cat-badge">현장 계장·전력</span>
+            <span class="area-txt">중앙 · Main CONTROL(PLC) ↔ PC 구간</span>
+          </div>
+          <h3 class="defect-title">PLC ↔ 서버 PC 간 점선 표기로 인한 통신 선로 및 IP 규격 모호성</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(8)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>Main CONTROL(PLC)과 PC 사이가 규격 설명 없는 단순 점선으로만 표시됨</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>LS PLC 이더넷 모듈(XBL-EMTA, 192.168.0.50) ↔ 서버 PC LAN1(192.168.0.100) 간 CAT6 S-FTP 차폐 랜선 1:1 직결 명시</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>두 장비 사이에 점선만 그어 놓으면 현장 작업자가 옛날 방식인 시리얼 선(RS-232/485)을 깔아야 하는지 랜선을 깔아야 하는지 알 수 없어 현장에서 혼선이 생깁니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>본 시스템은 LS ELECTRIC XGB PLC의 XBL-EMTA 모듈을 통해 0.5초 주기로 22채널 압력(%MW100~121)과 밸브 상태(%MW200~221)를 고속 폴링(지연 1~3ms)합니다. 외부 공유기망과 혼선되지 않도록 서버 PC의 PLC 전용 유선 랜포트(192.168.0.100, 게이트웨이 공란)와 1:1 차폐 랜선으로 직결해야 합니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-8">[보완지시 8] PLC 제어반(XBL-EMTA 모듈)과 메인 PC 사이는 CAT6 S-FTP 차폐 랜선 1가닥으로 1:1 직결 배선 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(8)">시공 지시문 복사</button>
+    </div>
+  </article>
+
+  <article class="defect-card" id="defect-9" data-severity="critical" data-category="bom">
+    <div class="defect-header">
+      <div class="defect-num-wrap">
+        <span class="defect-num num-crit">9</span>
+        <div>
+          <div class="defect-meta">
+            <span class="sev-badge sev-crit">치명 결함 (시공불가·파손위험)</span>
+            <span class="cat-badge">자재 물량(BOM)</span>
+            <span class="area-txt">좌측 하단 · 구입물품(BOM) 내역표</span>
+          </div>
+          <h3 class="defect-title">난연 CD 전선관 물량 55% 과소 산정(공사 중단 직결) 및 부자재 수량 오기재</h3>
+        </div>
+      </div>
+      <button type="button" class="btn-map-focus" onclick="focusOnMap(9)">도면 위치 보기 ↑</button>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-box ba-before">
+        <div class="ba-label">❌ 당초 설치업체 설계 (Before)</div>
+        <p>1. CD 36 * 4EA(50M기준 = 총 200M) / 2. CD콘넥타 20EA / 3. 랜 8P - 3EA / 4. HI-BOX(추후구매)</p>
+      </div>
+      <div class="ba-box ba-after">
+        <div class="ba-label">✅ 표준 보완 지시안 (After)</div>
+        <p>1. 난연 CD 36관 8~9롤(400~450M, 사내망 활용 시 6롤 300M) / 2. 콘넥타 45~50EA / 3. RJ-45 차폐잭 1봉(50~100EA) / 4. 옥외 방수형 HI-BOX(IP65) 착공 전 즉시 발주</p>
+      </div>
+    </div>
+
+    <div class="explain-grid">
+      <div class="explain-item">
+        <div class="explain-title">💡 이해하기 쉬운 비유</div>
+        <p>서울에서 부산까지(440km) 가야 하는데 기름을 대전까지 갈 만큼(200km)만 넣어둔 셈입니다. 공사 당일 배관을 절반도 못 깔고 자재가 동나 인부들이 철수하는 사태가 벌어집니다.</p>
+      </div>
+      <div class="explain-item">
+        <div class="explain-title">🔬 엔지니어링 검증 근거</div>
+        <p>설치업체 도면에 적힌 직선거리만 단순 합산해도 AC 5LINE(60m) + 인증케비넷(60m) + 외부 H2(120m) = 설비 구간만 이미 240m이며, 여기에 모니터 구간(50m + 150m = 200m)을 더하면 최소 440m의 전선관이 소요됩니다. 원안의 4롤(200m)은 명백한 산출 착오이며, "랜 8P - 3EA" 역시 RJ-45 커넥터 3개로는 케이블 2가닥조차 마감할 수 없는 오기재입니다.</p>
+      </div>
+    </div>
+
+    <div class="directive-bar">
+      <div class="directive-text" id="dir-txt-9">[보완지시 9] 전선관 총 소요거리가 약 440m에 달하므로 CD 36관을 8~9롤(400~450m, 타공장 사내망 활용 시 6롤) 및 콘넥타 45EA 이상으로 증량하고, RJ-45 차폐 커넥터 1봉(100EA)과 옥외 방수 HI-BOX를 착공 전 일괄 준비 바랍니다.</div>
+      <button type="button" class="btn-copy" onclick="copyDirective(9)">시공 지시문 복사</button>
+    </div>
+  </article>
+      </div>
+    </section>
+
+    <!-- Section 3: 구입물품(BOM) 원안 vs 확정 보정 대조표 -->
+    <section class="section-box">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">📦 3. 구입물품(BOM) 원안 vs 최종 보정 물량 대조표</h2>
+          <p class="section-sub">설치업체 발주 전 아래 우측 <strong>[최종 확정 규격 및 수량]</strong>으로 자재 내역서를 반드시 갱신하시기 바랍니다.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:16%">구분 품목</th>
+              <th style="width:22%">당초 도면 표기 (원안)</th>
+              <th style="width:34%">최종 보정 규격 및 확정 수량 (Rev 5.0)</th>
+              <th style="width:28%">핵심 보정 사유</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. 난연 CD 전선관</strong></td>
+              <td class="td-wrong">CD 36 * 4EA (50M기준 = 200M)</td>
+              <td class="td-right">난연 CD 36mm × 8~9롤 (400~450M)<br/><span style="font-size:12.5px;font-weight:600;color:var(--text-muted)">※ 150M 타공장 사내망 활용 시 6롤(300M)</span></td>
+              <td>설비(240M) + 모니터(50M+150M=200M) = <strong>총 440M 소요</strong> (원안 200M는 공사 중 자재 고갈)</td>
+            </tr>
+            <tr>
+              <td><strong>2. CD 콘넥타</strong></td>
+              <td class="td-wrong">20EA</td>
+              <td class="td-right">45 ~ 50EA (난연 36mm 규격)</td>
+              <td>전선관 롤 수 2배 증량 및 풀박스·제어반 인입 개소 반영</td>
+            </tr>
+            <tr>
+              <td><strong>3. 인증케비넷 5LINE 전선</strong></td>
+              <td class="td-wrong">24AWG 20C 케이블 / 60M</td>
+              <td class="td-right">CVV-SB 0.5SQ 16C(센서 차폐) 70M<br/>+ CVV 0.75SQ 16C(밸브 제어) 70M</td>
+              <td>센서 10개 + 밸브 10개 = 최소 24~32코어 필요 (20C 단선 결선 불가 및 신호 간섭 차단)</td>
+            </tr>
+            <tr>
+              <td><strong>4. 외부 H2 저장소 전선</strong></td>
+              <td class="td-wrong">24AWG 8C 케이블 / 120M</td>
+              <td class="td-right">CVV-SB 0.75SQ 8C 차폐 제어선 / 140M</td>
+              <td>120M 장거리 24AWG(0.2SQ) 적용 시 왕복 20Ω 저항으로 솔밸브 전압강하 미작동 위험 해소</td>
+            </tr>
+            <tr>
+              <td><strong>5. AC 5LINE 전선 & 소자</strong></td>
+              <td class="td-wrong">LAN 5가닥 / 60M</td>
+              <td class="td-right">CAT6 S-FTP 알루미늄 차폐 랜선 5가닥(각 70M)<br/>+ 역기전력 방지 다이오드(1N4007) 12EA</td>
+              <td>공장 모터·인버터 유도 노이즈 차폐 및 밸브 OFF 시 서지 전압으로부터 PLC 릴레이 보호</td>
+            </tr>
+            <tr>
+              <td><strong>6. RJ-45 커넥터 (랜 8P)</strong></td>
+              <td class="td-wrong">랜 8P - 3EA</td>
+              <td class="td-right">CAT6 쉴드(차폐형) RJ-45 커넥터 1봉 (50~100EA)</td>
+              <td>원안 3EA는 랜선 2가닥조차 마감할 수 없는 명백한 수량 오기재</td>
+            </tr>
+            <tr>
+              <td><strong>7. 옥외 분기함 (HI-BOX)</strong></td>
+              <td class="td-wrong">HI-BOX (추후구매)</td>
+              <td class="td-right">옥외 방수형 HI-BOX (IP65 이상, SOL. BOX용) 즉시 발주</td>
+              <td>외부 수소 저장소 인근 비방폭 안전구역에 솔밸브·단자대 수납 필수 (우천 노출 대비)</td>
+            </tr>
+            <tr>
+              <td><strong>8. 50M 모니터#1 전송세트</strong></td>
+              <td class="td-wrong">T자 분기 무연장 직결</td>
+              <td class="td-right">Active DP-to-HDMI + 70~100M급 PoC 연장기 + CAT6 S-FTP 65M</td>
+              <td>T자 분기 및 50M 일반 HDMI 전송 불가 → 무전원 수신(PoC) 방식으로 배관 입선 최적화</td>
+            </tr>
+            <tr>
+              <td><strong>9. 150M 타공장 모니터#2 세트</strong></td>
+              <td class="td-wrong">약 100M 구리선 직렬 증폭기</td>
+              <td class="td-right">[사내망 미연결 시] 옥외용 2코어 광점퍼코드 200M + 광컨버터 1쌍<br/>+ 초소형 미니PC(Intel N100) 1대</td>
+              <td>150M(실 200M) 거리 한계 돌파, 건물 간 낙뢰 완벽 절연, <strong>현재 11뱅크 표출 & 추후 4뱅크 즉시 전환 보장</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section 4: 착공 전 설치업체 미팅 체크리스트 -->
+    <section class="section-box">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">✅ 4. 착공 전 설치업체 협의 확인 체크리스트</h2>
+          <p class="section-sub">설치업체 담당자와 하나씩 점검하며 클릭해 체크하세요. (브라우저에 자동 저장되며 인쇄 시 그대로 출력됩니다)</p>
+        </div>
+        <button type="button" class="btn" onclick="resetChecks()">초기화</button>
+      </div>
+
+      <div class="check-list" id="checkList">
+        <label class="check-row"><input type="checkbox" data-idx="0" onchange="saveChecks()"/><span><strong>[사내망 사전 확인]</strong> 메인 서버실과 150M 별도 공장이 같은 사내 공유기/전산망으로 연결되어 있는지 확인 (연결 시 150M 배관·광케이블 공사비 0원!)</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="1" onchange="saveChecks()"/><span><strong>[관리자 모니터 반영]</strong> 서버실 메인 PC 옆에 24~27인치 관리자 제어용 모니터 1대(HDMI 직결) 설치 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="2" onchange="saveChecks()"/><span><strong>[50M 방A 연장기 확정]</strong> T자 분기 설계를 폐기하고, PC DP 포트에서 1:1 무전원 PoC 랜선 연장기(또는 광 HDMI 50M)로 단독 배선 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="3" onchange="saveChecks()"/><span><strong>[150M 타공장 미니PC 확정]</strong> 구리선 증폭기 대신 사내망(또는 2코어 광케이블 200M + 광컨버터) + 초소형 미니PC를 설치하여 11뱅크 표출 및 추후 4뱅크 전환 대비 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="4" onchange="saveChecks()"/><span><strong>[인증케비넷 전선 2줄 분리]</strong> 24AWG 20C 1줄 대신 CVV-SB 0.5SQ 16C(센서 차폐) + CVV 0.75SQ 16C(밸브 제어) 2줄 분리 포설 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="5" onchange="saveChecks()"/><span><strong>[외부 H2 전선 상향 & 공압선 수정]</strong> 120M 구간을 CVV-SB 0.75SQ 8C로 굵기 상향하고, 파란색 공압 에어 라인은 PLC 판넬이 아닌 현장 에어 배관에서 SOL. BOX로 직결 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="6" onchange="saveChecks()"/><span><strong>[AC 5LINE 차폐 & 다이오드]</strong> 일반 UTP 대신 알루미늄 차폐 CAT6 S-FTP 5가닥 사용 및 솔밸브 역기전력 방지 다이오드(1N4007) 부착 확정</span></label>
+        <label class="check-row"><input type="checkbox" data-idx="7" onchange="saveChecks()"/><span><strong>[자재 물량 증량 발주]</strong> 난연 CD 36관 8~9롤(400~450M), 콘넥타 45EA, RJ-45 차폐잭 1봉, 옥외 방수 HI-BOX 착공 전 준비 완료</span></label>
+      </div>
+
+      <div class="sign-box">
+        <div class="sign-line">검토 및 발주 승인 (발주처): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명)</div>
+        <div class="sign-line">설계 보완 확인 (시공업체): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (서명)</div>
+        <div class="sign-line">협의 일자: 2026년 &nbsp;&nbsp;&nbsp;&nbsp;월 &nbsp;&nbsp;&nbsp;&nbsp;일</div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">복사되었습니다!</div>
+
+  <script>
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(function() {
+        t.classList.remove('show');
+      }, 2600);
+    }
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+      try { localStorage.setItem('yg_audit_theme', next); } catch (e) {}
+    }
+
+    function switchDiagramTab(tabId, btnEl) {
+      var panes = document.querySelectorAll('.diagram-pane');
+      for (var i = 0; i < panes.length; i++) panes[i].classList.remove('active');
+      document.getElementById('pane-' + tabId).classList.add('active');
+
+      var btns = document.querySelectorAll('.tab-btn');
+      for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    function jumpToDefect(num) {
+      // 만약 필터로 숨겨져 있으면 전체 보기로 자동 해제
+      var target = document.getElementById('defect-' + num);
+      if (!target) return;
+      if (target.style.display === 'none') {
+        var allBtn = document.querySelector('.filter-btn');
+        filterDefects('all', allBtn);
+      }
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.remove('highlight-flash');
+      void target.offsetWidth;
+      target.classList.add('highlight-flash');
+      setTimeout(function() { target.classList.remove('highlight-flash'); }, 2200);
+    }
+
+    function focusOnMap(num) {
+      var beforeBtn = document.querySelector('.tab-before');
+      switchDiagramTab('before', beforeBtn);
+      document.getElementById('map-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast(num + '번 결함 위치를 도면에서 확인하세요.');
+    }
+
+    function filterDefects(criteria, btnEl) {
+      var btns = document.querySelectorAll('.filter-btn');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+      if (btnEl) btnEl.classList.add('active');
+
+      var cards = document.querySelectorAll('.defect-card');
+      for (var k = 0; k < cards.length; k++) {
+        var c = cards[k];
+        var sev = c.getAttribute('data-severity');
+        var cat = c.getAttribute('data-category');
+        if (criteria === 'all' || sev === criteria || cat === criteria) {
+          c.style.display = '';
+        } else {
+          c.style.display = 'none';
+        }
+      }
+    }
+
+    function copyTextSafe(text, okMsg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast(okMsg);
+        }).catch(function() {
+          fallbackCopy(text, okMsg);
+        });
+      } else {
+        fallbackCopy(text, okMsg);
+      }
+    }
+
+    function fallbackCopy(text, okMsg) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast(okMsg); } catch (e) { showToast('복사 실패: 직접 선택해 복사해 주세요.'); }
+      document.body.removeChild(ta);
+    }
+
+    function copyDirective(num) {
+      var el = document.getElementById('dir-txt-' + num);
+      if (!el) return;
+      copyTextSafe(el.textContent, num + '번 시공 보완 지시문이 복사되었습니다!');
+    }
+
+    function copyAllDirectives() {
+      var lines = ['[YG-ONE 서운공장(세진가스텍) 당초 설계도 시공 보완 요청사항 (총 9건)]', ''];
+      for (var i = 1; i <= 9; i++) {
+        var el = document.getElementById('dir-txt-' + i);
+        if (el) lines.push(el.textContent);
+      }
+      copyTextSafe(lines.join('\n'), '9대 시공 보완 지시문 전체가 클립보드에 복사되었습니다!');
+    }
+
+    function saveChecks() {
+      var boxes = document.querySelectorAll('#checkList input[type="checkbox"]');
+      var state = [];
+      for (var i = 0; i < boxes.length; i++) {
+        var checked = boxes[i].checked;
+        state.push(checked ? 1 : 0);
+        if (checked) boxes[i].parentElement.classList.add('checked');
+        else boxes[i].parentElement.classList.remove('checked');
+      }
+      try { localStorage.setItem('yg_contractor_audit_checks_v1', JSON.stringify(state)); } catch (e) {}
+    }
+
+    function loadChecks() {
+      try {
+        var savedTheme = localStorage.getItem('yg_audit_theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.getElementById('themeBtn').textContent = '☀️ 라이트 모드';
+        }
+        var raw = localStorage.getItem('yg_contractor_audit_checks_v1');
+        if (!raw) return;
+        var state = JSON.parse(raw);
+        var boxes = document.querySelectorAll('#checkList input[type="checkbox"]');
+        for (var i = 0; i < boxes.length; i++) {
+          boxes[i].checked = Boolean(state[i]);
+          if (boxes[i].checked) boxes[i].parentElement.classList.add('checked');
+        }
+      } catch (e) {}
+    }
+
+    function resetChecks() {
+      var boxes = document.querySelectorAll('#checkList input[type="checkbox"]');
+      for (var i = 0; i < boxes.length; i++) {
+        boxes[i].checked = false;
+        boxes[i].parentElement.classList.remove('checked');
+      }
+      try { localStorage.removeItem('yg_contractor_audit_checks_v1'); } catch (e) {}
+      showToast('체크리스트가 초기화되었습니다.');
+    }
+
+    loadChecks();
+  </script>
+</body>
+</html>
