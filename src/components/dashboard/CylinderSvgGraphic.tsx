@@ -115,10 +115,10 @@ export default function CylinderPairCard({
 
   return (
     <div
-      className={`rounded-2xl border-2 p-3.5 transition-all shadow-lg ${
+      className={`h-full flex flex-col justify-between rounded-2xl border-2 p-3.5 transition-all shadow-lg ${
         hasAlarm
-          ? "border-rose-500/90 bg-gradient-to-b from-rose-950/30 to-slate-900"
-          : "bg-slate-900/95"
+          ? "border-rose-500/90 bg-gradient-to-b from-rose-950/35 to-slate-950"
+          : "bg-slate-950/95"
       }`}
       style={{
         borderColor: hasAlarm ? undefined : chA.color || "#0ea5e9",

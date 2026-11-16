@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.0 · 업데이트: 2026-11-16 13:55 (모니터링·관제 2원화 & 대형실린더 기본·가스 선택 필터)";
+  "v2.1 · 업데이트: 2026-11-16 15:30 (4K UHD TV 4×3 12칸 & 종합안전 HUD·고시인성 최적화)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 

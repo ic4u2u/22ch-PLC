@@ -23,6 +23,7 @@ import {
 import CylinderPairCard from "./CylinderSvgGraphic";
 import FloorplanTab from "./FloorplanTab";
 import GasFilterBar from "./GasFilterBar";
+import TvSafetyHudCard from "./TvSafetyHudCard";
 import {
   MasterAlarmCard,
   OneScreenCylinderCard,
@@ -238,7 +239,7 @@ export default function WallboardView({
         isFullscreen
           ? `fixed inset-0 z-50 w-screen h-screen overflow-y-auto ${
               isTightScreen ? "xl:overflow-hidden" : ""
-            } rounded-none border-0 p-2.5 sm:p-3.5 flex flex-col gap-2.5`
+            } rounded-none border-0 p-3.5 sm:p-5 flex flex-col gap-3`
           : "min-h-[88vh] rounded-3xl border p-3 sm:p-4 shadow-2xl space-y-3"
       } ${themeBg}`}
     >
@@ -668,19 +669,21 @@ export default function WallboardView({
       )}
 
       {/* =====================================================================
-          [모드 3 : LARGE_CYLINDER (v2.0 기본 뷰)] 대형 자동절체기 + 피그테일 호스 + A/B 가스통 상세 뷰
-          - 선택된 가스 수에 맞춰 그리드 열 수를 자동 최적화 (1개 집중 ~ 전체 11뱅크)
+          [모드 3 : LARGE_CYLINDER (v2.1 기본 뷰)] 대형 자동절체기 + 피그테일 호스 + A/B 가스통 상세 뷰
+          - 4K UHD TV(4열 × 3줄 = 12칸) 자동 최적화: 11뱅크 + 12번째 칸 '종합 안전 HUD 카드'
          ===================================================================== */}
       {viewMode === "LARGE_CYLINDER" && (
         <div
-          className={`grid gap-4 ${
+          className={`grid gap-3.5 ${
             filteredPairs.length === 1
               ? "grid-cols-1 max-w-3xl mx-auto w-full"
               : filteredPairs.length === 2
               ? "grid-cols-1 lg:grid-cols-2"
               : filteredPairs.length <= 4
               ? "grid-cols-1 md:grid-cols-2"
-              : "grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3"
+              : isFullscreen
+              ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-4 flex-1 min-h-0"
+              : "grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4"
           }`}
         >
           {filteredPairs.map((pair) => (
@@ -697,6 +700,17 @@ export default function WallboardView({
               onRequestPin={() => onRequestPin?.()}
             />
           ))}
+          {/* 전체 11뱅크 표시 시 12번째 칸을 '실시간 종합 안전 HUD 카드'로 채워 4×3 완벽 균형 */}
+          {filteredPairs.length === allPairs.length && (
+            <TvSafetyHudCard
+              channels={channels}
+              diagnostics={diagnostics}
+              unit={unit}
+              clockText={clockText}
+              onSelectChannel={(ch) => onSelectChannel?.(ch)}
+              onJumpToSpotlight={() => updateMode("SPOTLIGHT_SPLIT")}
+            />
+          )}
         </div>
       )}
 
