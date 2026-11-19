@@ -18,6 +18,7 @@ import {
   getUnitLabel,
 } from "./types";
 import { BankPairItem } from "./GasFilterBar";
+import ThreeCylinderCanvas from "./ThreeCylinderCanvas";
 
 interface SimpleMonitorViewProps {
   allPairs: BankPairItem[];
@@ -113,139 +114,6 @@ function getCylinderFillStyle(ch: ChannelData, gasColor: string) {
     stroke: gasColor,
     label: "공급중",
   };
-}
-
-/**
- * 3D 입체 원통형 고압가스 실린더 SVG (기본뷰 47L 고압용기 실루엣 + 3D 원통 음영·반사광·황동 밸브)
- */
-function Cylinder3DSvg({ ch, gasColor }: { ch: ChannelData; gasColor: string }) {
-  const style = getCylinderFillStyle(ch, gasColor);
-  const isOpen = ch.valveState === 0;
-  const clipId = `sm3d-clip-${ch.id}`;
-  const fillGradId = `sm3d-fill-${ch.id}`;
-  const shellGradId = `sm3d-shell-${ch.id}`;
-  const glossGradId = `sm3d-gloss-${ch.id}`;
-  const brassGradId = `sm3d-brass-${ch.id}`;
-
-  const bodyTop = 24;
-  const bodyBottom = 120;
-  const bodyHeight = bodyBottom - bodyTop;
-  const fillY = bodyBottom - (bodyHeight * style.pct) / 100;
-  const tankPath =
-    "M 8 42 Q 8 24 23 24 L 37 24 Q 52 24 52 42 L 52 114 Q 52 120 46 120 L 14 120 Q 8 120 8 114 Z";
-
-  return (
-    <svg
-      viewBox="0 0 60 128"
-      className="w-[clamp(46px,4.2vw,148px)] max-h-[26vh] h-auto aspect-[60/128] drop-shadow-[0_8px_14px_rgba(0,0,0,0.75)]"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        {/* 3D 원통 외피 음영 그라데이션 */}
-        <linearGradient id={shellGradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#0f172a" />
-          <stop offset="28%" stopColor="#1e293b" />
-          <stop offset="68%" stopColor="#0f172a" />
-          <stop offset="100%" stopColor="#020617" />
-        </linearGradient>
-        {/* 3D 가스 액위 수직 입체 그라데이션 */}
-        <linearGradient id={fillGradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={style.top} />
-          <stop offset="55%" stopColor={style.mid} />
-          <stop offset="100%" stopColor={style.bottom} />
-        </linearGradient>
-        {/* 좌측 세로 원통 광택 하이라이트 */}
-        <linearGradient id={glossGradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="rgba(255,255,255,0)" />
-          <stop offset="38%" stopColor="rgba(255,255,255,0.34)" />
-          <stop offset="70%" stopColor="rgba(255,255,255,0.08)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-        </linearGradient>
-        {/* 황동 밸브 3D 금속 그라데이션 */}
-        <linearGradient id={brassGradId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#b45309" />
-          <stop offset="35%" stopColor="#fde047" />
-          <stop offset="70%" stopColor="#eab308" />
-          <stop offset="100%" stopColor="#78350f" />
-        </linearGradient>
-        {/* 기본뷰 고압가스 실린더 클립 경로 */}
-        <clipPath id={clipId}>
-          <path d={tankPath} />
-        </clipPath>
-      </defs>
-
-      {/* 바닥 3D 타원형 그림자 */}
-      <ellipse cx="30" cy="123" rx="22" ry="3.8" fill="rgba(0,0,0,0.68)" />
-
-      {/* 진짜 고압가스 실린더 밸브 어셈블리 (밸브 핸들 휠 + 황동 바디 + 스템) */}
-      <ellipse
-        cx="30"
-        cy="6"
-        rx="8.5"
-        ry="2.6"
-        fill={isOpen ? "#38bdf8" : "#64748b"}
-        stroke="rgba(255,255,255,0.35)"
-        strokeWidth="0.6"
-      />
-      <rect x="24" y="8" width="12" height="7" rx="1.5" fill={`url(#${brassGradId})`} />
-      <rect x="26" y="15" width="8" height="9" fill="#94a3b8" />
-
-      {/* 3D 고압 실린더 본체 배경 */}
-      <path d={tankPath} fill={`url(#${shellGradId})`} />
-
-      {/* 실시간 가스 잔량 3D 채움 */}
-      <g clipPath={`url(#${clipId})`}>
-        <rect
-          x="6"
-          y={fillY}
-          width="48"
-          height={bodyBottom - fillY + 4}
-          fill={`url(#${fillGradId})`}
-        />
-        {/* 액면 상단 하이라이트 라인 */}
-        {style.pct > 4 && style.pct < 99 && (
-          <line
-            x1="8"
-            y1={fillY}
-            x2="52"
-            y2={fillY}
-            stroke="#ffffff"
-            strokeOpacity="0.65"
-            strokeWidth="1.6"
-          />
-        )}
-        {/* 원통 좌측 세로 입체 반사광 */}
-        <rect x="12" y="24" width="11" height="96" fill={`url(#${glossGradId})`} />
-        {/* 원통 우측 입체 음영 */}
-        <rect x="44" y="24" width="8" height="96" fill="rgba(0,0,0,0.34)" />
-      </g>
-
-      {/* 고압 실린더 3D 외곽 테두리 */}
-      <path d={tankPath} fill="none" stroke={style.stroke} strokeWidth="2.2" />
-
-      {/* 고시인성 잔량 % 캡슐 뱃지 */}
-      <rect
-        x="13"
-        y="65"
-        width="34"
-        height="18"
-        rx="6"
-        fill="rgba(2,6,23,0.75)"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="0.9"
-      />
-      <text
-        x="30"
-        y="78"
-        fill="#ffffff"
-        fontSize="12"
-        fontWeight="900"
-        textAnchor="middle"
-      >
-        {style.pct}%
-      </text>
-    </svg>
-  );
 }
 
 export default function SimpleMonitorView({
@@ -428,8 +296,8 @@ export default function SimpleMonitorView({
               </span>
             </div>
           )}
-          <Cylinder3DSvg ch={chA} gasColor={gasColor} />
-          <Cylinder3DSvg ch={chB} gasColor={gasColor} />
+          <ThreeCylinderCanvas ch={chA} gasColor={gasColor} />
+          <ThreeCylinderCanvas ch={chB} gasColor={gasColor} />
           {isBAlert && (
             <div className="flex flex-col items-center justify-center rounded-xl border border-rose-400/80 bg-gradient-to-b from-rose-600/80 to-rose-950/90 px-[clamp(0.35rem,0.45vw,0.8rem)] py-[clamp(0.35rem,0.45vw,0.75rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.6)] animate-pulse shrink-0">
               <span className="text-[clamp(0.65rem,0.75vw,1.25rem)] font-black leading-tight whitespace-nowrap">
