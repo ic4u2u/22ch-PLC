@@ -27,6 +27,7 @@ interface SimpleMonitorViewProps {
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   onExitSimpleView: () => void;
+  onOpen3DView?: () => void;
   onSelectChannel?: (ch: ChannelData) => void;
 }
 
@@ -35,10 +36,10 @@ interface SimpleMonitorViewProps {
  */
 function YgOneLogo() {
   return (
-    <div className="flex items-center justify-center rounded-xl bg-white/95 px-2.5 py-1 shadow-[0_2px_14px_rgba(230,30,42,0.4)] ring-1 ring-red-500/30 shrink-0">
+    <div className="flex items-center justify-center rounded-xl bg-white/95 px-[clamp(0.6rem,0.7vw,1.4rem)] py-[clamp(0.25rem,0.3vw,0.6rem)] shadow-[0_2px_14px_rgba(230,30,42,0.4)] ring-1 ring-red-500/30 shrink-0">
       <svg
         viewBox="0 0 118 42"
-        className="h-7 sm:h-8 xl:h-9 w-auto"
+        className="h-[clamp(26px,2vw,54px)] w-auto"
         xmlns="http://www.w3.org/2000/svg"
         aria-label="YG-1 로고"
       >
@@ -136,7 +137,7 @@ function Cylinder3DSvg({ ch, gasColor }: { ch: ChannelData; gasColor: string }) 
   return (
     <svg
       viewBox="0 0 60 128"
-      className="w-[clamp(44px,3.1vw,76px)] h-auto aspect-[60/128] drop-shadow-[0_6px_10px_rgba(0,0,0,0.75)]"
+      className="w-[clamp(46px,4.2vw,148px)] max-h-[26vh] h-auto aspect-[60/128] drop-shadow-[0_8px_14px_rgba(0,0,0,0.75)]"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -255,6 +256,7 @@ export default function SimpleMonitorView({
   isFullscreen,
   onToggleFullscreen,
   onExitSimpleView,
+  onOpen3DView,
   onSelectChannel,
 }: SimpleMonitorViewProps) {
   const [dateTimeText, setDateTimeText] = useState("");
@@ -356,35 +358,35 @@ export default function SimpleMonitorView({
       >
         {/* 상단: 영문코드(좌측) + 한글 가스명(가로 중앙) / 공급압력 텍스트(좌측) + 수치(가로 중앙) */}
         <div
-          className="space-y-1.5 border-b border-dashed pb-2"
+          className="space-y-2 border-b border-dashed pb-2.5"
           style={{ borderBottomColor: `${gasColor}66` }}
         >
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 min-w-0">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 min-w-0">
             <span
-              className="justify-self-start whitespace-nowrap rounded-md px-2 py-0.5 font-mono text-[clamp(0.625rem,0.65vw,0.85rem)] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
+              className="justify-self-start whitespace-nowrap rounded-md px-[clamp(0.45rem,0.55vw,1rem)] py-[clamp(0.15rem,0.2vw,0.4rem)] font-mono text-[clamp(0.65rem,0.8vw,1.45rem)] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
               style={{ backgroundColor: gasColor }}
             >
               {gasShortCode || chA.gasCode}
             </span>
-            <span className="justify-self-center text-center text-[clamp(0.875rem,0.95vw,1.35rem)] font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
+            <span className="justify-self-center text-center text-[clamp(0.95rem,1.2vw,2.25rem)] font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
               {gasKoreanName}
             </span>
             <span aria-hidden="true" />
           </div>
 
-          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1 min-w-0">
-            <span className="justify-self-start text-[clamp(0.68rem,0.68vw,0.88rem)] font-extrabold text-slate-200 whitespace-nowrap">
+          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1.5 min-w-0">
+            <span className="justify-self-start text-[clamp(0.7rem,0.85vw,1.5rem)] font-extrabold text-slate-200 whitespace-nowrap">
               공급압력
             </span>
             <span
-              className="justify-self-center font-mono text-[clamp(1.15rem,1.45vw,2.1rem)] font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
+              className="justify-self-center font-mono text-[clamp(1.2rem,1.8vw,3.4rem)] font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
               style={{ color: hasDanger ? "#fda4af" : "#ffffff" }}
             >
               {activeCh.status === "SENSOR_FAULT"
                 ? "점검"
                 : formatPressureByUnit(activeCh.pressureBar, unit, activeCh.maxBar)}
               <span
-                className="ml-0.5 text-[clamp(0.7rem,0.75vw,1rem)] font-black"
+                className="ml-1 text-[clamp(0.75rem,0.95vw,1.7rem)] font-black"
                 style={{ color: hasDanger ? "#fb7185" : gasColor }}
               >
                 {activeCh.status === "SENSOR_FAULT" ? "" : unitLabel}
@@ -395,16 +397,16 @@ export default function SimpleMonitorView({
         </div>
 
         {/* 중앙: 3D 입체 실린더 2기 그래픽 */}
-        <div className="my-2 flex items-center justify-center gap-3">
+        <div className="my-2 flex flex-1 items-center justify-center gap-[clamp(0.6rem,1.2vw,2.2rem)]">
           <Cylinder3DSvg ch={chA} gasColor={gasColor} />
           <Cylinder3DSvg ch={chB} gasColor={gasColor} />
         </div>
 
         {/* 하단: 3D 그라데이션 공급중 / 대기중 알약 + 종합 상태 */}
-        <div className="space-y-1.5">
-          <div className="grid grid-cols-2 gap-1.5">
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             <span
-              className={`rounded-lg py-1.5 text-xs font-black transition-all ${
+              className={`rounded-xl py-[clamp(0.35rem,0.5vw,0.85rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black transition-all ${
                 isAOpen
                   ? "bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_3px_10px_rgba(16,185,129,0.5)]"
                   : aStyle.label === "교체필요"
@@ -415,7 +417,7 @@ export default function SimpleMonitorView({
               {aStyle.label}
             </span>
             <span
-              className={`rounded-lg py-1.5 text-xs font-black transition-all ${
+              className={`rounded-xl py-[clamp(0.35rem,0.5vw,0.85rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black transition-all ${
                 isBOpen
                   ? "bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_3px_10px_rgba(16,185,129,0.5)]"
                   : bStyle.label === "교체필요"
@@ -426,7 +428,9 @@ export default function SimpleMonitorView({
               {bStyle.label}
             </span>
           </div>
-          <div className={`rounded-lg border py-1 text-xs sm:text-sm font-black ${statusBadge.cls}`}>
+          <div
+            className={`rounded-xl border py-[clamp(0.3rem,0.45vw,0.8rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black ${statusBadge.cls}`}
+          >
             {statusBadge.label}
           </div>
         </div>
@@ -441,38 +445,47 @@ export default function SimpleMonitorView({
       }`}
     >
       {/* 1. 상단 전용 헤더: YG-1 공식 로고 + 와이지원 | 가스 모니터링 시스템 | 인천 제2공장 + 대형 날짜·시간 */}
-      <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/35 bg-gradient-to-r from-slate-950/95 via-[#071836]/95 to-slate-950/95 px-4 sm:px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_20px_rgba(0,0,0,0.45)]">
+      <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/35 bg-gradient-to-r from-slate-950/95 via-[#071836]/95 to-slate-950/95 px-4 sm:px-6 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_20px_rgba(0,0,0,0.45)]">
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <YgOneLogo />
-          <span className="text-xl sm:text-2xl xl:text-[26px] font-black tracking-tight text-white drop-shadow">
+          <span className="text-[clamp(1.2rem,1.4vw,2.6rem)] font-black tracking-tight text-white drop-shadow">
             와이지원
           </span>
-          <span className="hidden sm:inline-block h-6 w-0.5 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600" />
-          <span className="text-lg sm:text-xl xl:text-2xl font-black tracking-tight bg-gradient-to-r from-cyan-300 via-sky-200 to-white bg-clip-text text-transparent">
+          <span className="hidden sm:inline-block h-[clamp(1.2rem,1.4vw,2.4rem)] w-0.5 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600" />
+          <span className="text-[clamp(1.05rem,1.25vw,2.3rem)] font-black tracking-tight bg-gradient-to-r from-cyan-300 via-sky-200 to-white bg-clip-text text-transparent">
             가스 모니터링 시스템
           </span>
           <span className="hidden md:inline-block h-5 w-px bg-slate-700" />
-          <span className="rounded-xl border border-cyan-400/45 bg-gradient-to-b from-cyan-500/25 to-blue-900/40 px-3.5 py-1 text-sm sm:text-base xl:text-lg font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+          <span className="rounded-xl border border-cyan-400/45 bg-gradient-to-b from-cyan-500/25 to-blue-900/40 px-[clamp(0.75rem,0.9vw,1.6rem)] py-[clamp(0.25rem,0.3vw,0.55rem)] text-[clamp(0.875rem,1vw,1.8rem)] font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
             인천 제2공장
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-slate-950/90 px-3.5 py-1.5 font-mono text-sm sm:text-base xl:text-lg font-black text-white shadow-inner">
+          <div className="flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-slate-950/90 px-3.5 py-1.5 font-mono text-[clamp(0.85rem,1vw,1.8rem)] font-black text-white shadow-inner">
             <span className="text-cyan-300">📅</span>
             <span className="tabular-nums">{dateTimeText || "----"}</span>
           </div>
+          {onOpen3DView && (
+            <button
+              type="button"
+              onClick={onOpen3DView}
+              className="rounded-xl border border-purple-400/60 bg-gradient-to-b from-purple-500/30 to-indigo-900/60 px-3 py-2 text-[clamp(0.75rem,0.85vw,1.4rem)] font-black text-purple-100 hover:brightness-125 transition-all"
+            >
+              🧊 3D 뷰
+            </button>
+          )}
           <button
             type="button"
             onClick={onToggleFullscreen}
-            className="rounded-xl border border-cyan-400/60 bg-gradient-to-b from-cyan-500 to-blue-600 px-3 py-2 text-xs sm:text-sm font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_4px_12px_rgba(6,182,212,0.35)] hover:brightness-110 transition-all"
+            className="rounded-xl border border-cyan-400/60 bg-gradient-to-b from-cyan-500 to-blue-600 px-3 py-2 text-[clamp(0.75rem,0.85vw,1.4rem)] font-black text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_4px_12px_rgba(6,182,212,0.35)] hover:brightness-110 transition-all"
           >
             {isFullscreen ? "✕ 종료" : "⛶ 전체화면"}
           </button>
           <button
             type="button"
             onClick={onExitSimpleView}
-            className="rounded-xl border border-slate-600 bg-gradient-to-b from-slate-800 to-slate-900 px-3 py-2 text-xs sm:text-sm font-extrabold text-slate-100 hover:bg-slate-700 transition-all"
+            className="rounded-xl border border-slate-600 bg-gradient-to-b from-slate-800 to-slate-900 px-3 py-2 text-[clamp(0.75rem,0.85vw,1.4rem)] font-extrabold text-slate-100 hover:bg-slate-700 transition-all"
           >
             ↩ 기본뷰
           </button>
@@ -498,14 +511,16 @@ export default function SimpleMonitorView({
         </div>
       </div>
 
-      {/* 3. 하단 4가지 핵심 설비 요약 (말줄임 '...' 제로 + 정수 ms 표기 + 고시인성 폰트) */}
+      {/* 3. 하단 4가지 핵심 설비 요약 (4K에서도 시원하게 커지는 유체 폰트) */}
       <footer className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-2xl sm:text-3xl shrink-0">📡</span>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">📡</span>
           <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-bold text-slate-300">PLC 통신 상태</div>
+            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+              PLC 통신 상태
+            </div>
             <div
-              className={`text-sm sm:text-base xl:text-lg font-black leading-snug break-keep ${
+              className={`text-[clamp(0.9rem,1.05vw,1.9rem)] font-black leading-snug break-keep ${
                 diagnostics.plcConnected ? "text-emerald-300" : "text-rose-400"
               }`}
             >
@@ -516,21 +531,25 @@ export default function SimpleMonitorView({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-2xl sm:text-3xl shrink-0">🟢</span>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">🟢</span>
           <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-bold text-slate-300">전체 가동 현황</div>
-            <div className="text-sm sm:text-base xl:text-lg font-black text-white leading-snug break-keep">
+            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+              전체 가동 현황
+            </div>
+            <div className="text-[clamp(0.9rem,1.05vw,1.9rem)] font-black text-white leading-snug break-keep">
               {allPairs.length}종 가스 (공급 {supplyCount} · 대기 {standbyCount})
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-2xl sm:text-3xl shrink-0">🛡️</span>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">🛡️</span>
           <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-bold text-slate-300">무중단 자동절체 인터록</div>
-            <div className="text-sm sm:text-base xl:text-lg font-black text-cyan-300 leading-snug break-keep">
+            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+              무중단 자동절체 인터록
+            </div>
+            <div className="text-[clamp(0.9rem,1.05vw,1.9rem)] font-black text-cyan-300 leading-snug break-keep">
               {diagnostics.plcConnected ? "정상 감시중 (350ms)" : "조작 안전 잠금중"}
             </div>
           </div>
@@ -540,19 +559,21 @@ export default function SimpleMonitorView({
           onClick={() => {
             if (attentionChannels[0]) onSelectChannel?.(attentionChannels[0]);
           }}
-          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${
+          className={`flex items-center gap-3.5 rounded-2xl border px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${
             attentionChannels.length > 0
               ? "cursor-pointer border-rose-500/80 bg-gradient-to-b from-rose-950/70 to-slate-950 hover:brightness-110"
               : "border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950"
           }`}
         >
-          <span className="text-2xl sm:text-3xl shrink-0">
+          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">
             {attentionChannels.length > 0 ? "🚨" : "✅"}
           </span>
           <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-bold text-slate-300">설비 특이사항</div>
+            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+              설비 특이사항
+            </div>
             <div
-              className={`text-sm sm:text-base xl:text-lg font-black leading-snug break-keep ${
+              className={`text-[clamp(0.9rem,1.05vw,1.9rem)] font-black leading-snug break-keep ${
                 attentionChannels.length > 0 ? "text-rose-300" : "text-emerald-300"
               }`}
             >

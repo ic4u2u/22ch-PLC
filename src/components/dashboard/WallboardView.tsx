@@ -255,6 +255,7 @@ export default function WallboardView({
           isFullscreen={isFullscreen}
           onToggleFullscreen={toggleFullscreen}
           onExitSimpleView={() => updateMode("LARGE_CYLINDER")}
+          onOpen3DView={() => updateMode("DIGITAL_TWIN_3D")}
           onSelectChannel={onSelectChannel}
         />
       ) : (
