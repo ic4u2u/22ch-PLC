@@ -302,8 +302,20 @@ export default function SimpleMonitorView({
     const aStyle = getCylinderFillStyle(chA, gasColor);
     const bStyle = getCylinderFillStyle(chB, gasColor);
 
+    const isAAlert =
+      chA.status === "DANGER" ||
+      chA.status === "WARN" ||
+      chA.status === "SENSOR_FAULT" ||
+      aStyle.label === "교체필요";
+    const isBAlert =
+      chB.status === "DANGER" ||
+      chB.status === "WARN" ||
+      chB.status === "SENSOR_FAULT" ||
+      bStyle.label === "교체필요";
+
     const hasDanger = chA.status === "DANGER" || chB.status === "DANGER";
     const hasFault = chA.status === "SENSOR_FAULT" || chB.status === "SENSOR_FAULT";
+    const hasReplace = aStyle.label === "교체필요" || bStyle.label === "교체필요";
     const hasWarn = chA.status === "WARN" || chB.status === "WARN";
 
     const gasShortCode = (chA.gasCode || "")
@@ -316,19 +328,27 @@ export default function SimpleMonitorView({
       .replace(/^[A-Za-z0-9\-]+\s*/g, "")
       .trim() || chA.gasName;
 
+    const replaceSideLabel =
+      isAAlert && isBAlert ? "좌·우(A/B)" : isAAlert ? "좌측 A" : isBAlert ? "우측 B" : "";
+
     const statusBadge = hasDanger
       ? {
-          label: "🚨 위험",
+          label: `🚨 위험 (${replaceSideLabel})`,
           cls: "border-rose-400/90 bg-gradient-to-b from-rose-500/40 to-rose-900/70 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] animate-pulse",
         }
       : hasFault
       ? {
-          label: "⚡ 점검",
+          label: `⚡ 점검 (${replaceSideLabel})`,
           cls: "border-purple-400/90 bg-gradient-to-b from-purple-500/40 to-purple-900/70 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]",
+        }
+      : hasReplace
+      ? {
+          label: `⚠️ ${replaceSideLabel} 교체필요`,
+          cls: "border-rose-400/85 bg-gradient-to-b from-rose-600/45 to-rose-950/85 text-rose-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] animate-pulse",
         }
       : hasWarn
       ? {
-          label: "⚠️ 주의",
+          label: `⚠️ 주의 (${replaceSideLabel})`,
           cls: "border-amber-400/90 bg-gradient-to-b from-amber-500/35 to-amber-900/70 text-amber-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]",
         }
       : {
@@ -396,10 +416,30 @@ export default function SimpleMonitorView({
           </div>
         </div>
 
-        {/* 중앙: 3D 입체 실린더 2기 그래픽 */}
-        <div className="my-2 flex flex-1 items-center justify-center gap-[clamp(0.6rem,1.2vw,2.2rem)]">
+        {/* 중앙: 3D 입체 실린더 2기 + 알람 발생 시 해당 통 옆에 '좌측 A' / '우측 B' 표시 (해제 시 자동 소멸) */}
+        <div className="my-2 flex flex-1 items-center justify-center gap-[clamp(0.4rem,0.9vw,1.6rem)]">
+          {isAAlert && (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-rose-400/80 bg-gradient-to-b from-rose-600/80 to-rose-950/90 px-[clamp(0.35rem,0.45vw,0.8rem)] py-[clamp(0.35rem,0.45vw,0.75rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.6)] animate-pulse shrink-0">
+              <span className="text-[clamp(0.65rem,0.75vw,1.25rem)] font-black leading-tight whitespace-nowrap">
+                좌측
+              </span>
+              <span className="font-mono text-[clamp(0.85rem,1.05vw,1.8rem)] font-black text-amber-300 leading-none mt-0.5">
+                A
+              </span>
+            </div>
+          )}
           <Cylinder3DSvg ch={chA} gasColor={gasColor} />
           <Cylinder3DSvg ch={chB} gasColor={gasColor} />
+          {isBAlert && (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-rose-400/80 bg-gradient-to-b from-rose-600/80 to-rose-950/90 px-[clamp(0.35rem,0.45vw,0.8rem)] py-[clamp(0.35rem,0.45vw,0.75rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.6)] animate-pulse shrink-0">
+              <span className="text-[clamp(0.65rem,0.75vw,1.25rem)] font-black leading-tight whitespace-nowrap">
+                우측
+              </span>
+              <span className="font-mono text-[clamp(0.85rem,1.05vw,1.8rem)] font-black text-amber-300 leading-none mt-0.5">
+                B
+              </span>
+            </div>
+          )}
         </div>
 
         {/* 하단: 3D 그라데이션 공급중 / 대기중 알약 + 종합 상태 */}
