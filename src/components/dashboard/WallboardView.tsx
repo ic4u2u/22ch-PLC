@@ -24,6 +24,7 @@ import CylinderPairCard from "./CylinderSvgGraphic";
 import FloorplanTab from "./FloorplanTab";
 import GasFilterBar from "./GasFilterBar";
 import SimpleMonitorView from "./SimpleMonitorView";
+import ThreeDigitalTwinView from "./ThreeDigitalTwinView";
 import TvSafetyHudCard from "./TvSafetyHudCard";
 import {
   MasterAlarmCard,
@@ -33,6 +34,7 @@ import {
 export type WallboardMode =
   | "LARGE_CYLINDER"
   | "SIMPLE_MONITOR"
+  | "DIGITAL_TWIN_3D"
   | "ONE_SCREEN"
   | "FLOORPLAN"
   | "SPOTLIGHT_SPLIT"
@@ -288,6 +290,7 @@ export default function WallboardView({
           {[
             { id: "LARGE_CYLINDER", label: "🛢️ 대형 실린더뷰" },
             { id: "SIMPLE_MONITOR", label: "✨ 간편모니터링" },
+            { id: "DIGITAL_TWIN_3D", label: "🧊 3D 디지털 트윈" },
             { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },
             { id: "ONE_SCREEN", label: "🖥️ 1화면 전체 (16:9)" },
             { id: "SPOTLIGHT_SPLIT", label: "🚨 경보 집중뷰" },
@@ -741,6 +744,18 @@ export default function WallboardView({
           onSelectChannel={(ch) => onSelectChannel?.(ch)}
           onRequestPin={() => onRequestPin?.()}
           onSyncFloorplan={(payload) => onSyncFloorplan?.(payload)}
+        />
+      )}
+
+      {/* =====================================================================
+          [모드 3-C : DIGITAL_TWIN_3D] Three.js 단일 WebGL 3D 모션그래픽 디지털 트윈
+         ===================================================================== */}
+      {viewMode === "DIGITAL_TWIN_3D" && (
+        <ThreeDigitalTwinView
+          allPairs={allPairs}
+          isFullscreen={isFullscreen}
+          unit={unit}
+          onSelectChannel={(ch) => onSelectChannel?.(ch)}
         />
       )}
 

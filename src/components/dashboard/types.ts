@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.3 · 업데이트: 2026-11-19 21:50 (4K UHD·전해상도 유체 반응형 고도화)";
+  "v2.4 · 업데이트: 2026-11-19 22:05 (Three.js 3D 디지털 트윈 모션그래픽 & 4K 반응형)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
