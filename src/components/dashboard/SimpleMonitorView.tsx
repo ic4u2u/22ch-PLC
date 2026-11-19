@@ -28,7 +28,6 @@ interface SimpleMonitorViewProps {
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   onExitSimpleView: () => void;
-  onOpen3DView?: () => void;
   onSelectChannel?: (ch: ChannelData) => void;
 }
 
@@ -124,7 +123,6 @@ export default function SimpleMonitorView({
   isFullscreen,
   onToggleFullscreen,
   onExitSimpleView,
-  onOpen3DView,
   onSelectChannel,
 }: SimpleMonitorViewProps) {
   const [dateTimeText, setDateTimeText] = useState("");
@@ -374,15 +372,6 @@ export default function SimpleMonitorView({
             <span className="text-cyan-300">📅</span>
             <span className="tabular-nums">{dateTimeText || "----"}</span>
           </div>
-          {onOpen3DView && (
-            <button
-              type="button"
-              onClick={onOpen3DView}
-              className="rounded-xl border border-purple-400/60 bg-gradient-to-b from-purple-500/30 to-indigo-900/60 px-3 py-2 text-[clamp(0.75rem,0.85vw,1.4rem)] font-black text-purple-100 hover:brightness-125 transition-all"
-            >
-              🧊 3D 뷰
-            </button>
-          )}
           <button
             type="button"
             onClick={onToggleFullscreen}
