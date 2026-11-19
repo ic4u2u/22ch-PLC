@@ -75,7 +75,7 @@ export default function HeaderBar({
 
   return (
     <header className="no-print sticky top-0 z-30 border-b border-slate-800 bg-slate-950/95 backdrop-blur px-4 py-3">
-      <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-[2560px] flex-wrap items-center justify-between gap-3">
         {/* 좌측: 시스템 로고 및 PLC 실시간 연결 배지 */}
         <div className="flex items-center gap-3">
           <div className="flex h-11 px-3 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 font-black text-white shadow-lg shadow-cyan-500/20 tracking-tight text-sm">

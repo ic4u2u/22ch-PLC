@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.2 · 업데이트: 2026-11-19 16:18 (YG-1 3D 간편모니터링 & 한국어 아나운서 TTS)";
+  "v2.3 · 업데이트: 2026-11-19 21:50 (4K UHD·전해상도 유체 반응형 고도화)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 

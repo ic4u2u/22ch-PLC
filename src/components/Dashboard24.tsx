@@ -769,7 +769,7 @@ export default function Dashboard24() {
             faultCount={faultCount}
           />
 
-          <main className="mx-auto max-w-[1920px] px-4 pt-4">
+          <main className="mx-auto max-w-[2560px] px-4 pt-4">
             {/* 2. 2원화 최상위 시스템 전환 네비게이션 (📺 모니터링 시스템 | 🎛️ 관제(제어·시험) 시스템) */}
             <nav className="no-print mb-4 space-y-2 rounded-2xl border border-slate-800 bg-slate-900/90 p-2">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

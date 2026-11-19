@@ -136,7 +136,7 @@ function Cylinder3DSvg({ ch, gasColor }: { ch: ChannelData; gasColor: string }) 
   return (
     <svg
       viewBox="0 0 60 128"
-      className="h-[114px] sm:h-[120px] w-full max-w-[54px] drop-shadow-[0_6px_10px_rgba(0,0,0,0.75)]"
+      className="w-[clamp(44px,3.1vw,76px)] h-auto aspect-[60/128] drop-shadow-[0_6px_10px_rgba(0,0,0,0.75)]"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -359,32 +359,32 @@ export default function SimpleMonitorView({
           className="space-y-1.5 border-b border-dashed pb-2"
           style={{ borderBottomColor: `${gasColor}66` }}
         >
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 min-w-0">
             <span
-              className="justify-self-start whitespace-nowrap rounded-md px-2 py-0.5 font-mono text-[10.5px] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
+              className="justify-self-start whitespace-nowrap rounded-md px-2 py-0.5 font-mono text-[clamp(0.625rem,0.65vw,0.85rem)] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
               style={{ backgroundColor: gasColor }}
             >
               {gasShortCode || chA.gasCode}
             </span>
-            <span className="justify-self-center text-center text-sm sm:text-base font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
+            <span className="justify-self-center text-center text-[clamp(0.875rem,0.95vw,1.35rem)] font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
               {gasKoreanName}
             </span>
             <span aria-hidden="true" />
           </div>
 
-          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1">
-            <span className="justify-self-start text-[11px] font-extrabold text-slate-200 whitespace-nowrap">
+          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1 min-w-0">
+            <span className="justify-self-start text-[clamp(0.68rem,0.68vw,0.88rem)] font-extrabold text-slate-200 whitespace-nowrap">
               공급압력
             </span>
             <span
-              className="justify-self-center font-mono text-xl sm:text-2xl font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
+              className="justify-self-center font-mono text-[clamp(1.15rem,1.45vw,2.1rem)] font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
               style={{ color: hasDanger ? "#fda4af" : "#ffffff" }}
             >
               {activeCh.status === "SENSOR_FAULT"
                 ? "점검"
                 : formatPressureByUnit(activeCh.pressureBar, unit, activeCh.maxBar)}
               <span
-                className="ml-0.5 text-xs font-black"
+                className="ml-0.5 text-[clamp(0.7rem,0.75vw,1rem)] font-black"
                 style={{ color: hasDanger ? "#fb7185" : gasColor }}
               >
                 {activeCh.status === "SENSOR_FAULT" ? "" : unitLabel}
@@ -482,7 +482,7 @@ export default function SimpleMonitorView({
       {/* 2. 중앙 2단 3D 가스 모니터링 그리드 (1단: 가스캐비닛 5종 / 2단: 오토체인지 6종) */}
       <div className={`flex flex-col gap-3 ${isFullscreen ? "flex-1 min-h-0" : ""}`}>
         <div
-          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 ${
+          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 ${
             isFullscreen ? "flex-1 min-h-0" : ""
           }`}
         >
@@ -490,7 +490,7 @@ export default function SimpleMonitorView({
         </div>
 
         <div
-          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 ${
+          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 ${
             isFullscreen ? "flex-1 min-h-0" : ""
           }`}
         >

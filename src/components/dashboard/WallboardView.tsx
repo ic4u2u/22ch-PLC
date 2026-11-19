@@ -233,18 +233,11 @@ export default function WallboardView({
       ? "bg-slate-900 border-slate-700"
       : "bg-slate-950 border-slate-800";
 
-  const isTightScreen =
-    viewMode === "ONE_SCREEN" ||
-    viewMode === "PANORAMA_11" ||
-    viewMode === "SIMPLE_MONITOR";
-
   return (
     <div
       className={`${
         isFullscreen
-          ? `fixed inset-0 z-50 w-screen h-screen overflow-y-auto ${
-              isTightScreen ? "xl:overflow-hidden" : ""
-            } rounded-none border-0 p-3.5 sm:p-5 flex flex-col gap-3`
+          ? "fixed inset-0 z-50 w-screen h-screen overflow-y-auto rounded-none border-0 p-3.5 sm:p-5 flex flex-col gap-3"
           : "min-h-[88vh] rounded-3xl border p-3 sm:p-4 shadow-2xl space-y-3"
       } ${themeBg}`}
     >
