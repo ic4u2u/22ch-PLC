@@ -15,6 +15,7 @@
     "better-sqlite3": "^12.6.2",
     "concurrently": "^9.1.2",
     "modbus-serial": "^8.0.17",
+    "msedge-tts": "^2.1.1",
     "next": "^15.5.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

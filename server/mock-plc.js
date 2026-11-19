@@ -15,11 +15,13 @@ const HOST = process.env.MOCK_PLC_HOST || "127.0.0.1";
 const PORT = Number(process.env.PLC_MODBUS_PORT || 8502);
 const CHANNEL_COUNT = 22;
 
+const ENABLE_DEMO_FAULTS = process.env.MOCK_DEMO_FAULTS === "1";
+
 // 22채널 내부 압력 배열 (스케일 ×10: 1200 = 120.0 bar, 아세틸렌은 210 = 21.0 bar)
 const pressures = Array.from({ length: CHANNEL_COUNT }, (_, idx) => {
   const isAcetylene = idx === 8 || idx === 9; // CH09, CH10 (5번 뱅크 아세틸렌)
   const isPrimaryA = idx % 2 === 0;
-  if (idx === 3) return 80; // CH04 [B]: 빈 통(8.0 bar) 절체 차단 안전 인터록 시연용
+  if (ENABLE_DEMO_FAULTS && idx === 3) return 80; // 선택적 인터록 시연 모드일 때만 CH04 빈 통 세팅
   if (isAcetylene) return isPrimaryA ? 210 : 240; // 21.0 bar (공급중) / 24.0 bar (만충대기)
   return isPrimaryA ? 1200 : 1480; // 120.0 bar (공급중) / 148.0 bar (만충대기)
 });
@@ -44,14 +46,14 @@ setInterval(() => {
     const fullChargeVal = isAcetylene ? 240 : 1480; // 만충 24.0 bar / 148.0 bar
 
     if (valves[i] === 0) {
-      // 현재 공급 중인 열린 통만 가스 소모
-      const dropStep = isAcetylene ? 1 : i === 0 ? 22 : i === 2 ? 12 : 4 + (i % 4);
+      // 현재 공급 중인 열린 통만 완만하게 가스 소모 (정상 상태 오래 유지)
+      const dropStep = isAcetylene ? 1 : 2 + (i % 2);
       pressures[i] = Math.max(0, pressures[i] - dropStep);
       refillWaitTicks[i] = 0;
-    } else if (i !== 3 && pressures[i] <= minRefillTrigger) {
-      // 절체되어 닫힌 빈 통은 작업자 용기 교체 모사를 위해 12초 후 새 만충 용기로 리필 (CH04는 인터록 테스트용 유지)
+    } else if (!(ENABLE_DEMO_FAULTS && i === 3) && pressures[i] <= minRefillTrigger) {
+      // 절체되어 닫힌 빈 통은 작업자 용기 교체 모사를 위해 5초 후 새 만충 용기로 리필
       refillWaitTicks[i] += 1;
-      if (refillWaitTicks[i] >= 12) {
+      if (refillWaitTicks[i] >= 5) {
         pressures[i] = fullChargeVal;
         refillWaitTicks[i] = 0;
         console.log(
@@ -63,10 +65,14 @@ setInterval(() => {
     }
   }
 
-  // 20초 주기로 22번 채널(addr === 21)에 단선(0) 또는 노이즈 스파이크(1950) 발생
-  const cycleSec = tickCount % 20;
-  if (cycleSec >= 0 && cycleSec < 3) {
-    faultMode22 = cycleSec % 2 === 0 ? "WIRE_BREAK" : "NOISE_SPIKE";
+  // 기본 운영/테스트 시에는 센서 고장 없이 정상 상태 유지 (MOCK_DEMO_FAULTS=1 일 때만 시연)
+  if (ENABLE_DEMO_FAULTS) {
+    const cycleSec = tickCount % 20;
+    if (cycleSec >= 0 && cycleSec < 3) {
+      faultMode22 = cycleSec % 2 === 0 ? "WIRE_BREAK" : "NOISE_SPIKE";
+    } else {
+      faultMode22 = "NORMAL";
+    }
   } else {
     faultMode22 = "NORMAL";
   }

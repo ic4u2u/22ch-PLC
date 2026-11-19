@@ -23,6 +23,7 @@ import {
 import CylinderPairCard from "./CylinderSvgGraphic";
 import FloorplanTab from "./FloorplanTab";
 import GasFilterBar from "./GasFilterBar";
+import SimpleMonitorView from "./SimpleMonitorView";
 import TvSafetyHudCard from "./TvSafetyHudCard";
 import {
   MasterAlarmCard,
@@ -31,6 +32,7 @@ import {
 
 export type WallboardMode =
   | "LARGE_CYLINDER"
+  | "SIMPLE_MONITOR"
   | "ONE_SCREEN"
   | "FLOORPLAN"
   | "SPOTLIGHT_SPLIT"
@@ -231,7 +233,10 @@ export default function WallboardView({
       ? "bg-slate-900 border-slate-700"
       : "bg-slate-950 border-slate-800";
 
-  const isTightScreen = viewMode === "ONE_SCREEN" || viewMode === "PANORAMA_11";
+  const isTightScreen =
+    viewMode === "ONE_SCREEN" ||
+    viewMode === "PANORAMA_11" ||
+    viewMode === "SIMPLE_MONITOR";
 
   return (
     <div
@@ -244,7 +249,23 @@ export default function WallboardView({
       } ${themeBg}`}
     >
       {/* =====================================================================
-          상단 슬림 컨트롤 & 뷰 모드 선택 바 (2원화 모니터링 전용 4대 핵심 뷰)
+          간편모니터링 전용 뷰일 때는 상단 일반 컨트롤 바를 숨기고 전용 전광판만 100% 표시
+         ===================================================================== */}
+      {viewMode === "SIMPLE_MONITOR" ? (
+        <SimpleMonitorView
+          allPairs={allPairs}
+          channels={channels}
+          diagnostics={diagnostics}
+          unit={unit}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
+          onExitSimpleView={() => updateMode("LARGE_CYLINDER")}
+          onSelectChannel={onSelectChannel}
+        />
+      ) : (
+        <>
+      {/* =====================================================================
+          상단 슬림 컨트롤 & 뷰 모드 선택 바 (2원화 모니터링 전용 핵심 뷰)
          ===================================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-800 bg-slate-900/95 px-3.5 py-2.5">
         {/* 좌측: 모니터 타이틀 + 경보 요약 배지 */}
@@ -269,10 +290,11 @@ export default function WallboardView({
           )}
         </div>
 
-        {/* 중앙: 모니터링 핵심 4대 뷰 (대형 실린더뷰 기본 + 공장 도면 뷰 통합) */}
+        {/* 중앙: 모니터링 핵심 뷰 (대형 실린더뷰 기본 + 간편모니터링 + 공장 도면 뷰) */}
         <div className="flex flex-wrap items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
           {[
             { id: "LARGE_CYLINDER", label: "🛢️ 대형 실린더뷰" },
+            { id: "SIMPLE_MONITOR", label: "✨ 간편모니터링" },
             { id: "FLOORPLAN", label: "🗺️ 공장 도면 뷰" },
             { id: "ONE_SCREEN", label: "🖥️ 1화면 전체 (16:9)" },
             { id: "SPOTLIGHT_SPLIT", label: "🚨 경보 집중뷰" },
@@ -885,6 +907,8 @@ export default function WallboardView({
             </div>
           )}
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -395,13 +395,7 @@ export default function Dashboard24() {
                 : `절체예상 21:45`;
           }
 
-          // 22번 채널(마지막 채널) 25초 주기 4~20mA 센서 이상(SENSOR_FAULT) 시연
-          if (bIdx === 10 && demoTick % 25 >= 20 && demoTick % 25 < 23) {
-            chB.status = "SENSOR_FAULT";
-            chB.faultReason = "4~20mA 전류 루프 단선 감지 (오차단 방지 작동)";
-          }
-
-          // 트렌드 버퍼 적재
+          // 트렌드 버퍼 적재 (데모 모드에서도 정상 가동 상태 유지)
           [chA, chB].forEach((c) => {
             const arr = trendMapRef.current[c.id] || [];
             arr.push(c.pressureBar);

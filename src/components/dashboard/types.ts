@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.1 · 업데이트: 2026-11-16 15:30 (4K UHD TV 4×3 12칸 & 종합안전 HUD·고시인성 최적화)";
+  "v2.2 · 업데이트: 2026-11-19 16:18 (YG-1 3D 간편모니터링 & 한국어 아나운서 TTS)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
@@ -362,20 +362,29 @@ export function humanizeKoreanSpeech(raw: string): string {
     .replace(/P-N2/gi, "고순도 질소")
     .replace(/G-N2/gi, "일반 질소")
     .replace(/C2H2/gi, "아세틸렌")
+    .replace(/A실린더/g, "에이 실린더")
+    .replace(/B실린더/g, "비 실린더")
+    .replace(/1차측/g, "일차측")
+    .replace(/2차측/g, "이차측")
     .replace(/CH-(\d+)/gi, "$1번 채널")
     .replace(/BANK-(\d+)/gi, "$1번 뱅크")
     .replace(/SENSOR_FAULT/gi, "센서 신호 이상")
     .replace(/4~20mA/gi, "사 에서 이십 밀리암페어")
     .replace(/(\d+)\.(\d+)\s*bar/gi, "$1점 $2 바")
-    .replace(/(\d+)\s*bar/gi, "$1 바");
+    .replace(/(\d+)\s*bar/gi, "$1 바")
+    .replace(/\.\s+/g, ", ");
 }
 
 let activeTtsAudio: HTMLAudioElement | null = null;
 
 /**
- * Qwen3-TTS (`/api/tts`) 기반 인간형 한국어 아나운서 음성 방송 (폐쇄망 오프라인 시 Natural Neural Voice 자동 폴백)
+ * Qwen3-TTS Instruct(Sohee) / 한국어 신경망 아나운서 (`/api/tts`) 기반 음성 방송
+ * (폐쇄망 오프라인 시 로컬 Natural Neural Voice 자동 폴백)
  */
-export function speakKoreanAlarm(text: string, voice: "Cherry" | "Ethan" = "Cherry") {
+export function speakKoreanAlarm(
+  text: string,
+  voice: "Sohee" | "Cherry" | "Ethan" = "Sohee"
+) {
   if (typeof window === "undefined") return;
   const cleanText = humanizeKoreanSpeech(text);
 
@@ -391,7 +400,7 @@ export function speakKoreanAlarm(text: string, voice: "Cherry" | "Ethan" = "Cher
     const audio = new Audio(
       `/api/tts?text=${encodeURIComponent(cleanText)}&voice=${voice}`
     );
-    audio.playbackRate = 1.03;
+    audio.playbackRate = 1.0;
     activeTtsAudio = audio;
 
     audio.play().catch(() => {
