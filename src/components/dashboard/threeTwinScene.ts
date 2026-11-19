@@ -108,13 +108,13 @@ export function buildDigitalTwinScene(allPairs: BankPairItem[]): TwinSceneContex
   const beaconGeo = new THREE.SphereGeometry(0.12, 14, 14);
   const particleGeo = new THREE.SphereGeometry(0.065, 10, 10);
 
-  const glassMat = new THREE.MeshPhysicalMaterial({
-    color: "#cbd5e1",
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: "#e2e8f0",
     transparent: true,
-    opacity: 0.24,
-    roughness: 0.12,
-    metalness: 0.1,
-    transmission: 0.35,
+    opacity: 0.22,
+    roughness: 0.15,
+    metalness: 0.25,
+    depthWrite: false,
   });
   const brassMat = new THREE.MeshStandardMaterial({
     color: "#eab308",
