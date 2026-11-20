@@ -226,7 +226,7 @@ export default function SimpleMonitorView({
       <div
         key={pair.bankId}
         onClick={() => onSelectChannel?.(activeCh)}
-        className={`h-full cursor-pointer flex flex-col justify-between rounded-2xl border-2 p-3 text-center transition-all hover:scale-[1.01] hover:brightness-110 ${
+        className={`h-full min-w-0 cursor-pointer flex flex-col justify-between rounded-2xl border-2 p-[clamp(0.45rem,0.7vw,1.2rem)] text-center transition-all hover:brightness-110 ${
           hasDanger
             ? "border-rose-500 bg-gradient-to-b from-rose-950/70 via-slate-900 to-slate-950 ring-1 ring-rose-500/70"
             : hasFault
@@ -244,35 +244,35 @@ export default function SimpleMonitorView({
       >
         {/* 상단: 영문코드(좌측) + 한글 가스명(가로 중앙) / 공급압력 텍스트(좌측) + 수치(가로 중앙) */}
         <div
-          className="space-y-2 border-b border-dashed pb-2.5"
+          className="space-y-1 border-b border-dashed pb-[clamp(0.3rem,0.5vh,0.8rem)]"
           style={{ borderBottomColor: `${gasColor}66` }}
         >
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 min-w-0">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 min-w-0">
             <span
-              className="justify-self-start whitespace-nowrap rounded-md px-[clamp(0.45rem,0.55vw,1rem)] py-[clamp(0.15rem,0.2vw,0.4rem)] font-mono text-[clamp(0.65rem,0.8vw,1.45rem)] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
+              className="justify-self-start whitespace-nowrap rounded-md px-[clamp(0.35rem,0.5vw,0.9rem)] py-[clamp(0.1rem,0.18vw,0.35rem)] font-mono text-[clamp(0.6rem,0.72vw,1.25rem)] font-black text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_2px_6px_rgba(0,0,0,0.4)]"
               style={{ backgroundColor: gasColor }}
             >
               {gasShortCode || chA.gasCode}
             </span>
-            <span className="justify-self-center text-center text-[clamp(0.95rem,1.2vw,2.25rem)] font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
+            <span className="justify-self-center text-center text-[clamp(0.85rem,1.05vw,1.95rem)] font-black text-white tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] whitespace-nowrap">
               {gasKoreanName}
             </span>
             <span aria-hidden="true" />
           </div>
 
-          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1.5 min-w-0">
-            <span className="justify-self-start text-[clamp(0.7rem,0.85vw,1.5rem)] font-extrabold text-slate-200 whitespace-nowrap">
+          <div className="pt-0.5 grid grid-cols-[1fr_auto_1fr] items-baseline gap-1 min-w-0">
+            <span className="justify-self-start text-[clamp(0.65rem,0.75vw,1.35rem)] font-extrabold text-slate-200 whitespace-nowrap">
               공급압력
             </span>
             <span
-              className="justify-self-center font-mono text-[clamp(1.2rem,1.8vw,3.4rem)] font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
+              className="justify-self-center font-mono text-[clamp(1.1rem,1.55vw,2.9rem)] font-black tabular-nums leading-none whitespace-nowrap drop-shadow-[0_2px_6px_rgba(0,0,0,0.85)]"
               style={{ color: hasDanger ? "#fda4af" : "#ffffff" }}
             >
               {activeCh.status === "SENSOR_FAULT"
                 ? "점검"
                 : formatPressureByUnit(activeCh.pressureBar, unit, activeCh.maxBar)}
               <span
-                className="ml-1 text-[clamp(0.75rem,0.95vw,1.7rem)] font-black"
+                className="ml-0.5 text-[clamp(0.68rem,0.85vw,1.5rem)] font-black"
                 style={{ color: hasDanger ? "#fb7185" : gasColor }}
               >
                 {activeCh.status === "SENSOR_FAULT" ? "" : unitLabel}
@@ -282,14 +282,14 @@ export default function SimpleMonitorView({
           </div>
         </div>
 
-        {/* 중앙: 3D 입체 실린더 2기 + 알람 발생 시 해당 통 옆에 '좌측 A' / '우측 B' 표시 (해제 시 자동 소멸) */}
-        <div className="my-2 flex flex-1 items-center justify-center gap-[clamp(0.4rem,0.9vw,1.6rem)]">
+        {/* 중앙: 3D 입체 실린더 2기 + 알람 시 모서리 플로팅 '좌측 A' / '우측 B' 배지 (실린더 밀림·글자 꺾임 제로) */}
+        <div className="relative my-1 flex flex-1 items-center justify-center gap-[clamp(0.5rem,1.1vw,2rem)] min-h-0">
           {isAAlert && (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-rose-400/80 bg-gradient-to-b from-rose-600/80 to-rose-950/90 px-[clamp(0.35rem,0.45vw,0.8rem)] py-[clamp(0.35rem,0.45vw,0.75rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.6)] animate-pulse shrink-0">
-              <span className="text-[clamp(0.65rem,0.75vw,1.25rem)] font-black leading-tight whitespace-nowrap">
+            <div className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center rounded-xl border border-rose-400/90 bg-rose-950/90 px-[clamp(0.3rem,0.4vw,0.7rem)] py-[clamp(0.25rem,0.35vw,0.6rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.65)] animate-pulse whitespace-nowrap">
+              <span className="text-[clamp(0.6rem,0.68vw,1.15rem)] font-black leading-none">
                 좌측
               </span>
-              <span className="font-mono text-[clamp(0.85rem,1.05vw,1.8rem)] font-black text-amber-300 leading-none mt-0.5">
+              <span className="font-mono text-[clamp(0.8rem,0.95vw,1.6rem)] font-black text-amber-300 leading-none mt-0.5">
                 A
               </span>
             </div>
@@ -297,11 +297,11 @@ export default function SimpleMonitorView({
           <ThreeCylinderCanvas ch={chA} gasColor={gasColor} />
           <ThreeCylinderCanvas ch={chB} gasColor={gasColor} />
           {isBAlert && (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-rose-400/80 bg-gradient-to-b from-rose-600/80 to-rose-950/90 px-[clamp(0.35rem,0.45vw,0.8rem)] py-[clamp(0.35rem,0.45vw,0.75rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.6)] animate-pulse shrink-0">
-              <span className="text-[clamp(0.65rem,0.75vw,1.25rem)] font-black leading-tight whitespace-nowrap">
+            <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center justify-center rounded-xl border border-rose-400/90 bg-rose-950/90 px-[clamp(0.3rem,0.4vw,0.7rem)] py-[clamp(0.25rem,0.35vw,0.6rem)] text-white shadow-[0_0_14px_rgba(244,63,94,0.65)] animate-pulse whitespace-nowrap">
+              <span className="text-[clamp(0.6rem,0.68vw,1.15rem)] font-black leading-none">
                 우측
               </span>
-              <span className="font-mono text-[clamp(0.85rem,1.05vw,1.8rem)] font-black text-amber-300 leading-none mt-0.5">
+              <span className="font-mono text-[clamp(0.8rem,0.95vw,1.6rem)] font-black text-amber-300 leading-none mt-0.5">
                 B
               </span>
             </div>
@@ -309,10 +309,10 @@ export default function SimpleMonitorView({
         </div>
 
         {/* 하단: 3D 그라데이션 공급중 / 대기중 알약 + 종합 상태 */}
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-[clamp(0.25rem,0.4vh,0.6rem)] shrink-0">
+          <div className="grid grid-cols-2 gap-1.5">
             <span
-              className={`rounded-xl py-[clamp(0.35rem,0.5vw,0.85rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black transition-all ${
+              className={`rounded-xl py-[clamp(0.28rem,0.42vh,0.7rem)] text-[clamp(0.7rem,0.85vw,1.45rem)] font-black whitespace-nowrap transition-all ${
                 isAOpen
                   ? "bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_3px_10px_rgba(16,185,129,0.5)]"
                   : aStyle.label === "교체필요"
@@ -323,7 +323,7 @@ export default function SimpleMonitorView({
               {aStyle.label}
             </span>
             <span
-              className={`rounded-xl py-[clamp(0.35rem,0.5vw,0.85rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black transition-all ${
+              className={`rounded-xl py-[clamp(0.28rem,0.42vh,0.7rem)] text-[clamp(0.7rem,0.85vw,1.45rem)] font-black whitespace-nowrap transition-all ${
                 isBOpen
                   ? "bg-gradient-to-b from-emerald-400 to-emerald-600 text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_3px_10px_rgba(16,185,129,0.5)]"
                   : bStyle.label === "교체필요"
@@ -335,7 +335,7 @@ export default function SimpleMonitorView({
             </span>
           </div>
           <div
-            className={`rounded-xl border py-[clamp(0.3rem,0.45vw,0.8rem)] text-[clamp(0.75rem,0.95vw,1.65rem)] font-black ${statusBadge.cls}`}
+            className={`rounded-xl border py-[clamp(0.25rem,0.38vh,0.65rem)] text-[clamp(0.7rem,0.85vw,1.45rem)] font-black whitespace-nowrap ${statusBadge.cls}`}
           >
             {statusBadge.label}
           </div>
@@ -346,8 +346,8 @@ export default function SimpleMonitorView({
 
   return (
     <div
-      className={`flex flex-col justify-between gap-3 rounded-2xl border border-cyan-500/45 bg-gradient-to-b from-[#05152e] via-[#071c3d] to-[#020814] p-3.5 sm:p-4 shadow-[0_0_50px_rgba(6,182,212,0.16)] ${
-        isFullscreen ? "flex-1 min-h-0" : "min-h-[84vh]"
+      className={`flex flex-col justify-between gap-[clamp(0.5rem,0.9vh,1rem)] rounded-2xl border border-cyan-500/45 bg-gradient-to-b from-[#05152e] via-[#071c3d] to-[#020814] p-[clamp(0.6rem,1vw,1.5rem)] shadow-[0_0_50px_rgba(6,182,212,0.16)] ${
+        isFullscreen ? "min-h-full" : "min-h-[84vh]"
       }`}
     >
       {/* 1. 상단 전용 헤더: YG-1 공식 로고 + 와이지원 | 가스 모니터링 시스템 | 인천 제2공장 + 대형 날짜·시간 */}
@@ -389,64 +389,56 @@ export default function SimpleMonitorView({
         </div>
       </header>
 
-      {/* 2. 중앙 2단 3D 가스 모니터링 그리드 (1단: 가스캐비닛 5종 / 2단: 오토체인지 6종) */}
-      <div className={`flex flex-col gap-3 ${isFullscreen ? "flex-1 min-h-0" : ""}`}>
-        <div
-          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 ${
-            isFullscreen ? "flex-1 min-h-0" : ""
-          }`}
-        >
+      {/* 2. 중앙 2단 3D 가스 모니터링 그리드 (1단: 가스캐비닛 5종 / 2단: 오토체인지 6종 — 절대 겹침 없음) */}
+      <div className="grid flex-1 grid-rows-2 gap-[clamp(0.5rem,0.9vh,1rem)]">
+        <div className="grid grid-cols-1 gap-[clamp(0.5rem,0.8vw,1.2rem)] sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {cabinetPairs.map(renderGasCard)}
         </div>
 
-        <div
-          className={`grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 ${
-            isFullscreen ? "flex-1 min-h-0" : ""
-          }`}
-        >
+        <div className="grid grid-cols-1 gap-[clamp(0.5rem,0.8vw,1.2rem)] sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
           {autoPairs.map(renderGasCard)}
         </div>
       </div>
 
-      {/* 3. 하단 4가지 핵심 설비 요약 (4K에서도 시원하게 커지는 유체 폰트) */}
-      <footer className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">📡</span>
+      {/* 3. 하단 4가지 핵심 설비 요약 (4칸 동일 높이 1줄 고정 + 4K 유체 폰트) */}
+      <footer className="grid grid-cols-1 gap-[clamp(0.5rem,0.8vw,1.2rem)] sm:grid-cols-2 lg:grid-cols-4 shrink-0">
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.5rem,0.65vh,1.1rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.4rem,1.6vw,2.6rem)] shrink-0">📡</span>
           <div className="min-w-0">
-            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+            <div className="text-[clamp(0.7rem,0.75vw,1.2rem)] font-bold text-slate-300">
               PLC 통신 상태
             </div>
             <div
-              className={`text-[clamp(0.9rem,1.05vw,1.9rem)] font-black leading-snug break-keep ${
+              className={`text-[clamp(0.85rem,0.95vw,1.65rem)] font-black leading-tight whitespace-nowrap ${
                 diagnostics.plcConnected ? "text-emerald-300" : "text-rose-400"
               }`}
             >
               {diagnostics.plcConnected
-                ? `정상 연결 (${diagnostics.protocol} · ${Math.round(Number(diagnostics.latencyMs || 0))}ms)`
+                ? `정상 연결 (${String(diagnostics.protocol || "MODBUS").split(" ")[0]} · ${Math.round(Number(diagnostics.latencyMs || 0))}ms)`
                 : "통신 재연결 대기중"}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">🟢</span>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.5rem,0.65vh,1.1rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.4rem,1.6vw,2.6rem)] shrink-0">🟢</span>
           <div className="min-w-0">
-            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+            <div className="text-[clamp(0.7rem,0.75vw,1.2rem)] font-bold text-slate-300">
               전체 가동 현황
             </div>
-            <div className="text-[clamp(0.9rem,1.05vw,1.9rem)] font-black text-white leading-snug break-keep">
+            <div className="text-[clamp(0.85rem,0.95vw,1.65rem)] font-black text-white leading-tight whitespace-nowrap">
               {allPairs.length}종 가스 (공급 {supplyCount} · 대기 {standbyCount})
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
-          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">🛡️</span>
+        <div className="flex items-center gap-3.5 rounded-2xl border border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950 px-4 sm:px-5 py-[clamp(0.5rem,0.65vh,1.1rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+          <span className="text-[clamp(1.4rem,1.6vw,2.6rem)] shrink-0">🛡️</span>
           <div className="min-w-0">
-            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+            <div className="text-[clamp(0.7rem,0.75vw,1.2rem)] font-bold text-slate-300">
               무중단 자동절체 인터록
             </div>
-            <div className="text-[clamp(0.9rem,1.05vw,1.9rem)] font-black text-cyan-300 leading-snug break-keep">
+            <div className="text-[clamp(0.85rem,0.95vw,1.65rem)] font-black text-cyan-300 leading-tight whitespace-nowrap">
               {diagnostics.plcConnected ? "정상 감시중 (350ms)" : "조작 안전 잠금중"}
             </div>
           </div>
@@ -456,26 +448,26 @@ export default function SimpleMonitorView({
           onClick={() => {
             if (attentionChannels[0]) onSelectChannel?.(attentionChannels[0]);
           }}
-          className={`flex items-center gap-3.5 rounded-2xl border px-4 sm:px-5 py-[clamp(0.6rem,0.7vw,1.25rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${
+          className={`flex items-center gap-3.5 rounded-2xl border px-4 sm:px-5 py-[clamp(0.5rem,0.65vh,1.1rem)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${
             attentionChannels.length > 0
               ? "cursor-pointer border-rose-500/80 bg-gradient-to-b from-rose-950/70 to-slate-950 hover:brightness-110"
               : "border-cyan-400/35 bg-gradient-to-b from-slate-900/95 to-slate-950"
           }`}
         >
-          <span className="text-[clamp(1.5rem,1.8vw,3rem)] shrink-0">
+          <span className="text-[clamp(1.4rem,1.6vw,2.6rem)] shrink-0">
             {attentionChannels.length > 0 ? "🚨" : "✅"}
           </span>
           <div className="min-w-0">
-            <div className="text-[clamp(0.75rem,0.8vw,1.35rem)] font-bold text-slate-300">
+            <div className="text-[clamp(0.7rem,0.75vw,1.2rem)] font-bold text-slate-300">
               설비 특이사항
             </div>
             <div
-              className={`text-[clamp(0.9rem,1.05vw,1.9rem)] font-black leading-snug break-keep ${
+              className={`text-[clamp(0.85rem,0.95vw,1.65rem)] font-black leading-tight whitespace-nowrap ${
                 attentionChannels.length > 0 ? "text-rose-300" : "text-emerald-300"
               }`}
             >
               {attentionChannels.length > 0
-                ? `교체·점검 ${attentionChannels.length}건 (클릭 확인)`
+                ? `교체·점검 ${attentionChannels.length}건 (클릭)`
                 : "전 뱅크 이상 없음"}
             </div>
           </div>

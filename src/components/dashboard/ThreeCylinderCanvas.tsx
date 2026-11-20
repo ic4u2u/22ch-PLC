@@ -312,8 +312,8 @@ interface ThreeCylinderCanvasProps {
 export default function ThreeCylinderCanvas({
   ch,
   gasColor,
-  containerClassName = "w-[clamp(46px,4.2vw,148px)] max-h-[26vh]",
-  badgeClassName = "px-1.5 py-0.5 text-[clamp(0.68rem,0.85vw,1.45rem)]",
+  containerClassName = "h-[clamp(76px,15.5vh,270px)] w-auto",
+  badgeClassName = "px-1.5 py-0.5 text-[clamp(0.68rem,0.8vw,1.35rem)]",
 }: ThreeCylinderCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const phys = getGasPhysicsMeta(ch.gasCode, ch.pressureBar, ch.maxBar);
