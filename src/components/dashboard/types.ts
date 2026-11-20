@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.8 · 업데이트: 2026-11-19 22:50 (Three.js 3D 가스통 & 실시간 가스 공급 애니메이션)";
+  "v2.9 · 업데이트: 2026-11-20 09:50 (전 모니터링 뷰 Three.js 3D 가스통 통합)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 

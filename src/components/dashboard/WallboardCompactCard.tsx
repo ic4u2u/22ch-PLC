@@ -9,6 +9,7 @@
  */
 
 import React from "react";
+import ThreeCylinderCanvas from "./ThreeCylinderCanvas";
 import {
   ChannelData,
   PressureUnit,
@@ -254,184 +255,89 @@ export function OneScreenCylinderCard({
           </button>
         </div>
 
-        {/* 중앙 A/B 가스통 + 레귤레이터 + 피그테일 호스 일러스트 */}
+        {/* 중앙 A/B Three.js 3D 가스통 + 레귤레이터 + 공급 애니메이션 */}
         <div
           onClick={() => onSelectChannel?.(chA)}
-          className="col-span-4 flex items-center justify-center cursor-pointer"
+          className="col-span-4 flex flex-col items-center justify-between cursor-pointer"
         >
           <svg
-            viewBox="0 0 140 165"
-            className="h-[124px] w-full"
+            viewBox="0 0 140 50"
+            className="w-full max-h-[42px] shrink-0"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <defs>
-              <linearGradient id={`wbA-${bankId}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={visA.top} />
-                <stop offset="100%" stopColor={visA.bottom} />
-              </linearGradient>
-              <linearGradient id={`wbB-${bankId}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={visB.top} />
-                <stop offset="100%" stopColor={visB.bottom} />
-              </linearGradient>
-              <clipPath id={`wbClipA-${bankId}`}>
-                <rect x="14" y="64" width="42" height="78" rx="10" />
-              </clipPath>
-              <clipPath id={`wbClipB-${bankId}`}>
-                <rect x="84" y="64" width="42" height="78" rx="10" />
-              </clipPath>
-            </defs>
-
-            {/* 상단 자동절체기 박스 & 게이지 2개 */}
             <rect
               x="20"
               y="6"
               width="100"
-              height="32"
+              height="30"
               rx="5"
               fill="#1e293b"
               stroke="#475569"
               strokeWidth="1.5"
             />
-            <circle cx="38" cy="22" r="9" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.2" />
+            <circle cx="38" cy="21" r="8.5" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.2" />
             <line
               x1="38"
-              y1="22"
-              x2={38 + 6 * Math.sin((angleA * Math.PI) / 180)}
-              y2={22 - 6 * Math.cos((angleA * Math.PI) / 180)}
+              y1="21"
+              x2={38 + 5.5 * Math.sin((angleA * Math.PI) / 180)}
+              y2={21 - 5.5 * Math.cos((angleA * Math.PI) / 180)}
               stroke={visA.top}
               strokeWidth="1.8"
             />
-            <circle cx="102" cy="22" r="9" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.2" />
+            <circle cx="102" cy="21" r="8.5" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.2" />
             <line
               x1="102"
-              y1="22"
-              x2={102 + 6 * Math.sin((angleB * Math.PI) / 180)}
-              y2={22 - 6 * Math.cos((angleB * Math.PI) / 180)}
+              y1="21"
+              x2={102 + 5.5 * Math.sin((angleB * Math.PI) / 180)}
+              y2={21 - 5.5 * Math.cos((angleB * Math.PI) / 180)}
               stroke={visB.top}
               strokeWidth="1.8"
             />
-            <circle cx="70" cy="22" r="8" fill="#0284c7" stroke="#bae6fd" strokeWidth="1.2" />
-
-            {/* 피그테일 호스 */}
+            <circle cx="70" cy="21" r="7.5" fill="#0284c7" stroke="#bae6fd" strokeWidth="1.2" />
             <path
-              d="M 35 52 C 18 47, 50 43, 54 38"
+              d="M 35 49 C 18 44, 50 40, 54 36"
               fill="none"
               stroke={isAOpen ? visA.top : "#475569"}
               strokeWidth={isAOpen ? "2.5" : "1.5"}
               strokeDasharray={isAOpen ? "none" : "2,2"}
             />
             <path
-              d="M 105 52 C 122 47, 90 43, 86 38"
+              d="M 105 49 C 122 44, 90 40, 86 36"
               fill="none"
               stroke={isBOpen ? visB.top : "#475569"}
               strokeWidth={isBOpen ? "2.5" : "1.5"}
               strokeDasharray={isBOpen ? "none" : "2,2"}
             />
-
-            {/* A 가스통 황동 밸브 & 몸통 */}
-            <rect x="30" y="52" width="10" height="12" rx="1.5" fill="#eab308" />
-            <rect
-              x="14"
-              y="64"
-              width="42"
-              height="78"
-              rx="10"
-              fill="#0f172a"
-              stroke={visA.stroke}
-              strokeWidth="2"
-            />
-            <g clipPath={`url(#wbClipA-${bankId})`}>
-              <rect
-                x="12"
-                y={142 - (78 * visA.pct) / 100}
-                width="46"
-                height={(78 * visA.pct) / 100 + 4}
-                fill={`url(#wbA-${bankId})`}
-              />
-            </g>
-            <rect
-              x="14"
-              y="64"
-              width="42"
-              height="78"
-              rx="10"
-              fill="none"
-              stroke={visA.stroke}
-              strokeWidth="2"
-            />
-            <text
-              x="35"
-              y="108"
-              fill="#ffffff"
-              fontSize="11"
-              fontWeight="900"
-              textAnchor="middle"
-              style={{ textShadow: "0 1px 3px #000" }}
-            >
-              {visA.pct}%
-            </text>
-
-            {/* B 가스통 황동 밸브 & 몸통 */}
-            <rect x="100" y="52" width="10" height="12" rx="1.5" fill="#eab308" />
-            <rect
-              x="84"
-              y="64"
-              width="42"
-              height="78"
-              rx="10"
-              fill="#0f172a"
-              stroke={visB.stroke}
-              strokeWidth="2"
-            />
-            <g clipPath={`url(#wbClipB-${bankId})`}>
-              <rect
-                x="82"
-                y={142 - (78 * visB.pct) / 100}
-                width="46"
-                height={(78 * visB.pct) / 100 + 4}
-                fill={`url(#wbB-${bankId})`}
-              />
-            </g>
-            <rect
-              x="84"
-              y="64"
-              width="42"
-              height="78"
-              rx="10"
-              fill="none"
-              stroke={visB.stroke}
-              strokeWidth="2"
-            />
-            <text
-              x="105"
-              y="108"
-              fill="#ffffff"
-              fontSize="11"
-              fontWeight="900"
-              textAnchor="middle"
-              style={{ textShadow: "0 1px 3px #000" }}
-            >
-              {visB.pct}%
-            </text>
-
-            {/* 하단 [A] 🟢 [B] 마크 */}
-            <rect x="23" y="146" width="24" height="15" rx="2.5" fill="#facc15" />
-            <text x="35" y="157" fill="#0f172a" fontSize="10" fontWeight="900" textAnchor="middle">
-              A
-            </text>
-            <circle
-              cx="70"
-              cy="153"
-              r="6.5"
-              fill={hasDanger || hasFault ? "#f43f5e" : "#10b981"}
-              stroke="#ffffff"
-              strokeWidth="1.2"
-            />
-            <rect x="93" y="146" width="24" height="15" rx="2.5" fill="#facc15" />
-            <text x="105" y="157" fill="#0f172a" fontSize="10" fontWeight="900" textAnchor="middle">
-              B
-            </text>
           </svg>
+
+          <div className="my-0.5 flex w-full items-center justify-center gap-1">
+            <ThreeCylinderCanvas
+              ch={chA}
+              gasColor={chA.color || "#0ea5e9"}
+              containerClassName="w-[34px] sm:w-[38px]"
+              badgeClassName="px-1 py-0 text-[8.5px]"
+            />
+            <ThreeCylinderCanvas
+              ch={chB}
+              gasColor={chA.color || "#0ea5e9"}
+              containerClassName="w-[34px] sm:w-[38px]"
+              badgeClassName="px-1 py-0 text-[8.5px]"
+            />
+          </div>
+
+          <div className="flex w-full items-center justify-around px-1">
+            <span className="rounded bg-yellow-400 px-1.5 py-0 text-[9px] font-black text-slate-950">
+              A
+            </span>
+            <span
+              className={`h-2.5 w-2.5 rounded-full border border-white ${
+                hasDanger || hasFault ? "bg-rose-500 animate-pulse" : "bg-emerald-500"
+              }`}
+            />
+            <span className="rounded bg-yellow-400 px-1.5 py-0 text-[9px] font-black text-slate-950">
+              B
+            </span>
+          </div>
         </div>
 
         {/* 우측 B실린더 [CH-짝수] 요약 */}

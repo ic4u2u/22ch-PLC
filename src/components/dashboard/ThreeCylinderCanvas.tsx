@@ -305,9 +305,16 @@ function renderSharedLoop() {
 interface ThreeCylinderCanvasProps {
   ch: ChannelData;
   gasColor: string;
+  containerClassName?: string;
+  badgeClassName?: string;
 }
 
-export default function ThreeCylinderCanvas({ ch, gasColor }: ThreeCylinderCanvasProps) {
+export default function ThreeCylinderCanvas({
+  ch,
+  gasColor,
+  containerClassName = "w-[clamp(46px,4.2vw,148px)] max-h-[26vh]",
+  badgeClassName = "px-1.5 py-0.5 text-[clamp(0.68rem,0.85vw,1.45rem)]",
+}: ThreeCylinderCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const phys = getGasPhysicsMeta(ch.gasCode, ch.pressureBar, ch.maxBar);
   const pct = phys.realMassPct;
@@ -344,7 +351,9 @@ export default function ThreeCylinderCanvas({ ch, gasColor }: ThreeCylinderCanva
   }, [ch.id, ch.valveState, ch.status, ch.pressureBar, ch.dangerBar, pct, gasColor]);
 
   return (
-    <div className="relative w-[clamp(46px,4.2vw,148px)] max-h-[26vh] aspect-[60/128] flex items-center justify-center shrink-0">
+    <div
+      className={`relative aspect-[60/128] flex items-center justify-center shrink-0 ${containerClassName}`}
+    >
       <canvas
         ref={canvasRef}
         width={RENDER_W}
@@ -352,7 +361,9 @@ export default function ThreeCylinderCanvas({ ch, gasColor }: ThreeCylinderCanva
         className="h-full w-full drop-shadow-[0_8px_14px_rgba(0,0,0,0.75)]"
       />
       {/* 고시인성 2D 잔량 % 캡슐 뱃지 (4K에서도 100% 선명) */}
-      <span className="pointer-events-none absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border border-white/30 bg-slate-950/80 px-1.5 py-0.5 font-mono text-[clamp(0.68rem,0.85vw,1.45rem)] font-black text-white shadow">
+      <span
+        className={`pointer-events-none absolute top-[54%] left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-md border border-white/30 bg-slate-950/80 font-mono font-black text-white shadow ${badgeClassName}`}
+      >
         {pct}%
       </span>
     </div>
