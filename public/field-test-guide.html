@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACSC 22CH 현장 PLC 연결 &amp; 테스트 완벽 가이드 (최종판)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", "Segoe UI", sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      line-height: 1.65;
+      font-size: 14px;
+      padding-bottom: 56px;
+      word-break: keep-all;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.96);
+      color: #f8fafc;
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #334155;
+      padding: 10px 16px;
+    }
+    .topbar-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .topbar-title {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #0284c7;
+      color: #ffffff;
+    }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: #0284c7; color: #ffffff; }
+    .btn-secondary { background: #1e293b; color: #e2e8f0; border-color: #475569; }
+    .btn-outline { background: #ffffff; color: #0f172a; border-color: #cbd5e1; }
+    .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    h1 { font-size: 21px; font-weight: 800; color: #0f172a; }
+    h2 { font-size: 16px; font-weight: 800; color: #0f172a; }
+    h3 { font-size: 14px; font-weight: 700; color: #0f172a; }
+    .muted { color: #64748b; font-size: 12.5px; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-size: 12px;
+    }
+    pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+
+    .subbox {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 13px;
+    }
+    .stage-box {
+      border-radius: 12px;
+      padding: 15px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stage-1 { border-top: 4px solid #059669; }
+    .stage-2 { border-top: 4px solid #0284c7; }
+    .stage-3 { border-top: 4px solid #7c3aed; }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-blue { background: #e0f2fe; color: #075985; }
+    .tag-purple { background: #ede9fe; color: #5b21b6; }
+    .tag-amber { background: #fef3c7; color: #92400e; }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tab-btn {
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 9px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+    .tab-btn.active {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+    .hidden { display: none !important; }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .step-card.done { border-left-color: #059669; border-color: #a7f3d0; }
+    .step-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .step-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 14.5px;
+    }
+    .step-label input { width: 17px; height: 17px; accent-color: #059669; cursor: pointer; }
+
+    .progress-wrap {
+      min-width: 180px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-align: right;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #059669;
+      transition: width 0.25s;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; color: #334155; }
+
+    .cmd-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .copy-btn {
+      cursor: pointer;
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    label.field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 700; }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    details {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 11px 14px;
+    }
+    summary { cursor: pointer; font-weight: 700; font-size: 13px; }
+    details p { margin-top: 8px; color: #334155; font-size: 12.5px; }
+
+    .alert-warn {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #d97706;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      color: #78350f;
+    }
+
+    ol, ul { padding-left: 18px; }
+    li { margin-bottom: 4px; }
+
+    @media print {
+      .topbar, .no-print { display: none !important; }
+      body { background: #ffffff; }
+      .card, .step-card { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 고정 바 -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-title">
+        <span class="badge-pill">최종 통합본 · 현장 시운전 가이드</span>
+        <span>ACSC 22채널 특수가스 관제 시스템 — S/W 설치 &amp; PLC 테스트 매뉴얼</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="downloadThisGuide()">📥 이 가이드 HTML 다운로드</button>
+        <button class="btn btn-secondary" onclick="copyFullHtml(this)">📋 HTML 코드 복사</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ 인쇄 / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- 1. 한눈에 보는 요약 & 진행률 -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h1>이 컴퓨터 1대만으로 테스트할 수 있나요?</h1>
+          <p class="muted" style="margin-top:4px;">
+            네! <strong>혼자 연습하는 테스트는 지금 이 컴퓨터 1대만으로 100% 가능</strong>합니다. 현장에 가서 실물 PLC와 연결할 때만 <strong>랜선 1개 + 실물 PLC</strong>가 추가됩니다.
+          </p>
+        </div>
+        <div class="progress-wrap">
+          <div class="muted" style="font-size:11px;">현장 실전 체크리스트</div>
+          <div id="progressText" style="font-size:17px; font-weight:800; color:#059669;">0 / 5 단계</div>
+          <div class="progress-bar-bg">
+            <div id="progressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3단계 로드맵 -->
+      <div class="grid-3">
+        <div class="stage-box stage-1">
+          <span class="tag tag-green">1단계 · 장비 불필요</span>
+          <h3>내 컴퓨터 1대만으로 연습</h3>
+          <p class="muted">
+            프로젝트에 <strong>가상 PLC 시뮬레이터</strong>가 내장되어 있어 실물 PLC 없이도 화면, 알람, 밸브, 통신 패킷까지 전부 테스트할 수 있습니다.
+          </p>
+          <div style="font-size:12px;">
+            <strong>준비물:</strong> 지금 이 PC 1대
+          </div>
+        </div>
+
+        <div class="stage-box stage-2">
+          <span class="tag tag-blue">2단계 · 선택 사항</span>
+          <h3>PC 2대로 현장 예행연습</h3>
+          <p class="muted">
+            현장에 가기 전, 한쪽 PC를 가상 PLC로 두고 다른 쪽 노트북에서 실제 네트워크(공유기 또는 랜선)를 통해 통신이 되는지 미리 연습합니다.
+          </p>
+          <div style="font-size:12px;">
+            <strong>준비물:</strong> PC 2대 + 공유기(또는 랜선)
+          </div>
+        </div>
+
+        <div class="stage-box stage-3">
+          <span class="tag tag-purple">3단계 · 실제 현장</span>
+          <h3>현장 실물 PLC 1:1 연결 테스트</h3>
+          <p class="muted">
+            현장에 도착하면 PC 2대가 필요 없습니다. <strong>현장 PC(또는 노트북) 1대</strong>와 <strong>실물 PLC</strong>를 랜선으로 직접 꽂아 테스트합니다.
+          </p>
+          <div style="font-size:12px;">
+            <strong>준비물:</strong> PC 1대 + 랜선 1개 + 실물 PLC
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-top:14px;">
+        <div class="subbox">
+          <div class="muted">PC 고정 IP (LAN 1)</div>
+          <div style="font-weight:800; font-family:monospace;">192.168.0.100</div>
+        </div>
+        <div class="subbox">
+          <div class="muted">현장 PLC IP (XBL-EMTA)</div>
+          <div style="font-weight:800; font-family:monospace;">192.168.0.50</div>
+        </div>
+        <div class="subbox">
+          <div class="muted">통신 포트 (XGT / Modbus)</div>
+          <div style="font-weight:800; font-family:monospace;">TCP 2004 / 502</div>
+        </div>
+        <div class="subbox">
+          <div class="muted">관리자 PIN (잠금해제 5분)</div>
+          <div style="font-weight:800; font-family:monospace;">1234</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-2. 아무것도 안 깔린 새 컴퓨터에 S/W 다운 및 설치하기 -->
+    <section class="card" style="border-top: 4px solid #0284c7;">
+      <div class="card-header">
+        <div>
+          <h2>🆕 S/W가 없는 새 컴퓨터(노트북 · 미니 PC)에 처음 설치하기</h2>
+          <p class="muted">이 컴퓨터가 아닌 다른 빈 PC에서 테스트하려면 아래 순서대로 <strong>Node.js</strong>와 <strong>S/W 파일</strong>만 받으면 됩니다.</p>
+        </div>
+        <div class="btn-row no-print">
+          <a class="btn btn-primary" href="https://github.com/ic4u2u/22ch-PLC/archive/refs/heads/main.zip" target="_blank" rel="noopener" style="text-decoration:none;">
+            📦 S/W 전체 ZIP 즉시 다운로드
+          </a>
+          <a class="btn btn-outline" href="https://nodejs.org/ko/download" target="_blank" rel="noopener" style="text-decoration:none;">
+            ⬇️ Node.js LTS 다운로드
+          </a>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="subbox">
+          <span class="tag tag-green" style="margin-bottom:6px;">필수 1 · 런타임 설치 (1회)</span>
+          <h3>Node.js LTS 설치하기</h3>
+          <ol style="font-size:12px; margin-top:6px; color:#334155;">
+            <li><a href="https://nodejs.org/ko/download" target="_blank" rel="noopener">nodejs.org/ko</a>에서 <strong>LTS(장기 지원)</strong> 버전 다운로드</li>
+            <li>설치 파일 실행 후 <strong>Next → Install</strong>만 계속 눌러 설치 완료</li>
+            <li>CMD(명령 프롬프트)에서 <code>node -v</code> 입력해 버전이 나오면 성공!</li>
+          </ol>
+        </div>
+
+        <div class="subbox">
+          <span class="tag tag-blue" style="margin-bottom:6px;">방법 A · 초간단 통신 테스트만 (추천)</span>
+          <h3>설치 명령 없이 10초 만에 실행</h3>
+          <ol style="font-size:12px; margin-top:6px; color:#334155;">
+            <li>위 <strong>[S/W 전체 ZIP 즉시 다운로드]</strong> 클릭 후 압축 풀기</li>
+            <li><code>tools\xgt-ethernet-tester\</code> 폴더 열기</li>
+            <li><code>2_PC_B_클라이언트실행(EnetClient).bat</code> 더블클릭 → <strong>끝!</strong> (<code>npm install</code> 불필요)</li>
+          </ol>
+        </div>
+
+        <div class="subbox">
+          <span class="tag tag-purple" style="margin-bottom:6px;">방법 B · 22채널 전체 대시보드 설치</span>
+          <h3>웹 관제 시스템 전체 실행</h3>
+          <ol style="font-size:12px; margin-top:6px; color:#334155;">
+            <li>압축 푼 폴더(<code>22ch-PLC-main</code>)에서 CMD 열기</li>
+            <li>패키지 설치 (최초 1회, 약 1분):
+              <div class="cmd-box">
+                <span>npm install</span>
+                <button class="copy-btn" onclick="copyText('npm install', this)">복사</button>
+              </div>
+            </li>
+            <li>환경설정 복사: <code>copy .env.example .env.local</code></li>
+            <li>가상 테스트는 <code>npm run dev:all</code>, 실물 PLC는 <code>npm run build</code> 후 브릿지·웹 실행</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="alert-warn" style="margin-top:12px;">
+        <strong>💡 현장 PC에 인터넷이 안 될 때 (USB 오프라인 설치 팁):</strong><br/>
+        인터넷이 되는 PC에서 ① <code>Node.js LTS(.msi)</code> 설치 파일과 ② <code>npm install</code>까지 끝낸 <code>22ch-PLC</code> 폴더 전체를 USB에 복사한 뒤,
+        현장 PC에 붙여넣고 Node.js만 설치하면 인터넷 없이도 바로 실행됩니다!
+      </div>
+    </section>
+
+    <!-- 1-3. 모든 필요 자료 통합 다운로드 센터 -->
+    <section class="card" style="border-top: 4px solid #059669;">
+      <div class="card-header">
+        <div>
+          <h2>📦 현장 필요 자료 통합 다운로드 센터</h2>
+          <p class="muted">프로그램 전체, 필수 런타임, 현장 배치 스크립트, PDF/HTML 매뉴얼까지 이 화면에서 바로 내려받으세요.</p>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <!-- 프로그램 & 런타임 -->
+        <div class="subbox" style="display:flex; flex-direction:column; gap:8px;">
+          <span class="tag tag-green">1. S/W &amp; 필수 프로그램</span>
+          <a class="btn btn-primary" href="https://github.com/ic4u2u/22ch-PLC/archive/refs/heads/main.zip" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">
+            📦 22ch-PLC 전체 S/W (ZIP)
+          </a>
+          <a class="btn btn-outline" href="https://nodejs.org/ko/download" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">
+            ⬇️ Node.js LTS 공식 다운로드 (필수)
+          </a>
+          <a class="btn btn-outline" href="https://git-scm.com/download/win" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">
+            ⬇️ Git for Windows (선택)
+          </a>
+          <a class="btn btn-outline" href="https://github.com/ic4u2u/22ch-PLC" target="_blank" rel="noopener" style="text-decoration:none; text-align:center;">
+            🔗 GitHub 저장소 전체 보기
+          </a>
+        </div>
+
+        <!-- 현장 세팅 배치 & 설정 파일 -->
+        <div class="subbox" style="display:flex; flex-direction:column; gap:8px;">
+          <span class="tag tag-blue">2. 현장 PC 세팅 스크립트</span>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/set-plc-ip.bat" download="set-plc-ip.bat" target="_blank" rel="noopener" style="text-decoration:none;">
+            🌐 set-plc-ip.bat (PC 고정 IP 설정)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/allow-firewall.bat" download="allow-firewall.bat" target="_blank" rel="noopener" style="text-decoration:none;">
+            🛡️ allow-firewall.bat (방화벽 포트 허용)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/start-dual-kiosk.bat" download="start-dual-kiosk.bat" target="_blank" rel="noopener" style="text-decoration:none;">
+            🖥️ start-dual-kiosk.bat (듀얼모니터 실행)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/ecosystem.config.js" download="ecosystem.config.js" target="_blank" rel="noopener" style="text-decoration:none;">
+            ⚙️ ecosystem.config.js (PM2 운영설정)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/.env.example" download=".env.example" target="_blank" rel="noopener" style="text-decoration:none;">
+            📄 .env.example (환경변수 예시)
+          </a>
+        </div>
+
+        <!-- 현장 매뉴얼 & 기술 문서 -->
+        <div class="subbox" style="display:flex; flex-direction:column; gap:8px;">
+          <span class="tag tag-purple">3. 현장 매뉴얼 &amp; 기술 문서</span>
+          <a class="btn btn-outline" href="https://github.com/ic4u2u/22ch-PLC/raw/main/ACSC%2022%EC%B1%84%EB%84%90%20%ED%8A%B9%EC%88%98%EA%B0%80%EC%8A%A4%20%EA%B4%80%EC%A0%9C%20%EC%8B%9C%EC%8A%A4%ED%85%9C%20%ED%98%84%EC%9E%A5%20%EA%B5%AC%EC%B6%95%205%EB%8B%A8%EA%B3%84%20%EB%A7%A4%EB%89%B4%EC%96%BC.pdf" target="_blank" rel="noopener" style="text-decoration:none;">
+            📕 현장 구축 5단계 매뉴얼 (PDF)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/public/plc-guide.html" download="plc-guide.html" target="_blank" rel="noopener" style="text-decoration:none;">
+            🔌 PLC 실물 결선 가이드 (HTML)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/public/setup-guide.html" download="setup-guide.html" target="_blank" rel="noopener" style="text-decoration:none;">
+            🛠️ 시스템 설치 가이드 (HTML)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/public/gas-map.html" download="gas-map.html" target="_blank" rel="noopener" style="text-decoration:none;">
+            🧪 22채널 가스 매칭표 (HTML)
+          </a>
+          <a class="btn btn-outline" href="https://raw.githubusercontent.com/ic4u2u/22ch-PLC/main/public/tech-review.html" download="tech-review.html" target="_blank" rel="noopener" style="text-decoration:none;">
+            📋 기술 검토 보고서 (HTML)
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 단계별 상세 실행 가이드 (탭) -->
+    <section class="card">
+      <div class="card-header" style="margin-bottom:10px;">
+        <div>
+          <h2>상황별 테스트 방법 선택하기</h2>
+          <p class="muted">지금 내 상황에 맞는 탭을 눌러 순서대로 따라 하세요.</p>
+        </div>
+      </div>
+
+      <div class="tabs no-print">
+        <button id="tab1" class="tab-btn active" onclick="showTab(1)">① 내 PC 혼자 연습 (가상 PLC)</button>
+        <button id="tab2" class="tab-btn" onclick="showTab(2)">② PC 2대로 통신 연습 (예행연습)</button>
+        <button id="tab3" class="tab-btn" onclick="showTab(3)">③ 현장 실물 PLC 직결 (본게임)</button>
+      </div>
+
+      <!-- 탭 1 -->
+      <div id="panel1">
+        <div class="grid-2">
+          <div class="subbox">
+            <span class="tag tag-green" style="margin-bottom:6px;">방법 1-A · 대시보드 전체 체험</span>
+            <h3>웹 관제 화면 &amp; 22채널 시뮬레이션</h3>
+            <ol style="font-size:12.5px; margin-top:8px;">
+              <li>프로젝트 폴더에서 통합 실행 명령 실행:
+                <div class="cmd-box">
+                  <span>npm run dev:all</span>
+                  <button class="copy-btn" onclick="copyText('npm run dev:all', this)">복사</button>
+                </div>
+              </li>
+              <li>브라우저에서 <code>http://localhost:3000/?view=control</code> 열기</li>
+              <li>상단 <strong>[관리자 PIN 잠금]</strong> 클릭 → <code>1234</code> 입력 후 밸브 개폐, 영점 보정, 기밀 시험, 보고서 인쇄 기능 자유롭게 테스트</li>
+              <li>대형 TV용 화면은 <code>http://localhost:3000/?view=wallboard</code>에서 확인</li>
+            </ol>
+          </div>
+          <div class="subbox">
+            <span class="tag tag-green" style="margin-bottom:6px;">방법 1-B · 통신 패킷 단독 연습</span>
+            <h3>혼자서 XGT 통신 테스터 돌려보기</h3>
+            <ol style="font-size:12.5px; margin-top:8px;">
+              <li><code>tools/xgt-ethernet-tester/</code> 폴더 열기</li>
+              <li><code>1_PC_A_서버실행(가상PLC).bat</code> 더블클릭 → <code>TCP 2004 대기</code> 확인</li>
+              <li><code>2_PC_B_클라이언트실행(EnetClient).bat</code> 더블클릭 → 브라우저(<code>http://localhost:3100</code>) 자동 열림</li>
+              <li>IP <code>127.0.0.1</code>, 포트 <code>2004</code> 그대로 <strong>[연결]</strong> → <strong>[읽기 요청]</strong> 클릭해 <code>%MW0</code> 값(<code>486</code> = <code>48.6</code>)과 HEX 패킷 확인</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 2 -->
+      <div id="panel2" class="hidden">
+        <div class="subbox">
+          <span class="tag tag-blue" style="margin-bottom:6px;">PC 2대 · 같은 와이파이/공유기 또는 랜선 직결</span>
+          <h3>현장 가기 전 다른 PC와 이더넷 통신 예행연습</h3>
+          <ol style="font-size:12.5px; margin-top:8px;">
+            <li><strong>두 PC 연결:</strong> 같은 공유기(와이파이/허브)에 연결하거나 랜선으로 1:1 직결(직결 시 PC A <code>192.168.1.10</code>, PC B <code>192.168.1.11</code> 수동 IP 설정)</li>
+            <li><strong>PC A (가상 PLC 역할):</strong> <code>tools/xgt-ethernet-tester/1_PC_A_서버실행(가상PLC).bat</code> 실행 → Windows 방화벽 팝업이 뜨면 <strong>[액세스 허용]</strong> 클릭 → 검은 창에 표시된 PC A의 IPv4 주소 확인</li>
+            <li><strong>PC B (현장 노트북 역할):</strong> <code>2_PC_B_클라이언트실행(EnetClient).bat</code> 실행 → 대상 IP에 <strong>PC A의 IP 주소</strong>, 포트 <code>2004</code> 입력 → <strong>[연결]</strong> 후 읽기/전송 테스트</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 탭 3 -->
+      <div id="panel3" class="hidden">
+        <div class="subbox">
+          <span class="tag tag-purple" style="margin-bottom:6px;">현장 실물 PLC (LS XGB + XBL-EMTA)</span>
+          <h3>실물 PLC 연결 시 꼭 기억할 2가지 방식</h3>
+          <div class="grid-2" style="margin-top:8px;">
+            <div class="card" style="padding:12px;">
+              <h3>① 1분 통신 확인 (XGT 테스터)</h3>
+              <p class="muted" style="margin-top:4px;">
+                대시보드 설정 없이 <strong>"PLC와 통신이 되는지"</strong>만 가장 빠르게 확인할 때 사용합니다.<br/>
+                <code>2_PC_B_클라이언트실행(EnetClient).bat</code> 실행 → 현장 PLC IP(예: <code>192.168.0.50</code>), 포트 <code>2004</code> 연결 → <code>%MW100</code> 읽기!
+              </p>
+            </div>
+            <div class="card" style="padding:12px;">
+              <h3>② 22채널 대시보드 실물 연동</h3>
+              <p class="muted" style="margin-top:4px;">
+                <code>.env.local</code>에서 <code>PLC_IP=192.168.0.50</code>, <code>PLC_PROTOCOL=XGT</code>(또는 <code>MODBUS</code>)로 맞추고
+                가상 PLC(<code>sim:plc</code>)는 <strong>끈 채로</strong> 브릿지(<code>npm run sim:bridge</code>)와 웹(<code>npm run start</code>)만 실행합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 현장 실전 5단계 체크리스트 -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>현장 실전 5단계 체크리스트 (순서대로 체크하세요)</h2>
+          <p class="muted">체크 상태는 이 브라우저에 자동 저장됩니다.</p>
+        </div>
+        <button class="btn btn-outline btn-sm no-print" onclick="resetChecks()">체크 초기화</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+
+        <!-- STEP 1 -->
+        <div class="step-card" id="card-step1">
+          <div class="step-head">
+            <label class="step-label">
+              <input type="checkbox" class="step-check" data-id="step1" onchange="saveAndRefresh()" />
+              <span>STEP 1. 랜선 직결 및 PLC(XBL-EMTA) 전면 LED 확인</span>
+            </label>
+            <span class="tag tag-green">물리 연결</span>
+          </div>
+          <p class="muted">
+            PC의 <strong>LAN 1 포트</strong>와 PLC의 <strong>XBL-EMTA 모듈</strong>을 CAT5E 이상 차폐 랜선으로 1:1 직결하세요. (공유기/허브 없이 바로 꽂아도 자동 인식됩니다.)
+          </p>
+          <div class="grid-5" style="margin-top:10px;">
+            <div class="subbox" style="padding:8px;">
+              <div style="font-weight:700; font-size:12px;">RUN (녹색)</div>
+              <div style="color:#059669; font-size:11.5px; font-weight:700;">점등 (켜짐 정상)</div>
+            </div>
+            <div class="subbox" style="padding:8px;">
+              <div style="font-weight:700; font-size:12px;">I/F (녹색)</div>
+              <div style="color:#059669; font-size:11.5px; font-weight:700;">점멸 (CPU 통신중)</div>
+            </div>
+            <div class="subbox" style="padding:8px;">
+              <div style="font-weight:700; font-size:12px;">Link / Speed</div>
+              <div style="color:#059669; font-size:11.5px; font-weight:700;">점등 (랜선 정상)</div>
+            </div>
+            <div class="subbox" style="padding:8px;">
+              <div style="font-weight:700; font-size:12px;">TX / RX</div>
+              <div style="color:#0284c7; font-size:11.5px; font-weight:700;">통신 시 빠른 점멸</div>
+            </div>
+            <div class="subbox" style="padding:8px;">
+              <div style="font-weight:700; font-size:12px;">ERR (적색)</div>
+              <div style="color:#64748b; font-size:11.5px; font-weight:700;">소등 (꺼짐 정상)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-card" id="card-step2">
+          <div class="step-head">
+            <label class="step-label">
+              <input type="checkbox" class="step-check" data-id="step2" onchange="saveAndRefresh()" />
+              <span>STEP 2. PC 고정 IP · 방화벽 설정 &amp; Ping 확인</span>
+            </label>
+            <span class="tag tag-blue">네트워크</span>
+          </div>
+          <div class="grid-2">
+            <div class="subbox">
+              <div style="font-weight:700; font-size:12.5px; margin-bottom:4px;">1) 원클릭 배치 파일 2개 실행 (우클릭 → 관리자 권한)</div>
+              <ul style="font-size:12px; color:#334155;">
+                <li><code>set-plc-ip.bat</code> : PC 고정 IP <code>192.168.0.100</code>, 서브넷 <code>255.255.255.0</code>, 게이트웨이 비움 자동 설정</li>
+                <li><code>allow-firewall.bat</code> : 포트 <code>3000, 4000, 502, 2004, 8502</code> 방화벽 허용</li>
+              </ul>
+            </div>
+            <div class="subbox">
+              <div style="font-weight:700; font-size:12.5px; margin-bottom:4px;">2) 명령 프롬프트(CMD)에서 Ping 테스트</div>
+              <div class="cmd-box">
+                <span>ping 192.168.0.50</span>
+                <button class="copy-btn" onclick="copyText('ping 192.168.0.50', this)">복사</button>
+              </div>
+              <p class="muted" style="margin-top:6px;">
+                <code>TTL=... 시간&lt;1ms</code>가 나오면 PC와 PLC가 네트워크로 정상 연결된 것입니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-card" id="card-step3">
+          <div class="step-head">
+            <label class="step-label">
+              <input type="checkbox" class="step-check" data-id="step3" onchange="saveAndRefresh()" />
+              <span>STEP 3. XG5000 PLC 통신 설정 &amp; 번지(메모리 맵) 확인</span>
+            </label>
+            <span class="tag tag-purple">PLC 설정</span>
+          </div>
+          <p class="muted" style="margin-bottom:8px;">
+            PLC 엔지니어(XG5000) 측에서 <strong>XGT 전용 서버(TCP 2004)</strong> 또는 <strong>Modbus TCP 서버(TCP 502, Unit ID 1)</strong>가 켜져 있고 아래 번지를 사용하는지 확인하세요.
+          </p>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>구분</th>
+                  <th>LS XGT 번지 (TCP 2004)</th>
+                  <th>Modbus Holding Reg (TCP 502)</th>
+                  <th>값 규칙</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>22채널 압력 (읽기)</strong></td>
+                  <td><code>%MW100 ~ %MW121</code></td>
+                  <td><code>Offset 0 ~ 21</code> (22 Words)</td>
+                  <td>실제 압력(bar) × 10 (예: <code>1200</code> = <code>120.0 bar</code>)</td>
+                </tr>
+                <tr>
+                  <td><strong>22채널 밸브 (읽기/쓰기)</strong></td>
+                  <td><code>%MW200 ~ %MW221</code></td>
+                  <td><code>Offset 100 ~ 121</code> (22 Words)</td>
+                  <td><code>0</code> = OPEN (개방) / <code>1</code> = SHUTOFF (차단)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-card" id="card-step4">
+          <div class="step-head">
+            <label class="step-label">
+              <input type="checkbox" class="step-check" data-id="step4" onchange="saveAndRefresh()" />
+              <span>STEP 4. 실제 압력 데이터 읽기 테스트 (수신 확인)</span>
+            </label>
+            <span class="tag tag-blue">수신 확인</span>
+          </div>
+          <div class="grid-2">
+            <div class="subbox">
+              <div style="font-weight:700; font-size:12.5px;">A. XGT 테스터로 1번 채널(%MW100) 읽어보기</div>
+              <p class="muted" style="margin-top:4px;">
+                <code>http://localhost:3100</code> → IP <code>192.168.0.50</code>, 포트 <code>2004</code> 연결 → <code>%MW100</code> 입력 후 <strong>[읽기 요청]</strong>.<br/>
+                안 되면 우측 하단 <strong>[카톡 전달용 로그 복사]</strong>를 눌러 개발자/담당자에게 바로 공유하세요.
+              </p>
+            </div>
+            <div class="subbox">
+              <div style="font-weight:700; font-size:12.5px;">B. 대시보드 브릿지 연결 상태 확인</div>
+              <div class="cmd-box">
+                <span>http://localhost:4000/api/diagnostics</span>
+                <button class="copy-btn" onclick="copyText('http://localhost:4000/api/diagnostics', this)">복사</button>
+              </div>
+              <p class="muted" style="margin-top:6px;">
+                브라우저에서 열었을 때 <code>"plcConnected": true</code>와 응답시간(<code>latencyMs</code>)이 나오면 성공입니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="step-card" id="card-step5">
+          <div class="step-head">
+            <label class="step-label">
+              <input type="checkbox" class="step-check" data-id="step5" onchange="saveAndRefresh()" />
+              <span>STEP 5. 안전 입회 하에 단일 채널 밸브 제어 &amp; 0점 보정</span>
+            </label>
+            <span class="tag tag-amber">안전 주의</span>
+          </div>
+          <div class="alert-warn" style="margin-bottom:8px;">
+            <strong>현장 안전 수칙:</strong> 실제 특수가스가 흐르는 배관에서는 반드시 현장 담당자와 협의한 뒤, 테스트 가능한 <strong>예비/단일 채널 1개만</strong> 먼저 밸브 개폐를 시험하세요.
+          </div>
+          <ul style="font-size:12.5px; color:#334155;">
+            <li>대시보드(<code>http://localhost:3000/?view=control</code>) 우측 상단 <strong>[관리자 PIN 잠금]</strong> → <code>1234</code> 입력</li>
+            <li>테스트 채널에서 <strong>OPEN / SHUTOFF</strong> 클릭 → PLC <code>%MW200~%MW221</code> 값이 <code>0 ↔ 1</code>로 바뀌고 실물 밸브가 작동하는지 확인</li>
+            <li>압력 오차가 있으면 채널 설정(⚙️)에서 <strong>±0.1 bar 오프셋 보정</strong> 또는 가스 미공급 상태에서 <strong>0점(Zero) 설정</strong> 실행</li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. 대화형 도우미 2종 -->
+    <section class="grid-2">
+      <!-- 계산기 1: 채널별 번지 & 압력 계산기 -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>채널별 PLC 번지 &amp; 압력 계산기</h2>
+            <p class="muted">채널과 PLC 원시값을 넣으면 정확한 주소를 알려줍니다.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <label class="field">
+            <span>채널 선택 (CH01 ~ CH22)</span>
+            <select id="chSelect" onchange="updateLookup()"></select>
+          </label>
+          <label class="field">
+            <span>PLC에서 읽힌 숫자 (예: 1200)</span>
+            <input id="rawInput" type="number" value="1200" min="0" max="65535" oninput="updateLookup()" />
+          </label>
+          <div class="grid-2" style="margin-top:4px;">
+            <div class="subbox">
+              <div class="muted">소속 뱅크 / 통</div>
+              <div id="outBank" style="font-weight:800; margin-top:2px;">-</div>
+            </div>
+            <div class="subbox">
+              <div class="muted">실제 압력 (÷ 10)</div>
+              <div id="outBar" style="font-weight:800; color:#0284c7; font-family:monospace; margin-top:2px;">-</div>
+            </div>
+            <div class="subbox">
+              <div class="muted">압력 번지 (XGT / Modbus)</div>
+              <div id="outPressureAddr" style="font-weight:700; font-family:monospace; margin-top:2px;">-</div>
+            </div>
+            <div class="subbox">
+              <div class="muted">밸브 번지 (XGT / Modbus)</div>
+              <div id="outValveAddr" style="font-weight:700; font-family:monospace; margin-top:2px;">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 계산기 2: 현장 .env.local 설정 생성기 -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>현장 <code>.env.local</code> 설정값 자동 생성기</h2>
+            <p class="muted">현장 PLC IP나 프로토콜이 다를 때 입력하면 복사용 설정을 만들어줍니다.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <div class="grid-2">
+            <label class="field">
+              <span>현장 PLC IP 주소</span>
+              <input id="envIp" type="text" value="192.168.0.50" oninput="updateEnvPreview()" />
+            </label>
+            <label class="field">
+              <span>통신 프로토콜</span>
+              <select id="envProto" onchange="updateEnvPreview()">
+                <option value="XGT">XGT (LS 전용 · 포트 2004)</option>
+                <option value="MODBUS">MODBUS (Modbus TCP · 포트 502)</option>
+              </select>
+            </label>
+          </div>
+          <pre id="envPreview"></pre>
+          <div class="btn-row no-print">
+            <button class="btn btn-primary btn-sm" onclick="copyText(document.getElementById('envPreview').textContent, this)">
+              📋 .env.local 내용 복사하기
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="downloadEnvFile()">
+              💾 .env.local 파일로 저장
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 초보자용 트러블슈팅 FAQ -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>자주 막히는 문제 &amp; 해결 방법 (FAQ)</h2>
+          <p class="muted">현장에서 오류가 나면 아래 항목을 먼저 눌러 확인하세요.</p>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <details open>
+          <summary>1. ping 192.168.0.50 이 실패(요청 시간이 만료되었습니다)합니다.</summary>
+          <p>
+            ① 랜선이 공유기 포트(LAN 2)가 아니라 PLC 직결 포트(LAN 1)에 꽂혀 있는지 확인하세요.<br/>
+            ② Windows 어댑터 이름이 <code>이더넷</code>이 아니면 <code>set-plc-ip.bat</code> 안의 <code>ADAPTER_NAME</code>을 수정하거나, 제어판 → 네트워크 어댑터에서 직접 IP <code>192.168.0.100</code> / 서브넷 <code>255.255.255.0</code>을 입력하세요.<br/>
+            ③ 현장 PLC IP가 <code>192.168.0.50</code>이 아닌 다른 IP(예: <code>192.168.1.10</code>)로 되어 있을 수 있으니 PLC 담당자에게 IP를 확인하세요.
+          </p>
+        </details>
+        <details>
+          <summary>2. Ping은 되는데 연결이 안 됩니다 (ETIMEDOUT / ECONNREFUSED).</summary>
+          <p>
+            ① <code>allow-firewall.bat</code>를 우클릭 → <strong>관리자 권한으로 실행</strong>했는지 확인하세요.<br/>
+            ② XG5000에서 <strong>XGT 서버(2004)</strong> 또는 <strong>Modbus TCP 서버(502)</strong>가 체크되어 있고 PLC에 다운로드/리셋 반영이 되었는지 확인하세요.<br/>
+            ③ <code>.env.local</code>의 <code>PLC_PROTOCOL</code>과 실제 PLC에 켜진 프로토콜이 서로 맞는지(<code>XGT</code>↔<code>2004</code>, <code>MODBUS</code>↔<code>502</code>) 확인하세요.
+          </p>
+        </details>
+        <details>
+          <summary>3. 연결은 됐는데 압력이 0 bar 또는 보라색 SENSOR_FAULT로 뜹니다.</summary>
+          <p>
+            ① PLC가 <code>%MW100~%MW121</code>에 <strong>실제 압력 × 10</strong> (예: <code>120.0 bar</code> → <code>1200</code>) 형태로 값을 넣고 있는지 확인하세요.<br/>
+            ② 4~20mA 센서 선이 빠졌거나 <code>0</code> 미만 / 측정 한계 초과 값이 들어오면 안전을 위해 보라색 <code>SENSOR_FAULT</code>로 표시하고 오작동을 막습니다.
+          </p>
+        </details>
+        <details>
+          <summary>4. 대시보드에서 밸브 버튼을 눌러도 움직이지 않습니다.</summary>
+          <p>
+            ① 화면 상단 <strong>[관리자 PIN 잠금]</strong>이 풀려 있는지(PIN <code>1234</code>, 5분 타이머) 확인하세요.<br/>
+            ② 예비 통이 비어 있는 상태에서 자동 절체를 시도하면 안전 인터록이 빈 통 절체를 차단합니다.
+          </p>
+        </details>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'acsc_field_test_checks_v1';
+
+    function showTab(n) {
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById('panel' + i).classList.toggle('hidden', i !== n);
+        document.getElementById('tab' + i).classList.toggle('active', i === n);
+      }
+    }
+
+    function saveAndRefresh() {
+      const checks = document.querySelectorAll('.step-check');
+      const state = {};
+      let done = 0;
+      checks.forEach((chk) => {
+        state[chk.dataset.id] = chk.checked;
+        const card = document.getElementById('card-' + chk.dataset.id);
+        if (chk.checked) {
+          done += 1;
+          card.classList.add('done');
+        } else {
+          card.classList.remove('done');
+        }
+      });
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      document.getElementById('progressText').textContent = done + ' / 5 단계';
+      document.getElementById('progressBar').style.width = ((done / 5) * 100) + '%';
+    }
+
+    function loadChecks() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const state = JSON.parse(raw);
+          document.querySelectorAll('.step-check').forEach((chk) => {
+            chk.checked = Boolean(state[chk.dataset.id]);
+          });
+        }
+      } catch (e) {}
+      saveAndRefresh();
+    }
+
+    function resetChecks() {
+      document.querySelectorAll('.step-check').forEach((chk) => { chk.checked = false; });
+      saveAndRefresh();
+    }
+
+    function copyText(text, btn) {
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const prev = btn.textContent;
+        btn.textContent = '복사 완료!';
+        setTimeout(() => { btn.textContent = prev; }, 1200);
+      }).catch(() => {});
+    }
+
+    function initChannels() {
+      const sel = document.getElementById('chSelect');
+      for (let ch = 1; ch <= 22; ch++) {
+        const bank = Math.ceil(ch / 2);
+        const side = ch % 2 === 1 ? 'A통' : 'B통';
+        const opt = document.createElement('option');
+        opt.value = ch;
+        opt.textContent = 'CH' + String(ch).padStart(2, '0') + ' (뱅크 ' + bank + ' · ' + side + ')';
+        sel.appendChild(opt);
+      }
+      updateLookup();
+    }
+
+    function updateLookup() {
+      const ch = Number(document.getElementById('chSelect').value || 1);
+      const raw = Number(document.getElementById('rawInput').value || 0);
+      const idx = ch - 1;
+      const bank = Math.ceil(ch / 2);
+      const side = ch % 2 === 1 ? 'A통 (주공급)' : 'B통 (예비대기)';
+      document.getElementById('outBank').textContent = 'Bank ' + bank + ' · ' + side;
+      document.getElementById('outBar').textContent = (raw / 10).toFixed(1) + ' bar';
+      document.getElementById('outPressureAddr').textContent = '%MW' + (100 + idx) + ' / Offset ' + idx;
+      document.getElementById('outValveAddr').textContent = '%MW' + (200 + idx) + ' / Offset ' + (100 + idx);
+    }
+
+    function updateEnvPreview() {
+      const ip = (document.getElementById('envIp').value || '192.168.0.50').trim();
+      const proto = document.getElementById('envProto').value;
+      const text = [
+        'PLC_PROTOCOL=' + proto,
+        'PLC_IP=' + ip,
+        'PLC_MODBUS_PORT=502',
+        'PLC_XGT_PORT=2004',
+        'BRIDGE_PORT=4000',
+        'INITIAL_ADMIN_PIN=1234',
+        'LAMP_USB_PORT=AUTO'
+      ].join('\n');
+      document.getElementById('envPreview').textContent = text;
+    }
+
+    function downloadEnvFile() {
+      const content = document.getElementById('envPreview').textContent + '\n';
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '.env.local';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadThisGuide() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      try {
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ACSC_현장_PLC_테스트_완벽가이드.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (e) {
+        copyFullHtml(document.querySelector('.topbar .btn-secondary'));
+      }
+    }
+
+    function copyFullHtml(btn) {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(htmlContent).then(() => {
+          const prev = btn.textContent;
+          btn.textContent = 'HTML 코드 복사됨!';
+          setTimeout(() => { btn.textContent = prev; }, 1800);
+        }).catch(() => {});
+      }
+    }
+
+    initChannels();
+    updateEnvPreview();
+    loadChecks();
+  </script>
+</body>
+</html>
