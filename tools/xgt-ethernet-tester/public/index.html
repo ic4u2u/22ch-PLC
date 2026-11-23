@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LS XGT 이더넷 통신 테스터 (PC ↔ PC / PLC)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Malgun Gothic", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b1120; color: #e2e8f0; min-height: 100vh; padding: 16px;
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .card {
+      background: #111827; border: 1px solid #1f2937; border-radius: 14px; padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .title { font-size: 20px; font-weight: 800; color: #f8fafc; }
+    .sub { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+    .badge {
+      padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .badge.off { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+    .badge.on { background: #064e3b; color: #6ee7b7; border: 1px solid #10b981; }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .grid { display: grid; grid-template-columns: 420px 1fr; gap: 14px; }
+    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+    label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 5px; font-weight: 600; }
+    input, textarea {
+      width: 100%; background: #0f172a; border: 1px solid #334155; color: #f8fafc;
+      border-radius: 8px; padding: 10px 12px; font-size: 14px; outline: none;
+    }
+    input:focus, textarea:focus { border-color: #38bdf8; }
+    button {
+      border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: 0.15s; min-height: 42px;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: #0284c7; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #0369a1; }
+    .btn-green { background: #059669; color: #fff; }
+    .btn-green:hover:not(:disabled) { background: #047857; }
+    .btn-red { background: #dc2626; color: #fff; }
+    .btn-red:hover:not(:disabled) { background: #b91c1c; }
+    .btn-ghost { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    .btn-ghost:hover:not(:disabled) { background: #334155; }
+    .section-title { font-size: 15px; font-weight: 700; color: #38bdf8; margin: 0 0 12px 0; }
+    .divider { border-top: 1px solid #1f2937; margin: 14px 0; }
+    .preview {
+      background: #020617; border: 1px dashed #334155; border-radius: 8px; padding: 8px 10px;
+      font-family: Consolas, monospace; font-size: 12px; color: #7dd3fc; word-break: break-all;
+    }
+    .log-box {
+      background: #020617; border: 1px solid #1e293b; border-radius: 10px;
+      height: 520px; overflow-y: auto; padding: 12px; font-family: Consolas, monospace; font-size: 13px;
+    }
+    .log-item { padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #475569; background: #0f172a; }
+    .log-item.tx { border-left-color: #38bdf8; }
+    .log-item.rx { border-left-color: #10b981; }
+    .log-item.error { border-left-color: #ef4444; background: #2a1215; }
+    .log-meta { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+    .log-detail { color: #f8fafc; font-weight: 600; margin-bottom: 3px; }
+    .log-hex { color: #93c5fd; font-size: 12px; word-break: break-all; }
+    .stats { display: flex; gap: 14px; font-size: 13px; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 상단 헤더 & 연결 바 -->
+    <div class="card">
+      <div class="header" style="margin-bottom: 14px;">
+        <div>
+          <div class="title">🔌 LS XGT 이더넷 통신 테스터 (PC ↔ PC / PLC)</div>
+          <div class="sub">LS ELECTRIC XGT 전용 프로토콜 (TCP 2004) 및 일반 이더넷 데이터 실시간 패킷 덤프</div>
+        </div>
+        <div id="statusBadge" class="badge off">● 미연결</div>
+      </div>
+
+      <div class="row">
+        <div style="flex: 2; min-width: 180px;">
+          <label>대상 IP 주소 (PC A 또는 PLC IP)</label>
+          <input id="hostInput" value="127.0.0.1" placeholder="예: 192.168.1.10" />
+        </div>
+        <div style="width: 120px;">
+          <label>포트 번호 (TCP)</label>
+          <input id="portInput" type="number" value="2004" />
+        </div>
+        <button id="connectBtn" class="btn-green" onclick="connectTcp()">🔌 연결 (Connect)</button>
+        <button id="disconnectBtn" class="btn-red" onclick="disconnectTcp()" disabled>끊기 (Close)</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- 좌측: 송신 패널 -->
+      <div class="card">
+        <h3 class="section-title">1. LS XGT 전용 프로토콜 테스트 (PDF 7p 규격)</h3>
+        <div class="row" style="margin-bottom: 10px;">
+          <div style="flex: 1;">
+            <label>PLC 메모리 번지</label>
+            <input id="varNameInput" value="%MW0" oninput="updatePreview()" placeholder="%MW0, %MW100" />
+          </div>
+          <div style="width: 120px;">
+            <label>쓰기 값 (정수)</label>
+            <input id="wordValInput" type="number" value="520" oninput="updatePreview()" />
+          </div>
+        </div>
+        <div class="row" style="margin-bottom: 10px;">
+          <button class="btn-primary" style="flex: 1;" onclick="sendXgt('xgt_read')">📥 읽기 요청 (Read)</button>
+          <button class="btn-ghost" style="flex: 1;" onclick="sendXgt('xgt_write')">📤 쓰기 요청 (Write)</button>
+        </div>
+        <div style="margin-bottom: 6px; font-size: 12px; color: #94a3b8;">자동 생성된 LSIS-XGT 읽기 프레임 미리보기:</div>
+        <div id="framePreview" class="preview">로딩 중...</div>
+
+        <div class="divider"></div>
+
+        <h3 class="section-title">2. PC ↔ PC 자유 데이터 송신 (텍스트 / HEX)</h3>
+        <div style="margin-bottom: 10px;">
+          <label>보낼 텍스트 메시지 (PC 2대 간 일반 통신 테스트)</label>
+          <div class="row">
+            <input id="textInput" style="flex: 1;" value="안녕하세요! 이더넷 통신 테스트 OK" />
+            <button class="btn-primary" onclick="sendFree('text')">전송</button>
+          </div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label>HEX 패킷 직접 입력 (PDF 6페이지 EnetClient 방식)</label>
+          <textarea id="hexInput" rows="2" placeholder="4C 53 49 53 2D 58 47 54 ..."></textarea>
+          <div class="row" style="margin-top: 8px;">
+            <button class="btn-ghost" onclick="fillPreviewToHex()">위 XGT 프레임 복사</button>
+            <button class="btn-primary" style="flex: 1;" onclick="sendFree('hex')">HEX 직접 송신</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div style="font-size: 13px; color: #cbd5e1;">1초 간격 연속 읽기 (Continue)</div>
+          <button id="loopBtn" class="btn-ghost" onclick="toggleLoop()">▶ 연속 송신 시작</button>
+        </div>
+      </div>
+
+      <!-- 우측: 실시간 패킷 덤프(CCTV) -->
+      <div class="card">
+        <div class="header" style="margin-bottom: 10px;">
+          <h3 class="section-title" style="margin: 0;">📡 실시간 패킷 덤프 (TX / RX 로그)</h3>
+          <div class="stats">
+            <span>TX: <b id="txCount">0</b></span>
+            <span>RX: <b id="rxCount">0</b></span>
+            <span>응답: <b id="lastMs">-</b></span>
+          </div>
+        </div>
+        <div id="logBox" class="log-box">
+          <div style="color: #64748b; text-align: center; margin-top: 200px;">
+            상단에서 IP를 확인하고 [🔌 연결] 버튼을 눌러주세요.
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px; justify-content: flex-end;">
+          <button class="btn-ghost" onclick="copyLogs()">📋 카톡 전달용 로그 복사</button>
+          <button class="btn-ghost" onclick="clearLogs()">🗑️ 로그 지우기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isConnected = false;
+    let loopTimer = null;
+    let logHistory = [];
+
+    // SSE 실시간 로그 구독
+    const es = new EventSource("/api/events");
+    es.addEventListener("status", (e) => {
+      const s = JSON.parse(e.data);
+      isConnected = s.connected;
+      const badge = document.getElementById("statusBadge");
+      badge.className = "badge " + (s.connected ? "on" : "off");
+      badge.textContent = s.connected ? `● 연결됨 (${s.target})` : "● 미연결";
+      document.getElementById("connectBtn").disabled = s.connected;
+      document.getElementById("disconnectBtn").disabled = !s.connected;
+      document.getElementById("txCount").textContent = s.txCount;
+      document.getElementById("rxCount").textContent = s.rxCount;
+      if (!s.connected && loopTimer) toggleLoop();
+    });
+
+    es.addEventListener("log", (e) => {
+      const item = JSON.parse(e.data);
+      logHistory.push(item);
+      if (logHistory.length > 200) logHistory.shift();
+      document.getElementById("txCount").textContent = item.txCount;
+      document.getElementById("rxCount").textContent = item.rxCount;
+      if (item.elapsedMs !== null) {
+        document.getElementById("lastMs").textContent = item.elapsedMs + " ms";
+      }
+      renderLog(item);
+    });
+
+    function renderLog(item) {
+      const box = document.getElementById("logBox");
+      if (logHistory.length === 1) box.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "log-item " + item.type;
+      const msBadge = item.elapsedMs !== null ? `<span>⚡ ${item.elapsedMs}ms</span>` : "";
+      div.innerHTML = `
+        <div class="log-meta"><span>[${item.time}] ${item.title}</span>${msBadge}</div>
+        <div class="log-detail">${escapeHtml(item.detail)}</div>
+        ${item.hex ? `<div class="log-hex">HEX: ${item.hex}</div>` : ""}
+      `;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    async function api(path, body) {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {}),
+      });
+      return res.json();
+    }
+
+    async function connectTcp() {
+      const host = document.getElementById("hostInput").value.trim();
+      const port = Number(document.getElementById("portInput").value);
+      await api("/api/connect", { host, port });
+    }
+
+    async function disconnectTcp() {
+      await api("/api/disconnect");
+    }
+
+    async function sendXgt(mode) {
+      const variableName = document.getElementById("varNameInput").value.trim();
+      const wordValue = Number(document.getElementById("wordValInput").value);
+      await api("/api/send", { mode, variableName, wordValue });
+    }
+
+    async function sendFree(mode) {
+      const payload = mode === "hex"
+        ? document.getElementById("hexInput").value.trim()
+        : document.getElementById("textInput").value;
+      await api("/api/send", { mode, payload });
+    }
+
+    async function updatePreview() {
+      const variableName = document.getElementById("varNameInput").value.trim() || "%MW0";
+      const res = await api("/api/build-frame", { mode: "xgt_read", variableName });
+      document.getElementById("framePreview").textContent = res.ok ? `${res.hex} (${res.bytes}B)` : res.error;
+    }
+
+    function fillPreviewToHex() {
+      const txt = document.getElementById("framePreview").textContent.split(" (")[0];
+      document.getElementById("hexInput").value = txt;
+    }
+
+    function toggleLoop() {
+      const btn = document.getElementById("loopBtn");
+      if (loopTimer) {
+        clearInterval(loopTimer);
+        loopTimer = null;
+        btn.textContent = "▶ 연속 송신 시작";
+        btn.className = "btn-ghost";
+      } else {
+        if (!isConnected) return alert("먼저 [연결]을 눌러주세요!");
+        sendXgt("xgt_read");
+        loopTimer = setInterval(() => sendXgt("xgt_read"), 1000);
+        btn.textContent = "⏹ 연속 송신 중지";
+        btn.className = "btn-red";
+      }
+    }
+
+    function clearLogs() {
+      logHistory = [];
+      document.getElementById("logBox").innerHTML = "";
+    }
+
+    function copyLogs() {
+      const lines = logHistory.slice(-20).map((x) =>
+        `[${x.time}] ${x.title} | ${x.detail}${x.hex ? "\n  HEX: " + x.hex : ""}`
+      );
+      navigator.clipboard.writeText(lines.join("\n")).then(() => alert("최근 패킷 로그가 복사되었습니다! 카톡에 붙여넣기 하세요."));
+    }
+
+    updatePreview();
+  </script>
+</body>
+</html>
