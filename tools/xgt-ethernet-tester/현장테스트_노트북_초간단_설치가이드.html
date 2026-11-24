@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>현장 테스트용 노트북·미니PC 초간단 설치 가이드</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px 14px 48px;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif;
+      background: #0b1120; color: #e2e8f0; line-height: 1.6;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #334155; border-radius: 18px; padding: 24px 22px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    .tag {
+      display: inline-block; background: #0284c7; color: #fff; font-size: 12px;
+      font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; line-height: 1.35; }
+    .hero p { margin: 0; color: #cbd5e1; font-size: 14px; }
+    .card {
+      background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .step-num {
+      background: #0ea5e9; color: #082f49; font-weight: 900; font-size: 13px;
+      padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+    }
+    h2 { margin: 0; font-size: 18px; color: #f8fafc; }
+    h3 { margin: 14px 0 6px; font-size: 15px; color: #38bdf8; }
+    p, li { font-size: 14px; color: #cbd5e1; }
+    ul, ol { padding-left: 20px; margin: 8px 0; }
+    li { margin-bottom: 6px; }
+    .cmd-box {
+      position: relative; background: #020617; border: 1px solid #334155;
+      border-radius: 10px; padding: 12px 86px 12px 14px; margin: 8px 0 12px;
+      font-family: Consolas, "Courier New", monospace; font-size: 13px; color: #7dd3fc;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px; background: #1e293b; color: #f8fafc;
+      border: 1px solid #475569; border-radius: 7px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .copy-btn:hover { background: #0284c7; border-color: #38bdf8; }
+    .copy-btn.ok { background: #059669; border-color: #34d399; }
+    .alert {
+      background: #172554; border-left: 4px solid #38bdf8; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #e0f2fe;
+    }
+    .warn {
+      background: #2a1810; border-left: 4px solid #f59e0b; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #fef3c7;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+    .mini-box {
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;
+    }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+      background: #0f172a; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+    }
+    .check-item input { margin-top: 4px; width: 17px; height: 17px; accent-color: #10b981; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; }
+    th, td { border: 1px solid #1f2937; padding: 9px 10px; text-align: left; }
+    th { background: #0f172a; color: #38bdf8; }
+    a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+    a:hover { text-decoration: underline; }
+    .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 헤더 -->
+    <div class="hero">
+      <div class="tag">LS ELECTRIC XGT (TCP 2004) · 22CH 관제 시스템</div>
+      <h1>💻 현장 테스트용 노트북·미니PC 초간단 설치 가이드</h1>
+      <p>복잡한 설정 없이 <b>5분 만에 설치 → 바로 이더넷 통신 테스트</b>까지 끝내는 왕초보용 안내서입니다.<br>
+      (오프라인에서도 열리며, 검은 박스의 <b>[복사]</b> 버튼을 눌러 그대로 붙여넣기 하세요.)</p>
+    </div>
+
+    <!-- STEP 0: 사전 준비 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 0</span><h2>사전 준비 (필수 프로그램 & 장비)</h2></div>
+      <div class="grid-2">
+        <div class="mini-box">
+          <h3 style="margin-top:0;">1. Node.js 설치 (필수)</h3>
+          <p>아래 공식 사이트에서 <b>LTS(권장 버전)</b>를 다운받아 <b>[다음 → 다음 → 설치]</b>만 누르면 끝납니다.</p>
+          <p>👉 <a href="https://nodejs.org/ko" target="_blank">https://nodejs.org/ko</a></p>
+        </div>
+        <div class="mini-box">
+          <h3 style="margin-top:0;">2. Git 설치 (선택)</h3>
+          <p>명령어 1줄로 최신 버전을 받으려면 설치하세요. <i>(설치하기 귀찮으면 아래 STEP 1의 [방법 B: ZIP 다운] 사용!)</i></p>
+          <p>👉 <a href="https://git-scm.com/download/win" target="_blank">https://git-scm.com/download/win</a></p>
+        </div>
+      </div>
+      <div class="warn">
+        <b>🔌 현장 필수 하드웨어 체크:</b> 노트북에 네모난 유선 랜선(RJ45) 구멍이 없다면 반드시 <b>USB-to-LAN 유선랜 젠더</b>를 챙기세요!
+      </div>
+    </div>
+
+    <!-- STEP 1: 프로그램 받기 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 1</span><h2>프로그램 내려받기 (둘 중 편한 방법 1개 선택)</h2></div>
+
+      <h3>✅ 방법 A. Git 명령어로 5초 만에 받기 (추천)</h3>
+      <p>바탕화면에서 <b>마우스 우클릭 → 터미널에서 열기</b>(또는 윈도우 키 → <code>cmd</code> 실행) 후 아래 명령어 복사·붙여넣기:</p>
+      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>git clone https://github.com/ic4u2u/22ch-PLC.git</div>
+      <p style="font-size:13px; color:#94a3b8;">※ 이미 폴더가 있는 PC에서 최신 버전으로 업데이트할 때는 폴더 안에서 아래 명령어만 입력:</p>
+      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>cd 22ch-PLC &amp;&amp; git pull origin main</div>
+
+      <h3>✅ 방법 B. Git 없이 웹에서 ZIP 파일로 받기 (가장 쉬움)</h3>
+      <ol>
+        <li>브라우저에서 👉 <a href="https://github.com/ic4u2u/22ch-PLC" target="_blank">https://github.com/ic4u2u/22ch-PLC</a> 접속</li>
+        <li>초록색 <b>[&lt;&gt; Code]</b> 버튼 클릭 → 맨 아래 <b>[Download ZIP]</b> 클릭</li>
+        <li>다운로드된 ZIP 파일의 압축을 풀면 <code>22ch-PLC-main</code> 폴더 생성 완료!</li>
+      </ol>
+    </div>
+
+    <!-- STEP 2: 이더넷 통신 테스터 실행 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 2</span><h2>XGT 이더넷 통신 테스터 바로 실행 (설치 과정 0분!)</h2></div>
+      <div class="alert">
+        <b>💡 핵심 장점:</b> 통신 테스터 폴더(<code>tools\xgt-ethernet-tester</code>)는 <b>npm install이 전혀 필요 없습니다.</b> Node.js만 있으면 더블클릭으로 즉시 켜집니다!
+      </div>
+      <p>탐색기에서 <b><code>22ch-PLC \ tools \ xgt-ethernet-tester</code></b> 폴더를 여세요.</p>
+      <ol>
+        <li><b>혼자 사전 테스트할 때 (PC 1대):</b>
+          <ul>
+            <li><b><code>1_PC_A_서버실행(가상PLC).bat</code></b> 더블클릭 → 검은 창에 <code>TCP 2004 대기</code> 확인</li>
+            <li><b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → 브라우저(<code>http://localhost:3100</code>) 자동 열림</li>
+            <li>IP <code>127.0.0.1</code> / 포트 <code>2004</code> 그대로 두고 <b>[🔌 연결] → [📥 읽기 요청]</b> 클릭하여 TX/RX 패킷 확인!</li>
+          </ul>
+        </li>
+        <li><b>PC 2대 간 이더넷 테스트할 때:</b>
+          <ul>
+            <li><b>PC A</b>에서 <code>1번 .bat</code> 실행 → 화면에 뜨는 <b>PC A의 IP 주소</b> 확인 (방화벽 창 뜨면 <b>[액세스 허용]</b> 클릭!)</li>
+            <li><b>PC B</b>에서 <code>2번 .bat</code> 실행 → 대상 IP에 <b>PC A IP</b> 입력 후 <b>[🔌 연결]</b> 클릭</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- STEP 3: 현장 실물 PLC 연결 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 3</span><h2>현장 실물 LS PLC 연결 방법 (TCP 2004)</h2></div>
+      <ol>
+        <li><b>랜선 연결:</b> 노트북/미니PC와 현장 PLC(또는 허브)를 랜선으로 연결합니다.</li>
+        <li><b>PC IP 맞추기 (LS 매뉴얼 3p 기준):</b> PLC IP가 <code>192.168.1.10</code>이면 내 PC IP도 앞 3자리를 똑같이 맞춥니다.
+          <div class="mini-box" style="margin-top:6px;">
+            제어판 → 네트워크 및 공유 센터 → 이더넷 → 속성 → <b>IPv4</b> → <b>다음 IP 주소 사용</b><br>
+            • IP 주소: <code>192.168.1.11</code> &nbsp;|&nbsp; 서브넷 마스크: <code>255.255.255.0</code> &nbsp;|&nbsp; 게이트웨이: <code>192.168.1.1</code>
+          </div>
+        </li>
+        <li><b>생존 신호(Ping) 확인:</b> <code>cmd</code> 창에 아래 명령어 입력 → <code>시간&lt;1ms</code> 뜨면 물리 연결 100% 성공!
+          <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>ping 192.168.1.10</div>
+        </li>
+        <li><b>통신 테스트:</b> <b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 실행 → PLC IP(<code>192.168.1.10</code>), 포트 <code>2004</code> 입력 → <b>[🔌 연결]</b> → <code>%MW0</code> <b>[📥 읽기 요청]</b> 클릭!</li>
+        <li>안 되거나 값이 다르면 우측 하단 <b>[📋 카톡 전달용 로그 복사]</b>를 눌러 그대로 공유해 주세요.</li>
+      </ol>
+    </div>
+
+    <!-- STEP 4: 선택 전체 관제 화면 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 4 (선택)</span><h2>22채널 3D 전체 관제 화면도 노트북에서 띄우기</h2></div>
+      <p>현장 인터넷이 안 될 때도 3D 가스통 관제 화면을 직접 시연하려면, <b>출발 전 인터넷 되는 곳에서 딱 한 번</b> 아래 명령어를 실행해 두세요.</p>
+      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>cd 22ch-PLC
+npm install
+npm run dev:all</div>
+      <p>실행 후 브라우저에서 <b><code>http://localhost:3000</code></b> 접속! (한 번 <code>npm install</code> 해두면 현장 오프라인에서도 <code>npm run dev:all</code>로 바로 켜집니다.)</p>
+    </div>
+
+    <!-- 트러블슈팅 & 체크리스트 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">FAQ</span><h2>자주 겪는 문제 3초 해결 & 출발 전 체크리스트</h2></div>
+      <table>
+        <thead><tr><th>증상 / 에러 코드</th><th>원인 및 3초 해결법</th></tr></thead>
+        <tbody>
+          <tr><td><b>연결 거부 (10061)</b></td><td>대상 PC A 서버가 꺼져 있거나, PLC의 XGT 서버 포트(2004)가 닫혀 있음 → 서버 실행 및 XG5000 설정 확인</td></tr>
+          <tr><td><b>시간 초과 (10060)</b></td><td>IP 대역이 다르거나 Windows 방화벽 차단, 랜선 미연결 → IP 앞 3자리 통일 &amp; 방화벽 [액세스 허용]</td></tr>
+          <tr><td><b>node 명령어 없음</b></td><td>STEP 0의 Node.js 설치 후 열려 있던 검은 창(cmd)을 닫고 새로 여세요.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>✅ 출발 전 최종 체크 (클릭해서 체크해 보세요)</h3>
+      <label class="check-item"><input type="checkbox" /> <span>노트북/미니PC에 <b>Node.js LTS</b> 설치 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span><code>1번 .bat</code> + <code>2번 .bat</code> 실행해 <code>127.0.0.1:2004</code> 패킷 송수신 확인 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span><b>USB-to-LAN 젠더</b> + 노트북 충전기 + 스마트폰 핫스팟 준비 완료</span></label>
+    </div>
+
+    <div class="footer">특수가스 스마트 관제 시스템 (22ch-PLC) · 현장 테스트 설치 가이드 · 카톡/파일 공유용 단일 HTML</div>
+  </div>
+
+  <script>
+    function copyCmd(btn) {
+      const box = btn.parentElement;
+      const text = box.innerText.replace("📋 복사", "").replace("✅ 복사됨!", "").trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "✅ 복사됨!";
+        btn.classList.add("ok");
+        setTimeout(() => {
+          btn.textContent = "📋 복사";
+          btn.classList.remove("ok");
+        }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>
