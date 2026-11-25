@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>현장 테스트용 노트북·미니PC 초간단 설치 가이드</title>
+  <title>LS XGT 이더넷 통신 테스터 초간단 설치·실행 가이드 (ZIP 버전)</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -11,14 +11,14 @@
       font-family: "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif;
       background: #0b1120; color: #e2e8f0; line-height: 1.6;
     }
-    .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .wrap { max-width: 840px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
     .hero {
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       border: 1px solid #334155; border-radius: 18px; padding: 24px 22px;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     }
     .tag {
-      display: inline-block; background: #0284c7; color: #fff; font-size: 12px;
+      display: inline-block; background: #059669; color: #fff; font-size: 12px;
       font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
     }
     h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; line-height: 1.35; }
@@ -51,8 +51,8 @@
     .copy-btn:hover { background: #0284c7; border-color: #38bdf8; }
     .copy-btn.ok { background: #059669; border-color: #34d399; }
     .alert {
-      background: #172554; border-left: 4px solid #38bdf8; border-radius: 8px;
-      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #e0f2fe;
+      background: #064e3b; border-left: 4px solid #10b981; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #d1fae5;
     }
     .warn {
       background: #2a1810; border-left: 4px solid #f59e0b; border-radius: 8px;
@@ -80,77 +80,67 @@
   <div class="wrap">
     <!-- 헤더 -->
     <div class="hero">
-      <div class="tag">LS ELECTRIC XGT (TCP 2004) · 22CH 관제 시스템</div>
-      <h1>💻 현장 테스트용 노트북·미니PC 초간단 설치 가이드</h1>
-      <p>복잡한 설정 없이 <b>5분 만에 설치 → 바로 이더넷 통신 테스트</b>까지 끝내는 왕초보용 안내서입니다.<br>
-      (오프라인에서도 열리며, 검은 박스의 <b>[복사]</b> 버튼을 눌러 그대로 붙여넣기 하세요.)</p>
+      <div class="tag">카톡 ZIP 파일 전용 · GitHub 로그인 불필요 · npm install 불필요</div>
+      <h1>🔌 LS XGT 이더넷 통신 테스터 초간단 설치·실행 가이드</h1>
+      <p>카톡으로 받은 <b>ZIP 압축 파일</b>만 풀어서 <b>3분 만에</b> PC ↔ PC 및 현장 실물 LS PLC(TCP 2004) 통신 테스트를 실행하는 안내서입니다.</p>
     </div>
 
-    <!-- STEP 0: 사전 준비 -->
+    <!-- STEP 1: Node.js 설치 -->
     <div class="card">
-      <div class="step-head"><span class="step-num">STEP 0</span><h2>사전 준비 (필수 프로그램 & 장비)</h2></div>
-      <div class="grid-2">
-        <div class="mini-box">
-          <h3 style="margin-top:0;">1. Node.js 설치 (필수)</h3>
-          <p>아래 공식 사이트에서 <b>LTS(권장 버전)</b>를 다운받아 <b>[다음 → 다음 → 설치]</b>만 누르면 끝납니다.</p>
-          <p>👉 <a href="https://nodejs.org/ko" target="_blank">https://nodejs.org/ko</a></p>
-        </div>
-        <div class="mini-box">
-          <h3 style="margin-top:0;">2. Git 설치 (선택)</h3>
-          <p>명령어 1줄로 최신 버전을 받으려면 설치하세요. <i>(설치하기 귀찮으면 아래 STEP 1의 [방법 B: ZIP 다운] 사용!)</i></p>
-          <p>👉 <a href="https://git-scm.com/download/win" target="_blank">https://git-scm.com/download/win</a></p>
-        </div>
+      <div class="step-head"><span class="step-num">STEP 1</span><h2>Node.js 설치 (PC당 최초 1회, 1분 컷)</h2></div>
+      <p>이 프로그램을 실행할 노트북·미니PC에 <b>Node.js</b>가 없다면 먼저 설치하세요. <i>(이미 설치되어 있으면 STEP 2로 바로 이동!)</i></p>
+      <div class="mini-box">
+        1. 아래 공식 사이트 접속 👉 <a href="https://nodejs.org/ko" target="_blank">https://nodejs.org/ko</a><br>
+        2. 초록색 <b>LTS (권장 버전)</b> 버튼 클릭해 다운로드<br>
+        3. 설치 파일 실행 후 <b>[다음 → 다음 → 설치]</b>만 누르면 완료!
       </div>
       <div class="warn">
-        <b>🔌 현장 필수 하드웨어 체크:</b> 노트북에 네모난 유선 랜선(RJ45) 구멍이 없다면 반드시 <b>USB-to-LAN 유선랜 젠더</b>를 챙기세요!
+        <b>🔌 현장 필수 체크:</b> 노트북에 유선 랜선(RJ45) 포트가 없다면 <b>USB-to-LAN 유선랜 젠더</b>를 꼭 준비해 주세요!
       </div>
     </div>
 
-    <!-- STEP 1: 프로그램 받기 -->
+    <!-- STEP 2: ZIP 압축 풀기 -->
     <div class="card">
-      <div class="step-head"><span class="step-num">STEP 1</span><h2>프로그램 내려받기 (둘 중 편한 방법 1개 선택)</h2></div>
-
-      <h3>✅ 방법 A. Git 명령어로 5초 만에 받기 (추천)</h3>
-      <p>바탕화면에서 <b>마우스 우클릭 → 터미널에서 열기</b>(또는 윈도우 키 → <code>cmd</code> 실행) 후 아래 명령어 복사·붙여넣기:</p>
-      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>git clone https://github.com/ic4u2u/22ch-PLC.git</div>
-      <p style="font-size:13px; color:#94a3b8;">※ 이미 폴더가 있는 PC에서 최신 버전으로 업데이트할 때는 폴더 안에서 아래 명령어만 입력:</p>
-      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>cd 22ch-PLC &amp;&amp; git pull origin main</div>
-
-      <h3>✅ 방법 B. Git 없이 웹에서 ZIP 파일로 받기 (가장 쉬움)</h3>
+      <div class="step-head"><span class="step-num">STEP 2</span><h2>카톡으로 받은 ZIP 파일 압축 풀기</h2></div>
       <ol>
-        <li>브라우저에서 👉 <a href="https://github.com/ic4u2u/22ch-PLC" target="_blank">https://github.com/ic4u2u/22ch-PLC</a> 접속</li>
-        <li>초록색 <b>[&lt;&gt; Code]</b> 버튼 클릭 → 맨 아래 <b>[Download ZIP]</b> 클릭</li>
-        <li>다운로드된 ZIP 파일의 압축을 풀면 <code>22ch-PLC-main</code> 폴더 생성 완료!</li>
+        <li>카톡으로 받은 <b><code>xgt-ethernet-tester.zip</code></b> 파일을 바탕화면(또는 원하는 폴더)에 저장합니다.</li>
+        <li>파일에 <b>마우스 우클릭 → [압축 풀기]</b>를 눌러 폴더를 엽니다.</li>
       </ol>
-    </div>
-
-    <!-- STEP 2: 이더넷 통신 테스터 실행 -->
-    <div class="card">
-      <div class="step-head"><span class="step-num">STEP 2</span><h2>XGT 이더넷 통신 테스터 바로 실행 (설치 과정 0분!)</h2></div>
       <div class="alert">
-        <b>💡 핵심 장점:</b> 통신 테스터 폴더(<code>tools\xgt-ethernet-tester</code>)는 <b>npm install이 전혀 필요 없습니다.</b> Node.js만 있으면 더블클릭으로 즉시 켜집니다!
+        <b>✅ 별도 설치 과정 0분!</b> 압축만 풀면 <code>1_PC_A_서버실행(가상PLC).bat</code>과 <code>2_PC_B_클라이언트실행(EnetClient).bat</code> 파일이 바로 보입니다.
       </div>
-      <p>탐색기에서 <b><code>22ch-PLC \ tools \ xgt-ethernet-tester</code></b> 폴더를 여세요.</p>
-      <ol>
-        <li><b>혼자 사전 테스트할 때 (PC 1대):</b>
-          <ul>
-            <li><b><code>1_PC_A_서버실행(가상PLC).bat</code></b> 더블클릭 → 검은 창에 <code>TCP 2004 대기</code> 확인</li>
-            <li><b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → 브라우저(<code>http://localhost:3100</code>) 자동 열림</li>
-            <li>IP <code>127.0.0.1</code> / 포트 <code>2004</code> 그대로 두고 <b>[🔌 연결] → [📥 읽기 요청]</b> 클릭하여 TX/RX 패킷 확인!</li>
-          </ul>
-        </li>
-        <li><b>PC 2대 간 이더넷 테스트할 때:</b>
-          <ul>
-            <li><b>PC A</b>에서 <code>1번 .bat</code> 실행 → 화면에 뜨는 <b>PC A의 IP 주소</b> 확인 (방화벽 창 뜨면 <b>[액세스 허용]</b> 클릭!)</li>
-            <li><b>PC B</b>에서 <code>2번 .bat</code> 실행 → 대상 IP에 <b>PC A IP</b> 입력 후 <b>[🔌 연결]</b> 클릭</li>
-          </ul>
-        </li>
-      </ol>
     </div>
 
-    <!-- STEP 3: 현장 실물 PLC 연결 -->
+    <!-- STEP 3: 실행 및 테스트 방법 -->
     <div class="card">
-      <div class="step-head"><span class="step-num">STEP 3</span><h2>현장 실물 LS PLC 연결 방법 (TCP 2004)</h2></div>
+      <div class="step-head"><span class="step-num">STEP 3</span><h2>상황별 실행 방법 (더블클릭만 하면 끝!)</h2></div>
+
+      <div class="grid-2">
+        <div class="mini-box">
+          <h3 style="margin-top:0;">① 내 PC 혼자 사전 테스트 (10초)</h3>
+          <ol style="padding-left:18px; margin-bottom:0;">
+            <li><b><code>1_PC_A_서버실행(가상PLC).bat</code></b> 더블클릭</li>
+            <li><b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → 브라우저 자동 열림</li>
+            <li>IP <code>127.0.0.1</code> / 포트 <code>2004</code> 그대로 두고 <b>[🔌 연결] → [📥 읽기 요청]</b> 클릭</li>
+            <li>우측 창에 <code>TX / RX</code> HEX 패킷과 수신값 <code>486</code>이 뜨면 성공!</li>
+          </ol>
+        </div>
+        <div class="mini-box">
+          <h3 style="margin-top:0;">② PC 2대 간 이더넷 테스트</h3>
+          <ol style="padding-left:18px; margin-bottom:0;">
+            <li>두 PC를 같은 공유기(또는 랜선 직결)로 연결</li>
+            <li><b>PC A</b>에서 <code>1번 .bat</code> 실행 → 방화벽 창 뜨면 <b>[액세스 허용]</b> 클릭! 화면에 표시된 <b>PC A IP 주소</b> 확인</li>
+            <li><b>PC B</b>에서 <code>2번 .bat</code> 실행 → 대상 IP에 <b>PC A IP</b> 입력 후 <b>[🔌 연결]</b></li>
+            <li>XGT 읽기/쓰기 또는 하단 자유 텍스트 전송으로 송수신 확인!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: 현장 실물 LS PLC 연결 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 4</span><h2>광주 현장 실물 LS PLC 연결 방법 (TCP 2004)</h2></div>
+      <p>실물 PLC와 연결할 때는 <b><code>1번 .bat</code>은 끄고, <code>2번 .bat</code>만 실행</b>하시면 됩니다.</p>
       <ol>
         <li><b>랜선 연결:</b> 노트북/미니PC와 현장 PLC(또는 허브)를 랜선으로 연결합니다.</li>
         <li><b>PC IP 맞추기 (LS 매뉴얼 3p 기준):</b> PLC IP가 <code>192.168.1.10</code>이면 내 PC IP도 앞 3자리를 똑같이 맞춥니다.
@@ -159,43 +149,33 @@
             • IP 주소: <code>192.168.1.11</code> &nbsp;|&nbsp; 서브넷 마스크: <code>255.255.255.0</code> &nbsp;|&nbsp; 게이트웨이: <code>192.168.1.1</code>
           </div>
         </li>
-        <li><b>생존 신호(Ping) 확인:</b> <code>cmd</code> 창에 아래 명령어 입력 → <code>시간&lt;1ms</code> 뜨면 물리 연결 100% 성공!
+        <li><b>연결 확인(Ping):</b> 윈도우 키 → <code>cmd</code> 입력 후 아래 명령어 실행 → <code>시간&lt;1ms</code> 뜨면 랜선/IP 연결 100% 성공!
           <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>ping 192.168.1.10</div>
         </li>
-        <li><b>통신 테스트:</b> <b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 실행 → PLC IP(<code>192.168.1.10</code>), 포트 <code>2004</code> 입력 → <b>[🔌 연결]</b> → <code>%MW0</code> <b>[📥 읽기 요청]</b> 클릭!</li>
-        <li>안 되거나 값이 다르면 우측 하단 <b>[📋 카톡 전달용 로그 복사]</b>를 눌러 그대로 공유해 주세요.</li>
+        <li><b>패킷 테스트:</b> <b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → PLC IP(<code>192.168.1.10</code>), 포트 <code>2004</code> 입력 → <b>[🔌 연결]</b> → <code>%MW0</code> <b>[📥 읽기 요청]</b> 클릭!</li>
+        <li>문제가 생기면 우측 하단 <b>[📋 카톡 전달용 로그 복사]</b> 버튼을 눌러 카톡으로 그대로 보내주세요.</li>
       </ol>
     </div>
 
-    <!-- STEP 4: 선택 전체 관제 화면 -->
+    <!-- FAQ & 체크리스트 -->
     <div class="card">
-      <div class="step-head"><span class="step-num">STEP 4 (선택)</span><h2>22채널 3D 전체 관제 화면도 노트북에서 띄우기</h2></div>
-      <p>현장 인터넷이 안 될 때도 3D 가스통 관제 화면을 직접 시연하려면, <b>출발 전 인터넷 되는 곳에서 딱 한 번</b> 아래 명령어를 실행해 두세요.</p>
-      <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>cd 22ch-PLC
-npm install
-npm run dev:all</div>
-      <p>실행 후 브라우저에서 <b><code>http://localhost:3000</code></b> 접속! (한 번 <code>npm install</code> 해두면 현장 오프라인에서도 <code>npm run dev:all</code>로 바로 켜집니다.)</p>
-    </div>
-
-    <!-- 트러블슈팅 & 체크리스트 -->
-    <div class="card">
-      <div class="step-head"><span class="step-num">FAQ</span><h2>자주 겪는 문제 3초 해결 & 출발 전 체크리스트</h2></div>
+      <div class="step-head"><span class="step-num">FAQ</span><h2>자주 겪는 문제 3초 해결 & 체크리스트</h2></div>
       <table>
         <thead><tr><th>증상 / 에러 코드</th><th>원인 및 3초 해결법</th></tr></thead>
         <tbody>
-          <tr><td><b>연결 거부 (10061)</b></td><td>대상 PC A 서버가 꺼져 있거나, PLC의 XGT 서버 포트(2004)가 닫혀 있음 → 서버 실행 및 XG5000 설정 확인</td></tr>
-          <tr><td><b>시간 초과 (10060)</b></td><td>IP 대역이 다르거나 Windows 방화벽 차단, 랜선 미연결 → IP 앞 3자리 통일 &amp; 방화벽 [액세스 허용]</td></tr>
-          <tr><td><b>node 명령어 없음</b></td><td>STEP 0의 Node.js 설치 후 열려 있던 검은 창(cmd)을 닫고 새로 여세요.</td></tr>
+          <tr><td><b>연결 거부 (10061)</b></td><td>PC A 서버(1번 .bat)가 꺼져 있거나, PLC의 XGT 서버 포트(2004)가 닫혀 있음</td></tr>
+          <tr><td><b>시간 초과 (10060)</b></td><td>IP 앞 3자리가 다르거나 Windows 방화벽 차단, 랜선 미연결 → IP 확인 &amp; 방화벽 [액세스 허용]</td></tr>
+          <tr><td><b>창이 바로 꺼짐</b></td><td>STEP 1의 Node.js가 설치되지 않았거나, 설치 직후 PC/창을 새로 열지 않았을 때 발생</td></tr>
         </tbody>
       </table>
 
-      <h3>✅ 출발 전 최종 체크 (클릭해서 체크해 보세요)</h3>
-      <label class="check-item"><input type="checkbox" /> <span>노트북/미니PC에 <b>Node.js LTS</b> 설치 완료</span></label>
-      <label class="check-item"><input type="checkbox" /> <span><code>1번 .bat</code> + <code>2번 .bat</code> 실행해 <code>127.0.0.1:2004</code> 패킷 송수신 확인 완료</span></label>
-      <label class="check-item"><input type="checkbox" /> <span><b>USB-to-LAN 젠더</b> + 노트북 충전기 + 스마트폰 핫스팟 준비 완료</span></label>
+      <h3>✅ 실행 전 최종 체크</h3>
+      <label class="check-item"><input type="checkbox" /> <span><b>Node.js LTS</b> 설치 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span><code>xgt-ethernet-tester.zip</code> 압축 해제 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span>PC 1대 테스트(<code>127.0.0.1:2004</code>)에서 <code>TX / RX</code> 정상 수신 확인</span></label>
     </div>
 
-    <div class="footer">특수가스 스마트 관제 시스템 (22ch-PLC) · 현장 테스트 설치 가이드 · 카톡/파일 공유용 단일 HTML</div>
+    <div class="footer">LS XGT 이더넷 통신 테스터 (ZIP 배포판) · 오프라인 지원 단일 HTML 설치 가이드</div>
   </div>
 
   <script>
