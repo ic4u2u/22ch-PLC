@@ -51,6 +51,7 @@ const runtimeState = {
   banks: [],
   recentAlerts: [],
   packetLogs: [],
+  dumpWaitingRx: false,
 };
 
 // 드라이버 인스턴스 준비
@@ -76,6 +77,11 @@ function toHexSpaced(buf) {
 }
 
 function pushPacketLog(entry) {
+  const first = runtimeState.packetLogs[0];
+  if (first && first.rxBytes === 0 && !first.error && first.txHex === entry.txHex) {
+    runtimeState.packetLogs = [entry, ...runtimeState.packetLogs.slice(1)].slice(0, 30);
+    return;
+  }
   runtimeState.packetLogs = [entry, ...runtimeState.packetLogs].slice(0, 30);
 }
 
@@ -114,13 +120,13 @@ function buildModbusReadDump(startAddr, count, words) {
   };
 }
 
-async function readPlcRegisters() {
+async function readPlcRegisters({ onTx = null } = {}) {
   const startNs = process.hrtime.bigint();
   await ensurePlcConnected();
 
   if (PLC_PROTOCOL === "XGT") {
     // %MW100~%MW121 (22워드 압력), %MW200~%MW221 (22워드 밸브)
-    const pressures = await xgtClient.readWords(100, CHANNEL_COUNT);
+    const pressures = await xgtClient.readWords(100, CHANNEL_COUNT, onTx);
     const pressurePkt = xgtClient.lastPacket ? { ...xgtClient.lastPacket } : null;
     const valves = await xgtClient.readWords(200, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
@@ -128,6 +134,14 @@ async function readPlcRegisters() {
     return { pressures, valves, latencyMs: Number(elapsedMs.toFixed(2)) };
   } else {
     // Modbus Holding Register Offset 0~21 (22채널 압력), Offset 100~121 (22채널 밸브)
+    if (typeof onTx === "function") {
+      const txPreview = buildModbusReadDump(0, CHANNEL_COUNT, []);
+      onTx({
+        ...txPreview,
+        rxHex: "",
+        rxBytes: 0,
+      });
+    }
     const pRes = await modbusClient.readHoldingRegisters(0, CHANNEL_COUNT);
     const vRes = await modbusClient.readHoldingRegisters(100, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
@@ -285,15 +299,27 @@ const server = http.createServer(async (req, res) => {
       latencyMs: runtimeState.latencyMs,
       lastPollAt: runtimeState.lastPollAt,
       lastError: runtimeState.lastError,
-      rawPressures: runtimeState.rawPressures,
-      rawValves: runtimeState.rawValves,
+      rawPressures: runtimeState.dumpWaitingRx ? [] : runtimeState.rawPressures,
+      rawValves: runtimeState.dumpWaitingRx ? [] : runtimeState.rawValves,
       packetLogs: runtimeState.packetLogs,
+      dumpWaitingRx: runtimeState.dumpWaitingRx,
     });
   }
 
   if (req.method === "POST" && pathname === "/api/plc-poll-once") {
+    // 1) 기존 버퍼 값 모두 클리어
+    runtimeState.dumpWaitingRx = true;
+    runtimeState.packetLogs = [];
+    runtimeState.lastError = null;
+    runtimeState.lastPollAt = null;
     try {
-      const { pressures, valves, latencyMs } = await readPlcRegisters();
+      // 2) TX 송신 시 TX 버퍼 먼저 기록 -> 3) PLC RX 수신 시 값 채움
+      const { pressures, valves, latencyMs } = await readPlcRegisters({
+        onTx: (txEntry) => {
+          runtimeState.packetLogs = [txEntry];
+        },
+      });
+      runtimeState.dumpWaitingRx = false;
       runtimeState.plcConnected = true;
       runtimeState.latencyMs = latencyMs;
       runtimeState.lastPollAt = new Date().toISOString();
@@ -312,8 +338,10 @@ const server = http.createServer(async (req, res) => {
         rawPressures: pressures,
         rawValves: valves,
         packetLogs: runtimeState.packetLogs,
+        dumpWaitingRx: false,
       });
     } catch (err) {
+      runtimeState.dumpWaitingRx = false;
       runtimeState.plcConnected = false;
       runtimeState.lastError = err.message;
       if (PLC_PROTOCOL === "XGT" && xgtClient.lastPacket) {
@@ -328,9 +356,10 @@ const server = http.createServer(async (req, res) => {
         latencyMs: runtimeState.latencyMs,
         lastPollAt: runtimeState.lastPollAt,
         lastError: err.message,
-        rawPressures: runtimeState.rawPressures,
-        rawValves: runtimeState.rawValves,
+        rawPressures: [],
+        rawValves: [],
         packetLogs: runtimeState.packetLogs,
+        dumpWaitingRx: false,
       });
     }
   }

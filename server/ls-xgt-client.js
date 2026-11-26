@@ -98,7 +98,7 @@ class LsXgtClient {
    * @param {string} [opLabel]
    * @returns {Promise<Buffer>}
    */
-  sendAndReceive(packet, opLabel = "XGT_FRAME") {
+  sendAndReceive(packet, opLabel = "XGT_FRAME", onTx = null) {
     const txHex = packet
       .toString("hex")
       .toUpperCase()
@@ -115,6 +115,13 @@ class LsXgtClient {
       error: null,
     };
     this.lastPacket = recordBase;
+    if (typeof onTx === "function") {
+      try {
+        onTx({ ...recordBase });
+      } catch {
+        // ignore callback errors
+      }
+    }
 
     return new Promise(async (resolve, reject) => {
       try {
@@ -188,7 +195,7 @@ class LsXgtClient {
    * @param {number} wordCount 읽을 워드 개수 (기본: 22 -> 44 Bytes)
    * @returns {Promise<number[]>}
    */
-  async readWords(startWordAddr = 100, wordCount = 22) {
+  async readWords(startWordAddr = 100, wordCount = 22, onTx = null) {
     const byteAddr = startWordAddr * 2; // %MW100 === %MB200
     const varName = `%MB${byteAddr}`;
     const varBuf = Buffer.from(varName, "ascii");
@@ -218,7 +225,8 @@ class LsXgtClient {
     const header = this.buildHeader(bodyLen);
     const response = await this.sendAndReceive(
       Buffer.concat([header, body]),
-      `READ %MW${startWordAddr}~%MW${startWordAddr + wordCount - 1} (${wordCount}W)`
+      `READ %MW${startWordAddr}~%MW${startWordAddr + wordCount - 1} (${wordCount}W)`,
+      onTx
     );
 
     // 응답 검증: Offset 20=Command(0x0055), Offset 26=ErrorState(2B)

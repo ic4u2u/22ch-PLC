@@ -25,18 +25,26 @@ interface PlcDumpResponse {
   rawPressures: number[];
   rawValves: number[];
   packetLogs: PacketLogItem[];
+  dumpWaitingRx?: boolean;
 }
 
 interface PlcDumpTabProps {
   channels: ChannelData[];
 }
 
+const DEFAULT_XGT_TX_HEX =
+  "4C 53 49 53 2D 58 47 54 00 00 00 00 A0 33 01 00 18 00 00 00 54 00 14 00 00 00 01 00 06 00 25 4D 42 32 30 30 2C 00";
+
 export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
   const [dump, setDump] = useState<PlcDumpResponse | null>(null);
   const [bridgeAvailable, setBridgeAvailable] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [requesting, setRequesting] = useState(false);
+  const [clearedWaiting, setClearedWaiting] = useState(false);
+  const [txPendingPacket, setTxPendingPacket] = useState<PacketLogItem | null>(null);
+  const [demoRxPacket, setDemoRxPacket] = useState<PacketLogItem | null>(null);
   const [copied, setCopied] = useState(false);
+  const requestingRef = React.useRef(false);
 
   const getBridgeBase = useCallback(() => {
     if (typeof window === "undefined") return "";
@@ -45,6 +53,7 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
   }, []);
 
   const fetchDump = useCallback(async () => {
+    if (requestingRef.current) return;
     const base = getBridgeBase();
     if (!base) {
       setBridgeAvailable(false);
@@ -54,8 +63,10 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
       const res = await fetch(`${base}/api/plc-dump`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: PlcDumpResponse = await res.json();
-      setDump(data);
-      setBridgeAvailable(true);
+      if (!requestingRef.current) {
+        setDump(data);
+        setBridgeAvailable(true);
+      }
     } catch {
       setBridgeAvailable(false);
     }
@@ -68,10 +79,78 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
     return () => clearInterval(timer);
   }, [fetchDump, autoRefresh]);
 
+  const buildTxOnlyPacket = useCallback(
+    (protocolName: string): PacketLogItem => {
+      const isModbus = protocolName.toUpperCase().includes("MODBUS");
+      const txHex = isModbus
+        ? "00 01 00 00 00 06 01 03 00 00 00 16"
+        : DEFAULT_XGT_TX_HEX;
+      const txBytes = isModbus ? 12 : 38;
+      return {
+        timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+        protocol: protocolName,
+        op: "READ %MW100~%MW121 (22W / 44B)",
+        txHex,
+        txBytes,
+        rxHex: "",
+        rxBytes: 0,
+        error: null,
+      };
+    },
+    []
+  );
+
   const handlePollOnce = async () => {
-    const base = getBridgeBase();
-    if (!base) return;
+    const protocolName = dump?.protocol || "XGT";
+    // 1) 모든 버퍼 값 클리어 후 TX 버퍼 값 즉시 표시
+    requestingRef.current = true;
     setRequesting(true);
+    setClearedWaiting(true);
+    setDemoRxPacket(null);
+    setTxPendingPacket(buildTxOnlyPacket(protocolName));
+    setDump((prev) =>
+      prev
+        ? {
+            ...prev,
+            lastPollAt: null,
+            lastError: null,
+            rawPressures: [],
+            rawValves: [],
+            packetLogs: [],
+            dumpWaitingRx: true,
+          }
+        : null
+    );
+
+    const base = getBridgeBase();
+    if (!base) {
+      // 데모/미리보기 모드(Vercel 등): 클리어 -> TX 표시 -> 짧은 지연 후 RX 수신 시뮬레이션
+      setTimeout(() => {
+        const dataHex = Array.from({ length: 22 }, (_, i) => {
+          const ch = channels[i];
+          const raw = ch ? Math.round(ch.pressureBar * 10) : 0;
+          const lo = (raw & 0xff).toString(16).toUpperCase().padStart(2, "0");
+          const hi = ((raw >> 8) & 0xff).toString(16).toUpperCase().padStart(2, "0");
+          return `${lo} ${hi}`;
+        }).join(" ");
+        setDemoRxPacket({
+          timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+          protocol: "XGT (시뮬레이션 미리보기)",
+          op: "READ %MW100~%MW121 (22W / 44B)",
+          txHex: DEFAULT_XGT_TX_HEX,
+          txBytes: 38,
+          rxHex: `4C 53 49 53 2D 58 47 54 00 00 00 00 A0 11 01 00 38 00 00 00 55 00 14 00 00 00 00 00 01 00 2C 00 ${dataHex}`,
+          rxBytes: 76,
+          error: null,
+        });
+        setClearedWaiting(false);
+        setTxPendingPacket(null);
+        setRequesting(false);
+        requestingRef.current = false;
+      }, 300);
+      return;
+    }
+
     try {
       const res = await fetch(`${base}/api/plc-poll-once`, { method: "POST" });
       const data: PlcDumpResponse = await res.json();
@@ -80,12 +159,32 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
     } catch {
       setBridgeAvailable(false);
     } finally {
+      setClearedWaiting(false);
+      setTxPendingPacket(null);
       setRequesting(false);
+      requestingRef.current = false;
     }
   };
 
   // 브릿지 미연결(Vercel 데모 등) 시 현재 channels 상태 기반 폴백 워드/패킷 생성
+  // 단, 요청 중(클리어 상태)이거나 브릿지가 빈 버퍼(오류/대기)를 내려준 경우 클리어 상태로 표시
+  const isBufferCleared =
+    clearedWaiting ||
+    Boolean(dump && dump.rawPressures && dump.rawPressures.length === 0);
+
   const words = useMemo(() => {
+    if (isBufferCleared) {
+      return Array.from({ length: 22 }, (_, i) => ({
+        wordNo: i + 1,
+        mwAddr: `%MW${100 + i}`,
+        modbusOffset: i,
+        raw: null as number | null,
+        bar: "--.-",
+        hex: "----",
+        valve: null as number | null,
+        gasName: channels[i]?.gasName || `CH${String(i + 1).padStart(2, "0")}`,
+      }));
+    }
     if (dump && dump.rawPressures && dump.rawPressures.length > 0) {
       return Array.from({ length: 22 }, (_, i) => {
         const raw = Number(dump.rawPressures[i] ?? 0);
@@ -117,15 +216,14 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
         gasName: ch?.gasName || `CH${String(i + 1).padStart(2, "0")}`,
       };
     });
-  }, [dump, channels]);
+  }, [isBufferCleared, dump, channels]);
 
   const fallbackPacket: PacketLogItem = useMemo(() => {
-    const tx =
-      "4C 53 49 53 2D 58 47 54 00 00 00 00 A0 33 01 00 18 00 00 00 54 00 14 00 00 00 01 00 06 00 25 4D 42 32 30 30 2C 00";
     const dataHex = words
       .map((w) => {
-        const lo = (w.raw & 0xff).toString(16).toUpperCase().padStart(2, "0");
-        const hi = ((w.raw >> 8) & 0xff).toString(16).toUpperCase().padStart(2, "0");
+        const rawVal = w.raw ?? 0;
+        const lo = (rawVal & 0xff).toString(16).toUpperCase().padStart(2, "0");
+        const hi = ((rawVal >> 8) & 0xff).toString(16).toUpperCase().padStart(2, "0");
         return `${lo} ${hi}`;
       })
       .join(" ");
@@ -134,7 +232,7 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
       timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
       protocol: "XGT (시뮬레이션 미리보기)",
       op: "READ %MW100~%MW121 (22W / 44B)",
-      txHex: tx,
+      txHex: DEFAULT_XGT_TX_HEX,
       txBytes: 38,
       rxHex: rx,
       rxBytes: 76,
@@ -142,20 +240,40 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
     };
   }, [words]);
 
-  const packetLogs =
-    dump && dump.packetLogs && dump.packetLogs.length > 0 ? dump.packetLogs : [fallbackPacket];
-  const latestPkt = packetLogs[0];
+  const packetLogs = clearedWaiting
+    ? txPendingPacket
+      ? [txPendingPacket]
+      : []
+    : dump && dump.packetLogs && dump.packetLogs.length > 0
+      ? dump.packetLogs
+      : demoRxPacket
+        ? [demoRxPacket]
+        : [fallbackPacket];
+  const latestPkt: PacketLogItem = packetLogs[0] || {
+    timestamp: "-",
+    protocol: dump?.protocol || "XGT",
+    op: "READ %MW100~%MW121 (22W / 44B)",
+    txHex: "",
+    txBytes: 0,
+    rxHex: "",
+    rxBytes: 0,
+    error: null,
+  };
 
   const handleCopyDump = () => {
     const wordLines = words
-      .map((w) => `Word${w.wordNo} (${w.mwAddr}) = ${w.bar} bar (원시값: ${w.raw}, 밸브: ${w.valve === 0 ? "OPEN" : "SHUTOFF"})`)
+      .map((w) =>
+        w.raw === null
+          ? `Word${w.wordNo} (${w.mwAddr}) = --.- bar (클리어됨 / RX 대기)`
+          : `Word${w.wordNo} (${w.mwAddr}) = ${w.bar} bar (원시값: ${w.raw}, 밸브: ${w.valve === 0 ? "OPEN" : "SHUTOFF"})`
+      )
       .join("\n");
     const summary = [
       `[ACSC 22CH PLC 통신 덤프] ${latestPkt.timestamp}`,
       `- 상태: ${dump?.plcConnected ? "연결됨" : bridgeAvailable ? "연결 끊김" : "데모 미리보기"} / ${dump?.protocol || "XGT"} (${dump?.plcIp || "192.168.0.50"}:${dump?.plcPort || 2004})`,
       `- 작업: ${latestPkt.op}`,
       `- TX (${latestPkt.txBytes}B): ${latestPkt.txHex}`,
-      `- RX (${latestPkt.rxBytes}B): ${latestPkt.rxHex}`,
+      `- RX (${latestPkt.rxBytes}B): ${latestPkt.rxHex || "(대기 중)"}`,
       latestPkt.error ? `- 오류: ${latestPkt.error}` : "",
       "",
       "[22워드 수신 압력]",
@@ -187,10 +305,10 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
           <button
             type="button"
             onClick={handlePollOnce}
-            disabled={requesting || !bridgeAvailable}
+            disabled={requesting}
             className="min-h-[38px] rounded-xl bg-cyan-500 px-3.5 py-2 text-xs font-extrabold text-slate-950 hover:bg-cyan-400 disabled:opacity-50 transition-all"
           >
-            {requesting ? "⏳ 요청 중..." : "📥 22워드 압력 즉시 요청 (TX)"}
+            {requesting ? "⏳ 클리어 후 TX 전송 · RX 대기 중..." : "📥 22워드 압력 즉시 요청 (TX)"}
           </button>
           <button
             type="button"
@@ -278,9 +396,17 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
                 {w.bar} <span className="text-xs font-bold text-slate-400">bar</span>
               </div>
               <div className="mt-0.5 flex items-center justify-between font-mono text-[10px] text-slate-400">
-                <span>원시: {w.raw} ({w.hex})</span>
-                <span className={w.valve === 0 ? "text-emerald-400" : "text-amber-400"}>
-                  {w.valve === 0 ? "OPEN" : "SHUT"}
+                <span>{w.raw === null ? "원시: - (----)" : `원시: ${w.raw} (${w.hex})`}</span>
+                <span
+                  className={
+                    w.valve === null
+                      ? "text-slate-500"
+                      : w.valve === 0
+                        ? "text-emerald-400"
+                        : "text-amber-400"
+                  }
+                >
+                  {w.valve === null ? "-" : w.valve === 0 ? "OPEN" : "SHUT"}
                 </span>
               </div>
               <div className="mt-0.5 truncate text-[10px] text-slate-500" title={w.gasName}>
@@ -313,7 +439,12 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
             <span className="font-mono text-[11px] text-slate-400">{latestPkt.timestamp}</span>
           </div>
           <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-slate-800 bg-slate-900 p-3 font-mono text-[11px] leading-relaxed text-emerald-200">
-            {latestPkt.rxHex || (latestPkt.error ? `오류: ${latestPkt.error}` : "(응답 없음)")}
+            {latestPkt.rxHex ||
+              (latestPkt.error
+                ? `오류: ${latestPkt.error}`
+                : clearedWaiting
+                  ? "(PLC RX 응답 대기 중...)"
+                  : "(응답 없음)")}
           </pre>
         </div>
       </div>
