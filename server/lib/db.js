@@ -8,7 +8,9 @@ const fs = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
 
-const LOGS_DIR = path.join(process.cwd(), "logs");
+const LOGS_DIR = process.env.ACSC_LOGS_DIR
+  ? path.resolve(process.env.ACSC_LOGS_DIR)
+  : path.join(process.cwd(), "logs");
 const BACKUP_DIR = path.join(LOGS_DIR, "backups");
 const DB_PATH = path.join(LOGS_DIR, "acsc_history.db");
 
