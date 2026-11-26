@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>박정호 전달용 — 미니PC 22채널 가스 모니터링 현장 테스트 완벽 가이드</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px 14px 54px;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif;
+      background: #0b1120; color: #e2e8f0; line-height: 1.65;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #38bdf8; border-radius: 18px; padding: 26px 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+    .tag {
+      display: inline-block; background: #0284c7; color: #fff; font-size: 12px;
+      font-weight: 800; padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; line-height: 1.35; }
+    .hero p { margin: 0; color: #cbd5e1; font-size: 14.5px; }
+    .card {
+      background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 22px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+    .step-num {
+      background: #0ea5e9; color: #082f49; font-weight: 900; font-size: 13px;
+      padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+    }
+    .step-num.green { background: #10b981; color: #022c22; }
+    .step-num.amber { background: #f59e0b; color: #451a03; }
+    h2 { margin: 0; font-size: 18px; color: #f8fafc; }
+    h3 { margin: 16px 0 6px; font-size: 15px; color: #38bdf8; }
+    p, li { font-size: 14px; color: #cbd5e1; }
+    ul, ol { padding-left: 20px; margin: 8px 0; }
+    li { margin-bottom: 6px; }
+    .flow {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 10px; background: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;
+      margin-top: 12px; font-weight: 700; font-size: 13.5px;
+    }
+    .flow-box { background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 1px solid #334155; }
+    .flow-arrow { color: #38bdf8; font-size: 16px; }
+    .cmd-box {
+      position: relative; background: #020617; border: 1px solid #334155;
+      border-radius: 10px; padding: 12px 86px 12px 14px; margin: 8px 0 12px;
+      font-family: Consolas, "Courier New", monospace; font-size: 13px; color: #7dd3fc;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px; background: #1e293b; color: #f8fafc;
+      border: 1px solid #475569; border-radius: 7px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .copy-btn:hover { background: #0284c7; }
+    .copy-btn.ok { background: #059669; }
+    .alert {
+      background: #064e3b; border-left: 4px solid #10b981; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #d1fae5;
+    }
+    .warn {
+      background: #2a1810; border-left: 4px solid #f59e0b; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #fef3c7;
+    }
+    .mini-box {
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; margin: 8px 0;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; }
+    th, td { border: 1px solid #1f2937; padding: 9px 10px; text-align: left; }
+    th { background: #0f172a; color: #38bdf8; }
+    code { background: #1e293b; padding: 2px 6px; border-radius: 5px; color: #7dd3fc; font-family: Consolas, monospace; font-size: 13px; }
+    a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+      background: #0f172a; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+    }
+    .check-item input { margin-top: 4px; width: 17px; height: 17px; accent-color: #10b981; }
+    .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 헤더 -->
+    <div class="hero">
+      <div class="tag">와이지원 인천 2공장 · 특수가스 22채널 모니터링 현장 테스트 매뉴얼</div>
+      <h1>🖥️ 정호 전달용: 미니PC 설치 → 가상 PLC 시뮬레이션 → 광주 업체 실물 PLC 연동 완벽 가이드</h1>
+      <p>이 안내서 순서대로만 따라 하면 <b>용주 없이도 정호 혼자 미니PC로 설치부터 광주 업체 PLC 연결 테스트까지 100% 완료</b>할 수 있습니다.</p>
+      <div class="flow">
+        <div class="flow-box">1. 미니PC 설치 (1회)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">2. 가상 PLC 시뮬레이션 연습</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">3. 광주 업체 실물 PLC 연결</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">4. 3D 관제 화면 동작 확인</div>
+      </div>
+    </div>
+
+    <!-- PART 1: 미니PC 설치 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">PART 1</span><h2>미니PC에 우리 모니터링 프로그램 설치하기 (출발 전 인터넷 되는 곳에서 1회)</h2></div>
+      <ol>
+        <li><b>Node.js 설치</b> (이미 깔려 있으면 패스):
+          👉 <a href="https://nodejs.org/ko" target="_blank">https://nodejs.org/ko</a> 에서 초록색 <b>LTS 버전</b> 다운 → <b>[다음 → 다음 → 설치]</b>
+        </li>
+        <li><b>프로그램 폴더 준비</b>:
+          용주가 전달한 프로젝트 폴더(<code>PLC_24CH_Monitoring_System</code>)를 미니PC 바탕화면(또는 <code>C:\PLC</code>)에 복사합니다.
+        </li>
+        <li><b>최초 1회 설치 실행</b>:
+          폴더 안에 있는 <b><code>1_최초설치_미니PC_1회실행.bat</code></b> 파일을 더블클릭합니다.
+          <ul>
+            <li>검은 창이 뜨고 자동으로 필요한 패키지를 설치합니다 (약 1~2분 소요).</li>
+            <li><b>"[설치 완료!]"</b> 메시지가 뜨면 창을 닫습니다. (이제 현장 인터넷이 없어도 작동합니다!)</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <!-- PART 2: 가상 PLC 시뮬레이션 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num green">PART 2</span><h2>[출발 전 연습] 미니PC 혼자 '가상 PLC'로 시뮬레이션 돌려보기</h2></div>
+      <p>광주 업체에 가기 전, 미니PC에서 우리 프로그램이 정상 작동하는지 <b>가상 PLC</b>와 연결해 미리 확인하는 단계입니다.</p>
+      <ol>
+        <li>폴더 안의 <b><code>2_시뮬레이션모드_가상PLC_테스트실행.bat</code></b> 파일을 더블클릭합니다.</li>
+        <li>검은 창이 켜지면서 <b>① 가상 PLC 서버(127.0.0.1:8502) + ② 브릿지 서버 + ③ 3D 관제 화면</b>이 동시에 켜집니다.</li>
+        <li>약 5초 뒤 자동으로 브라우저가 열리며 <b><code>http://localhost:3000</code></b> 화면이 뜹니다.</li>
+        <li><b>확인할 것</b>:
+          <ul>
+            <li>11종 가스(22개 3D 가스통) 압력 숫자가 실시간으로 들어오고, 공급중인 가스통에 애니메이션이 잘 나오는지 확인!</li>
+            <li>하단 상태 바에 <b>"정상 연결"</b>이 뜨는지 확인!</li>
+          </ul>
+        </li>
+        <li>확인이 끝나면 검은 창을 닫아 종료합니다.</li>
+      </ol>
+    </div>
+
+    <!-- PART 3: 광주 업체 실물 PLC 연결 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num amber">PART 3</span><h2>[실전] 경기도 광주 업체(컨트롤러 회사)에서 실물 PLC와 연결하기</h2></div>
+
+      <h3>📌 3-1. 광주 업체 PLC 개발자에게 딱 이 표만 보여주세요! (가장 중요 ⭐)</h3>
+      <p>우리 모니터링 프로그램은 아래 약속(메모리 번지)대로 PLC에서 22개 압력과 밸브 값을 읽어옵니다. 업체 PLC 담당자에게 이 표를 보여주면 1분 만에 맞춰줍니다.</p>
+      <table>
+        <thead>
+          <tr><th>통신 방식 (둘 다 지원)</th><th>압력값 22채널 (1차측 압력 × 10)</th><th>밸브 상태 22채널 (0=닫힘, 1=열림)</th><th>포트 번호</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>LS XGT 전용 프로토콜</b> (권장)</td>
+            <td><code>%MW100 ~ %MW121</code> (22워드)</td>
+            <td><code>%MW200 ~ %MW221</code> (22워드)</td>
+            <td><b>TCP 2004</b></td>
+          </tr>
+          <tr>
+            <td><b>Modbus TCP</b> (스마트 서버)</td>
+            <td>Holding Reg <code>0 ~ 21</code> (40001~40022)</td>
+            <td>Holding Reg <code>100 ~ 121</code> (40101~40122)</td>
+            <td><b>TCP 502</b></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="warn">
+        <b>💡 압력 숫자 규칙:</b> 예를 들어 <b>48.6 Bar</b>이면 PLC 메모리에는 소수점 없이 10을 곱한 정수 <b><code>486</code></b>을 넣어주시면 됩니다. (만약 업체 번지가 다르면 번지표 사진만 찍어 용주에게 카톡으로 보내주면 원격으로 5분 만에 수정 가능!)
+      </div>
+
+      <h3>📌 3-2. 미니PC와 PLC 랜선 연결 & IP 맞추기</h3>
+      <ol>
+        <li>미니PC와 광주 업체 PLC(또는 허브)를 <b>랜선</b>으로 연결합니다.</li>
+        <li>업체 PLC IP가 예를 들어 <code>192.168.1.10</code>이면, 미니PC IP도 앞 3자리를 똑같이 맞춥니다:
+          <div class="mini-box">
+            제어판 → 네트워크 및 공유 센터 → 이더넷 → 속성 → <b>IPv4</b> → <b>다음 IP 주소 사용</b><br>
+            • IP 주소: <code>192.168.1.11</code> &nbsp;|&nbsp; 서브넷 마스크: <code>255.255.255.0</code> &nbsp;|&nbsp; 게이트웨이: <code>192.168.1.1</code>
+          </div>
+        </li>
+        <li><b>Ping 연결 확인</b>: 윈도우 키 → <code>cmd</code> 입력 후 아래 명령어 실행 → <code>시간&lt;1ms</code>가 뜨면 랜선 연결 100% 성공!
+          <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>ping 192.168.1.10</div>
+        </li>
+      </ol>
+
+      <h3>📌 3-3. (1차 점검) 패킷이 진짜 오가는지 10초 확인하기 (선택)</h3>
+      <p>바로 본 화면을 켜기 전에 패킷 덤프부터 눈으로 보고 싶으면:</p>
+      <ol>
+        <li><code>tools \ xgt-ethernet-tester \ 2_PC_B_클라이언트실행(EnetClient).bat</code> 더블클릭</li>
+        <li>브라우저(<code>http://localhost:3100</code>)에서 PLC IP(<code>192.168.1.10</code>), 포트 <code>2004</code> → <b>[🔌 연결] → [📥 읽기 요청]</b> 클릭!</li>
+        <li>우측 창에 <code>TX / RX</code> HEX 패킷이 들어오면 통신 100% 성공! (창을 닫고 아래 3-4로 이동)</li>
+      </ol>
+
+      <h3>📌 3-4. (최종 실전) 우리 22채널 3D 모니터링 시스템에 실물 PLC 연결!</h3>
+      <ol>
+        <li>프로젝트 폴더의 <b><code>3_현장실물PLC연결_광주업체_테스트실행.bat</code></b> 파일을 더블클릭합니다.</li>
+        <li>검은 창이 물어보는 2가지만 입력하고 엔터:
+          <ul>
+            <li><b>통신 방식</b>: XGT면 <code>1</code> (엔터), Modbus면 <code>2</code> 입력</li>
+            <li><b>PLC IP 주소</b>: 예) <code>192.168.1.10</code> 입력 후 엔터</li>
+          </ul>
+        </li>
+        <li>약 5초 뒤 <b><code>http://localhost:3000</code></b> 3D 관제 화면이 열리며, <b>광주 업체 PLC의 실제 압력/밸브 값이 화면에 실시간 반영</b>됩니다!</li>
+      </ol>
+      <div class="alert">
+        <b>🎉 테스트 성공 기준:</b> 업체 개발자가 PLC의 <code>%MW100</code> 값을 바꾸거나 밸브(<code>%MW200</code>)를 켜고 끌 때, 우리 3D 화면의 1번 가스(고순도메탄 A) 숫자와 공급 애니메이션이 0.5초 안에 같이 움직이면 <b>완벽 성공</b>입니다!
+      </div>
+    </div>
+
+    <!-- PART 4: 문제 발생 시 용주에게 보낼 것 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">PART 4</span><h2>현장에서 안 될 때 — 용주에게 카톡으로 보낼 것 딱 3가지</h2></div>
+      <p>만약 연결이 안 되거나 숫자가 이상하게 나오면 당황하지 말고 <b>아래 3가지만 사진 찍어 용주에게 카톡 전송</b>해 주세요. 용인에서 원격으로 바로 해결해 줍니다!</p>
+      <label class="check-item"><input type="checkbox" /> <span><b>1. 검은 실행 창(또는 브라우저) 에러 화면 사진</b></span></label>
+      <label class="check-item"><input type="checkbox" /> <span><b>2. 업체 PLC 메모리 번지표(Address Map) &amp; IP/포트 설정 사진</b></span></label>
+      <label class="check-item"><input type="checkbox" /> <span><b>3. (원격 필요 시) 미니PC에 핫스팟 연결 후 AnyDesk(애니데스크) 접속 번호</b></span></label>
+    </div>
+
+    <div class="footer">와이지원 인천 2공장 특수가스 22채널 스마트 관제 시스템 · 현장 테스트 전달용 가이드</div>
+  </div>
+
+  <script>
+    function copyCmd(btn) {
+      const box = btn.parentElement;
+      const text = box.innerText.replace("📋 복사", "").replace("✅ 복사됨!", "").trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "✅ 복사됨!";
+        btn.classList.add("ok");
+        setTimeout(() => {
+          btn.textContent = "📋 복사";
+          btn.classList.remove("ok");
+        }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>

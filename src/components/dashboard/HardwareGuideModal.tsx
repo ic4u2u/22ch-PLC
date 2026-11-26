@@ -144,6 +144,22 @@ export default function HardwareGuideModal({
             >
               🛠️ XG5000 세팅 마스터북 HTML
             </a>
+            <a
+              href="/field-test-guide.html"
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[38px] inline-flex items-center rounded-xl border border-amber-500/50 bg-amber-500/15 px-3 py-1.5 text-xs font-extrabold text-amber-300 hover:bg-amber-500/25"
+            >
+              📖 현장 테스트 &amp; S/W 다운로드 HTML
+            </a>
+            <a
+              href="/minipc-field-guide.html"
+              target="_blank"
+              rel="noreferrer"
+              className="min-h-[38px] inline-flex items-center rounded-xl border border-rose-500/50 bg-rose-500/15 px-3 py-1.5 text-xs font-extrabold text-rose-300 hover:bg-rose-500/25"
+            >
+              🖥️ 미니PC 현장 완벽가이드 HTML
+            </a>
           </div>
         </div>
 

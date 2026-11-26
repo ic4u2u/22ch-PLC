@@ -56,7 +56,8 @@ type MainTab =
   | "MANIFOLD"
   | "GRID"
   | "LEAK_TEST"
-  | "HISTORY_REPORT";
+  | "HISTORY_REPORT"
+  | "FIELD_GUIDE";
 
 export default function Dashboard24() {
   const [activeTab, setActiveTab] = useState<MainTab>("WALLBOARD");
@@ -813,6 +814,7 @@ export default function Dashboard24() {
                     { id: "GRID", label: "🟢 22실린더 상세 그리드" },
                     { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
                     { id: "HISTORY_REPORT", label: "⏪ 과거 이력 & 📄 PDF 보고서" },
+                    { id: "FIELD_GUIDE", label: "📖 현장 PLC 테스트 & S/W 다운로드" },
                   ].map((t) => (
                     <button
                       key={t.id}
@@ -914,6 +916,63 @@ export default function Dashboard24() {
                 leakLogs={leakLogs}
                 onRefreshHistory={fetchAllLogs}
               />
+            )}
+
+            {activeTab === "FIELD_GUIDE" && (
+              <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                  <div>
+                    <h2 className="text-base sm:text-lg font-extrabold text-cyan-300">
+                      📖 현장 PLC 테스트 가이드 &amp; S/W 원클릭 다운로드
+                    </h2>
+                    <p className="mt-1 text-xs text-slate-400">
+                      미니PC·노트북 현장 시운전 매뉴얼, 1분 XGT 통신 테스터 가이드, 전체 S/W ZIP 패키지를 바로 열거나 내려받을 수 있습니다.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href="https://github.com/ic4u2u/22ch-PLC/archive/refs/heads/main.zip"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-[38px] items-center rounded-xl bg-emerald-500 px-3.5 py-2 text-xs font-extrabold text-slate-950 hover:bg-emerald-400 transition-all"
+                    >
+                      📦 전체 S/W (ZIP) 다운로드
+                    </a>
+                    <a
+                      href="/field-test-guide.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-[38px] items-center rounded-xl border border-cyan-500/50 bg-cyan-500/15 px-3.5 py-2 text-xs font-extrabold text-cyan-200 hover:bg-cyan-500/25 transition-all"
+                    >
+                      📄 통합 테스트 가이드 새 창
+                    </a>
+                    <a
+                      href="/minipc-field-guide.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-[38px] items-center rounded-xl border border-amber-500/50 bg-amber-500/15 px-3.5 py-2 text-xs font-extrabold text-amber-200 hover:bg-amber-500/25 transition-all"
+                    >
+                      🖥️ 미니PC 현장 완벽가이드
+                    </a>
+                    <a
+                      href="/xgt-laptop-guide.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-[38px] items-center rounded-xl border border-purple-500/50 bg-purple-500/15 px-3.5 py-2 text-xs font-extrabold text-purple-200 hover:bg-purple-500/25 transition-all"
+                    >
+                      💻 노트북 XGT 초간단 가이드
+                    </a>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-xl border border-slate-800 bg-white">
+                  <iframe
+                    src="/field-test-guide.html"
+                    title="현장 PLC 테스트 완벽 가이드"
+                    className="h-[720px] w-full border-0"
+                  />
+                </div>
+              </section>
             )}
 
             {/* 4. 하단 3대 이력 테이블 & 엑셀(CSV, UTF-8 BOM) 원클릭 다운로드 */}

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LS XGT 이더넷 통신 테스터 초간단 설치·실행 가이드 (ZIP 버전)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 20px 14px 48px;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif;
+      background: #0b1120; color: #e2e8f0; line-height: 1.6;
+    }
+    .wrap { max-width: 840px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #334155; border-radius: 18px; padding: 24px 22px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    .tag {
+      display: inline-block; background: #059669; color: #fff; font-size: 12px;
+      font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px;
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; color: #f8fafc; line-height: 1.35; }
+    .hero p { margin: 0; color: #cbd5e1; font-size: 14px; }
+    .card {
+      background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    .step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .step-num {
+      background: #0ea5e9; color: #082f49; font-weight: 900; font-size: 13px;
+      padding: 4px 11px; border-radius: 999px; white-space: nowrap;
+    }
+    h2 { margin: 0; font-size: 18px; color: #f8fafc; }
+    h3 { margin: 14px 0 6px; font-size: 15px; color: #38bdf8; }
+    p, li { font-size: 14px; color: #cbd5e1; }
+    ul, ol { padding-left: 20px; margin: 8px 0; }
+    li { margin-bottom: 6px; }
+    .cmd-box {
+      position: relative; background: #020617; border: 1px solid #334155;
+      border-radius: 10px; padding: 12px 86px 12px 14px; margin: 8px 0 12px;
+      font-family: Consolas, "Courier New", monospace; font-size: 13px; color: #7dd3fc;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px; background: #1e293b; color: #f8fafc;
+      border: 1px solid #475569; border-radius: 7px; padding: 6px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+    .copy-btn:hover { background: #0284c7; border-color: #38bdf8; }
+    .copy-btn.ok { background: #059669; border-color: #34d399; }
+    .alert {
+      background: #064e3b; border-left: 4px solid #10b981; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #d1fae5;
+    }
+    .warn {
+      background: #2a1810; border-left: 4px solid #f59e0b; border-radius: 8px;
+      padding: 12px 14px; margin: 10px 0; font-size: 13.5px; color: #fef3c7;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+    .mini-box {
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 14px;
+    }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px;
+      background: #0f172a; border-radius: 8px; margin-bottom: 8px; cursor: pointer;
+    }
+    .check-item input { margin-top: 4px; width: 17px; height: 17px; accent-color: #10b981; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; }
+    th, td { border: 1px solid #1f2937; padding: 9px 10px; text-align: left; }
+    th { background: #0f172a; color: #38bdf8; }
+    a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+    a:hover { text-decoration: underline; }
+    .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 헤더 -->
+    <div class="hero">
+      <div class="tag">카톡 ZIP 파일 전용 · GitHub 로그인 불필요 · npm install 불필요</div>
+      <h1>🔌 LS XGT 이더넷 통신 테스터 초간단 설치·실행 가이드</h1>
+      <p>카톡으로 받은 <b>ZIP 압축 파일</b>만 풀어서 <b>3분 만에</b> PC ↔ PC 및 현장 실물 LS PLC(TCP 2004) 통신 테스트를 실행하는 안내서입니다.</p>
+    </div>
+
+    <!-- STEP 1: Node.js 설치 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 1</span><h2>Node.js 설치 (PC당 최초 1회, 1분 컷)</h2></div>
+      <p>이 프로그램을 실행할 노트북·미니PC에 <b>Node.js</b>가 없다면 먼저 설치하세요. <i>(이미 설치되어 있으면 STEP 2로 바로 이동!)</i></p>
+      <div class="mini-box">
+        1. 아래 공식 사이트 접속 👉 <a href="https://nodejs.org/ko" target="_blank">https://nodejs.org/ko</a><br>
+        2. 초록색 <b>LTS (권장 버전)</b> 버튼 클릭해 다운로드<br>
+        3. 설치 파일 실행 후 <b>[다음 → 다음 → 설치]</b>만 누르면 완료!
+      </div>
+      <div class="warn">
+        <b>🔌 현장 필수 체크:</b> 노트북에 유선 랜선(RJ45) 포트가 없다면 <b>USB-to-LAN 유선랜 젠더</b>를 꼭 준비해 주세요!
+      </div>
+    </div>
+
+    <!-- STEP 2: ZIP 압축 풀기 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 2</span><h2>카톡으로 받은 ZIP 파일 압축 풀기</h2></div>
+      <ol>
+        <li>카톡으로 받은 <b><code>xgt-ethernet-tester.zip</code></b> 파일을 바탕화면(또는 원하는 폴더)에 저장합니다.</li>
+        <li>파일에 <b>마우스 우클릭 → [압축 풀기]</b>를 눌러 폴더를 엽니다.</li>
+      </ol>
+      <div class="alert">
+        <b>✅ 별도 설치 과정 0분!</b> 압축만 풀면 <code>1_PC_A_서버실행(가상PLC).bat</code>과 <code>2_PC_B_클라이언트실행(EnetClient).bat</code> 파일이 바로 보입니다.
+      </div>
+    </div>
+
+    <!-- STEP 3: 실행 및 테스트 방법 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 3</span><h2>상황별 실행 방법 (더블클릭만 하면 끝!)</h2></div>
+
+      <div class="grid-2">
+        <div class="mini-box">
+          <h3 style="margin-top:0;">① 내 PC 혼자 사전 테스트 (10초)</h3>
+          <ol style="padding-left:18px; margin-bottom:0;">
+            <li><b><code>1_PC_A_서버실행(가상PLC).bat</code></b> 더블클릭</li>
+            <li><b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → 브라우저 자동 열림</li>
+            <li>IP <code>127.0.0.1</code> / 포트 <code>2004</code> 그대로 두고 <b>[🔌 연결] → [📥 읽기 요청]</b> 클릭</li>
+            <li>우측 창에 <code>TX / RX</code> HEX 패킷과 수신값 <code>486</code>이 뜨면 성공!</li>
+          </ol>
+        </div>
+        <div class="mini-box">
+          <h3 style="margin-top:0;">② PC 2대 간 이더넷 테스트</h3>
+          <ol style="padding-left:18px; margin-bottom:0;">
+            <li>두 PC를 같은 공유기(또는 랜선 직결)로 연결</li>
+            <li><b>PC A</b>에서 <code>1번 .bat</code> 실행 → 방화벽 창 뜨면 <b>[액세스 허용]</b> 클릭! 화면에 표시된 <b>PC A IP 주소</b> 확인</li>
+            <li><b>PC B</b>에서 <code>2번 .bat</code> 실행 → 대상 IP에 <b>PC A IP</b> 입력 후 <b>[🔌 연결]</b></li>
+            <li>XGT 읽기/쓰기 또는 하단 자유 텍스트 전송으로 송수신 확인!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: 현장 실물 LS PLC 연결 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">STEP 4</span><h2>광주 현장 실물 LS PLC 연결 방법 (TCP 2004)</h2></div>
+      <p>실물 PLC와 연결할 때는 <b><code>1번 .bat</code>은 끄고, <code>2번 .bat</code>만 실행</b>하시면 됩니다.</p>
+      <ol>
+        <li><b>랜선 연결:</b> 노트북/미니PC와 현장 PLC(또는 허브)를 랜선으로 연결합니다.</li>
+        <li><b>PC IP 맞추기 (LS 매뉴얼 3p 기준):</b> PLC IP가 <code>192.168.1.10</code>이면 내 PC IP도 앞 3자리를 똑같이 맞춥니다.
+          <div class="mini-box" style="margin-top:6px;">
+            제어판 → 네트워크 및 공유 센터 → 이더넷 → 속성 → <b>IPv4</b> → <b>다음 IP 주소 사용</b><br>
+            • IP 주소: <code>192.168.1.11</code> &nbsp;|&nbsp; 서브넷 마스크: <code>255.255.255.0</code> &nbsp;|&nbsp; 게이트웨이: <code>192.168.1.1</code>
+          </div>
+        </li>
+        <li><b>연결 확인(Ping):</b> 윈도우 키 → <code>cmd</code> 입력 후 아래 명령어 실행 → <code>시간&lt;1ms</code> 뜨면 랜선/IP 연결 100% 성공!
+          <div class="cmd-box"><button class="copy-btn" onclick="copyCmd(this)">📋 복사</button>ping 192.168.1.10</div>
+        </li>
+        <li><b>패킷 테스트:</b> <b><code>2_PC_B_클라이언트실행(EnetClient).bat</code></b> 더블클릭 → PLC IP(<code>192.168.1.10</code>), 포트 <code>2004</code> 입력 → <b>[🔌 연결]</b> → <code>%MW0</code> <b>[📥 읽기 요청]</b> 클릭!</li>
+        <li>문제가 생기면 우측 하단 <b>[📋 카톡 전달용 로그 복사]</b> 버튼을 눌러 카톡으로 그대로 보내주세요.</li>
+      </ol>
+    </div>
+
+    <!-- FAQ & 체크리스트 -->
+    <div class="card">
+      <div class="step-head"><span class="step-num">FAQ</span><h2>자주 겪는 문제 3초 해결 & 체크리스트</h2></div>
+      <table>
+        <thead><tr><th>증상 / 에러 코드</th><th>원인 및 3초 해결법</th></tr></thead>
+        <tbody>
+          <tr><td><b>연결 거부 (10061)</b></td><td>PC A 서버(1번 .bat)가 꺼져 있거나, PLC의 XGT 서버 포트(2004)가 닫혀 있음</td></tr>
+          <tr><td><b>시간 초과 (10060)</b></td><td>IP 앞 3자리가 다르거나 Windows 방화벽 차단, 랜선 미연결 → IP 확인 &amp; 방화벽 [액세스 허용]</td></tr>
+          <tr><td><b>창이 바로 꺼짐</b></td><td>STEP 1의 Node.js가 설치되지 않았거나, 설치 직후 PC/창을 새로 열지 않았을 때 발생</td></tr>
+        </tbody>
+      </table>
+
+      <h3>✅ 실행 전 최종 체크</h3>
+      <label class="check-item"><input type="checkbox" /> <span><b>Node.js LTS</b> 설치 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span><code>xgt-ethernet-tester.zip</code> 압축 해제 완료</span></label>
+      <label class="check-item"><input type="checkbox" /> <span>PC 1대 테스트(<code>127.0.0.1:2004</code>)에서 <code>TX / RX</code> 정상 수신 확인</span></label>
+    </div>
+
+    <div class="footer">LS XGT 이더넷 통신 테스터 (ZIP 배포판) · 오프라인 지원 단일 HTML 설치 가이드</div>
+  </div>
+
+  <script>
+    function copyCmd(btn) {
+      const box = btn.parentElement;
+      const text = box.innerText.replace("📋 복사", "").replace("✅ 복사됨!", "").trim();
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "✅ 복사됨!";
+        btn.classList.add("ok");
+        setTimeout(() => {
+          btn.textContent = "📋 복사";
+          btn.classList.remove("ok");
+        }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>
