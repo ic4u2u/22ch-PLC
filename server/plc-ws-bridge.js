@@ -299,8 +299,14 @@ const server = http.createServer(async (req, res) => {
       latencyMs: runtimeState.latencyMs,
       lastPollAt: runtimeState.lastPollAt,
       lastError: runtimeState.lastError,
-      rawPressures: runtimeState.dumpWaitingRx ? [] : runtimeState.rawPressures,
-      rawValves: runtimeState.dumpWaitingRx ? [] : runtimeState.rawValves,
+      rawPressures:
+        runtimeState.dumpWaitingRx || !runtimeState.plcConnected
+          ? []
+          : runtimeState.rawPressures,
+      rawValves:
+        runtimeState.dumpWaitingRx || !runtimeState.plcConnected
+          ? []
+          : runtimeState.rawValves,
       packetLogs: runtimeState.packetLogs,
       dumpWaitingRx: runtimeState.dumpWaitingRx,
     });

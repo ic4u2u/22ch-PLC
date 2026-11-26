@@ -114,6 +114,7 @@ export default function Dashboard24() {
   const [historyLogs, setHistoryLogs] =
     useState<HistoryLogItem[]>(INITIAL_HISTORY_LOGS);
   const [wsConnected, setWsConnected] = useState(false);
+  const [virtualDataEnabled, setVirtualDataEnabled] = useState(true);
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -121,6 +122,55 @@ export default function Dashboard24() {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 4000);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = window.localStorage.getItem("acsc_virtual_data_enabled");
+      if (saved === "false") {
+        setVirtualDataEnabled(false);
+        setChannels((prev) =>
+          prev.map((c) => ({
+            ...c,
+            rawBar: 0,
+            pressureBar: 0,
+            status: "SHUTOFF",
+            faultReason: null,
+            remainingText: "가상데이터 OFF · 실측대기",
+          }))
+        );
+      }
+    } catch {}
+  }, []);
+
+  const handleToggleVirtualData = useCallback(() => {
+    setVirtualDataEnabled((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem("acsc_virtual_data_enabled", String(next));
+      } catch {}
+      if (!wsConnected) {
+        if (!next) {
+          trendMapRef.current = {};
+          setChannels((curr) =>
+            curr.map((c) => ({
+              ...c,
+              rawBar: 0,
+              pressureBar: 0,
+              status: "SHUTOFF",
+              faultReason: null,
+              remainingText: "가상데이터 OFF · 실측대기",
+            }))
+          );
+          showToast("🚫 가상 데이터 OFF — 이제 가상 수치 변경 없이 실제 PLC 수신만 대기합니다.");
+        } else {
+          setChannels(INITIAL_CHANNELS);
+          showToast("🧪 가상 데이터 ON — 데모 시뮬레이션이 다시 시작됩니다.");
+        }
+      }
+      return next;
+    });
+  }, [wsConnected, showToast]);
 
   // URL 쿼리 (?view=wallboard) 감지하여 2번 모니터 대형 전광판 뷰 자동 전환
   useEffect(() => {
@@ -300,7 +350,7 @@ export default function Dashboard24() {
 
   // Vercel 클라우드 배포 시(로컬 브릿지 서버 미연결 시) 실제 현장과 동일한 A ⇄ B 오토체인지(자동절체) 컨트롤러 시뮬레이터 구동
   useEffect(() => {
-    if (wsConnected) return;
+    if (wsConnected || !virtualDataEnabled) return;
     let demoTick = 0;
     const simTimer = setInterval(() => {
       demoTick += 1;
@@ -411,7 +461,7 @@ export default function Dashboard24() {
       });
     }, 1000);
     return () => clearInterval(simTimer);
-  }, [wsConnected, showToast]);
+  }, [wsConnected, virtualDataEnabled, showToast]);
 
   // 클라우드 데모 모드일 때 22채널 상태에 맞춰 USB 3색 타워램프 상태 자동 동기화
   useEffect(() => {
@@ -770,6 +820,9 @@ export default function Dashboard24() {
             onOpenFaModal={() => setMobileOrFaModal("FA")}
             dangerCount={dangerCount}
             faultCount={faultCount}
+            wsConnected={wsConnected}
+            virtualDataEnabled={virtualDataEnabled}
+            onToggleVirtualData={handleToggleVirtualData}
           />
 
           <main className="mx-auto max-w-[2560px] px-4 pt-4">
@@ -921,7 +974,14 @@ export default function Dashboard24() {
               />
             )}
 
-            {activeTab === "PLC_DUMP" && <PlcDumpTab channels={channels} />}
+            {activeTab === "PLC_DUMP" && (
+              <PlcDumpTab
+                channels={channels}
+                wsConnected={wsConnected}
+                virtualDataEnabled={virtualDataEnabled}
+                onToggleVirtualData={handleToggleVirtualData}
+              />
+            )}
 
             {activeTab === "FIELD_GUIDE" && (
               <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5">

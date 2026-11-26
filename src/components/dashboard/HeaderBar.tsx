@@ -38,6 +38,9 @@ interface HeaderBarProps {
   onOpenFaModal: () => void;
   dangerCount: number;
   faultCount: number;
+  wsConnected?: boolean;
+  virtualDataEnabled?: boolean;
+  onToggleVirtualData?: () => void;
 }
 
 const UNIT_OPTIONS: { code: PressureUnit; label: string; desc: string }[] = [
@@ -66,6 +69,9 @@ export default function HeaderBar({
   onOpenFaModal,
   dangerCount,
   faultCount,
+  wsConnected = false,
+  virtualDataEnabled = true,
+  onToggleVirtualData,
 }: HeaderBarProps) {
   const formatRemain = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -109,6 +115,20 @@ export default function HeaderBar({
                   ? `PLC 온라인 (${diagnostics.protocol} ${diagnostics.plcIp}:${diagnostics.plcPort} · ${diagnostics.latencyMs}ms)`
                   : `PLC 재연결 대기 중 (${diagnostics.plcIp}:${diagnostics.plcPort})`}
               </span>
+              {!wsConnected && onToggleVirtualData && (
+                <button
+                  type="button"
+                  onClick={onToggleVirtualData}
+                  title="브릿지/PLC 미연결 시 가상 시뮬레이션 데이터 출력 여부를 전환합니다"
+                  className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-extrabold transition-all whitespace-nowrap ${
+                    virtualDataEnabled
+                      ? "border-amber-400/50 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25"
+                      : "border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  {virtualDataEnabled ? "🧪 가상데이터 ON (끄기)" : "🚫 가상데이터 OFF (실측대기)"}
+                </button>
+              )}
               {dangerCount > 0 && (
                 <span className="rounded bg-rose-500/20 border border-rose-500/50 px-2 py-0.5 text-rose-300 font-bold animate-pulse whitespace-nowrap">
                   🚨 위험 {dangerCount}채널

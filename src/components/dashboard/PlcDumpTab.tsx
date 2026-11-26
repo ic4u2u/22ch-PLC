@@ -30,12 +30,20 @@ interface PlcDumpResponse {
 
 interface PlcDumpTabProps {
   channels: ChannelData[];
+  wsConnected?: boolean;
+  virtualDataEnabled?: boolean;
+  onToggleVirtualData?: () => void;
 }
 
 const DEFAULT_XGT_TX_HEX =
   "4C 53 49 53 2D 58 47 54 00 00 00 00 A0 33 01 00 18 00 00 00 54 00 14 00 00 00 01 00 06 00 25 4D 42 32 30 30 2C 00";
 
-export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
+export default function PlcDumpTab({
+  channels,
+  wsConnected = false,
+  virtualDataEnabled = true,
+  onToggleVirtualData,
+}: PlcDumpTabProps) {
   const [dump, setDump] = useState<PlcDumpResponse | null>(null);
   const [bridgeAvailable, setBridgeAvailable] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -124,25 +132,39 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
 
     const base = getBridgeBase();
     if (!base) {
-      // 데모/미리보기 모드(Vercel 등): 클리어 -> TX 표시 -> 짧은 지연 후 RX 수신 시뮬레이션
+      // 데모/미리보기 모드(Vercel 등): 가상 데이터가 켜져 있으면 짧은 지연 후 RX 시뮬레이션, 꺼져 있으면 클리어 상태 유지
       setTimeout(() => {
-        const dataHex = Array.from({ length: 22 }, (_, i) => {
-          const ch = channels[i];
-          const raw = ch ? Math.round(ch.pressureBar * 10) : 0;
-          const lo = (raw & 0xff).toString(16).toUpperCase().padStart(2, "0");
-          const hi = ((raw >> 8) & 0xff).toString(16).toUpperCase().padStart(2, "0");
-          return `${lo} ${hi}`;
-        }).join(" ");
-        setDemoRxPacket({
-          timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
-          protocol: "XGT (시뮬레이션 미리보기)",
-          op: "READ %MW100~%MW121 (22W / 44B)",
-          txHex: DEFAULT_XGT_TX_HEX,
-          txBytes: 38,
-          rxHex: `4C 53 49 53 2D 58 47 54 00 00 00 00 A0 11 01 00 38 00 00 00 55 00 14 00 00 00 00 00 01 00 2C 00 ${dataHex}`,
-          rxBytes: 76,
-          error: null,
-        });
+        if (virtualDataEnabled) {
+          const dataHex = Array.from({ length: 22 }, (_, i) => {
+            const ch = channels[i];
+            const raw = ch ? Math.round(ch.pressureBar * 10) : 0;
+            const lo = (raw & 0xff).toString(16).toUpperCase().padStart(2, "0");
+            const hi = ((raw >> 8) & 0xff).toString(16).toUpperCase().padStart(2, "0");
+            return `${lo} ${hi}`;
+          }).join(" ");
+          setDemoRxPacket({
+            timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+            protocol: "XGT (가상 시뮬레이션)",
+            op: "READ %MW100~%MW121 (22W / 44B)",
+            txHex: DEFAULT_XGT_TX_HEX,
+            txBytes: 38,
+            rxHex: `4C 53 49 53 2D 58 47 54 00 00 00 00 A0 11 01 00 38 00 00 00 55 00 14 00 00 00 00 00 01 00 2C 00 ${dataHex}`,
+            rxBytes: 76,
+            error: null,
+          });
+        } else {
+          setDemoRxPacket({
+            timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+            protocol: "XGT (브릿지 미연결)",
+            op: "READ %MW100~%MW121 (22W / 44B)",
+            txHex: DEFAULT_XGT_TX_HEX,
+            txBytes: 38,
+            rxHex: "",
+            rxBytes: 0,
+            error:
+              "가상 데이터 OFF · 브릿지 미연결 (사내 Wi-Fi에서 http://<미니PC_IP>:3000 접속 시 실제 PLC 수신)",
+          });
+        }
         setClearedWaiting(false);
         setTxPendingPacket(null);
         setRequesting(false);
@@ -166,11 +188,14 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
     }
   };
 
-  // 브릿지 미연결(Vercel 데모 등) 시 현재 channels 상태 기반 폴백 워드/패킷 생성
-  // 단, 요청 중(클리어 상태)이거나 브릿지가 빈 버퍼(오류/대기)를 내려준 경우 클리어 상태로 표시
+  // 브릿지 미연결(Vercel 데모 등) 시:
+  // - 요청 중(클리어 상태)이거나
+  // - 브릿지가 빈 버퍼(오류/대기)를 내려줬거나
+  // - 브릿지 미연결 상태에서 가상 데이터 OFF인 경우 => 버퍼 클리어(--.-) 상태로 유지
   const isBufferCleared =
     clearedWaiting ||
-    Boolean(dump && dump.rawPressures && dump.rawPressures.length === 0);
+    Boolean(dump && dump.rawPressures && dump.rawPressures.length === 0) ||
+    (!bridgeAvailable && !virtualDataEnabled);
 
   const words = useMemo(() => {
     if (isBufferCleared) {
@@ -219,6 +244,18 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
   }, [isBufferCleared, dump, channels]);
 
   const fallbackPacket: PacketLogItem = useMemo(() => {
+    if (!virtualDataEnabled) {
+      return {
+        timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+        protocol: "XGT (브릿지 미연결)",
+        op: "READ %MW100~%MW121 (22W / 44B)",
+        txHex: DEFAULT_XGT_TX_HEX,
+        txBytes: 38,
+        rxHex: "",
+        rxBytes: 0,
+        error: "가상 데이터 OFF · 브릿지/PLC 미연결 상태 (실측 수신 대기 중)",
+      };
+    }
     const dataHex = words
       .map((w) => {
         const rawVal = w.raw ?? 0;
@@ -230,7 +267,7 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
     const rx = `4C 53 49 53 2D 58 47 54 00 00 00 00 A0 11 01 00 38 00 00 00 55 00 14 00 00 00 00 00 01 00 2C 00 ${dataHex}`;
     return {
       timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
-      protocol: "XGT (시뮬레이션 미리보기)",
+      protocol: "XGT (가상 시뮬레이션)",
       op: "READ %MW100~%MW121 (22W / 44B)",
       txHex: DEFAULT_XGT_TX_HEX,
       txBytes: 38,
@@ -238,7 +275,7 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
       rxBytes: 76,
       error: null,
     };
-  }, [words]);
+  }, [words, virtualDataEnabled]);
 
   const packetLogs = clearedWaiting
     ? txPendingPacket
@@ -246,9 +283,13 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
       : []
     : dump && dump.packetLogs && dump.packetLogs.length > 0
       ? dump.packetLogs
-      : demoRxPacket
-        ? [demoRxPacket]
-        : [fallbackPacket];
+      : !virtualDataEnabled
+        ? demoRxPacket && demoRxPacket.rxBytes === 0
+          ? [demoRxPacket]
+          : [fallbackPacket]
+        : demoRxPacket
+          ? [demoRxPacket]
+          : [fallbackPacket];
   const latestPkt: PacketLogItem = packetLogs[0] || {
     timestamp: "-",
     protocol: dump?.protocol || "XGT",
@@ -321,6 +362,19 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
           >
             {autoRefresh ? "⏸️ 실시간 0.5초 갱신 중" : "▶️ 일시정지됨 (클릭 시 재개)"}
           </button>
+          {!wsConnected && onToggleVirtualData && (
+            <button
+              type="button"
+              onClick={onToggleVirtualData}
+              className={`min-h-[38px] rounded-xl border px-3 py-2 text-xs font-extrabold transition-all ${
+                virtualDataEnabled
+                  ? "border-amber-400/60 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30"
+                  : "border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              }`}
+            >
+              {virtualDataEnabled ? "🧪 가상 데이터: ON (끄기)" : "🚫 가상 데이터: OFF (실측 대기)"}
+            </button>
+          )}
           <button
             type="button"
             onClick={handleCopyDump}
@@ -331,13 +385,57 @@ export default function PlcDumpTab({ channels }: PlcDumpTabProps) {
         </div>
       </div>
 
+      {/* 브릿지 미연결(HTTPS 클라우드 접속 등) 안내 배너 */}
+      {!bridgeAvailable && (
+        <div
+          className={`rounded-xl border px-4 py-3 text-xs leading-relaxed ${
+            virtualDataEnabled
+              ? "border-amber-500/40 bg-amber-950/30 text-amber-200"
+              : "border-slate-700 bg-slate-950/90 text-slate-300"
+          }`}
+        >
+          {virtualDataEnabled ? (
+            <div>
+              <span className="font-extrabold text-amber-300">
+                ⚠️ 현재 가상 데이터(시뮬레이터) 표시 중:
+              </span>{" "}
+              HTTPS 클라우드 주소(vercel.app) 또는 브릿지 미연결 상태에서는 실제 PLC와 직접 통신할 수 없어 1초마다 가상 데이터가 변경됩니다.
+              가상 데이터를 끄려면 위{" "}
+              <button
+                type="button"
+                onClick={onToggleVirtualData}
+                className="mx-1 inline-flex items-center rounded bg-amber-500/30 px-1.5 py-0.5 font-extrabold text-amber-100 underline hover:bg-amber-500/40"
+              >
+                🧪 가상 데이터: ON (끄기)
+              </button>
+              버튼을 누르세요. 실제 PLC 수신을 보려면 폰을 현장 Wi-Fi에 연결한 뒤{" "}
+              <span className="font-mono font-bold text-cyan-300">http://&lt;미니PC_IP&gt;:3000</span>으로 접속해야 합니다.
+            </div>
+          ) : (
+            <div>
+              <span className="font-extrabold text-emerald-300">
+                🚫 가상 데이터 OFF (버퍼 클리어 유지):
+              </span>{" "}
+              가상 시뮬레이션이 꺼져 있어 22워드 버퍼가 임의로 변경되지 않고{" "}
+              <span className="font-mono text-slate-100">--.- bar</span> 상태로 유지됩니다.
+              실제 현장 PLC 패킷을 수신하려면 현장 Wi-Fi에서{" "}
+              <span className="font-mono font-bold text-cyan-300">http://&lt;미니PC_IP&gt;:3000</span>으로 접속하세요.
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 연결 상태 요약 4칸 */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
           <div className="text-[11px] text-slate-400">PLC 통신 상태</div>
           <div className="mt-1 text-sm font-extrabold">
             {!bridgeAvailable ? (
-              <span className="text-amber-300">데모 모드 (브릿지 미연결)</span>
+              virtualDataEnabled ? (
+                <span className="text-amber-300">🧪 가상 데이터 모드 (브릿지 미연결)</span>
+              ) : (
+                <span className="text-slate-300">🚫 가상 OFF · 브릿지 미연결</span>
+              )
             ) : dump?.plcConnected ? (
               <span className="text-emerald-400">🟢 연결됨 (정상 수신)</span>
             ) : (
