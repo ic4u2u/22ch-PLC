@@ -26,6 +26,7 @@ class LsXgtClient {
     this.socket = null;
     this.connected = false;
     this.invokeId = 1;
+    this.lastPacket = null;
   }
 
   /**
@@ -92,15 +93,34 @@ class LsXgtClient {
   }
 
   /**
-   * 패킷 송신 후 응답 프레임 수신
+   * 패킷 송신 후 응답 프레임 수신 (TX/RX HEX 덤프 기록 포함)
    * @param {Buffer} packet
+   * @param {string} [opLabel]
    * @returns {Promise<Buffer>}
    */
-  sendAndReceive(packet) {
+  sendAndReceive(packet, opLabel = "XGT_FRAME") {
+    const txHex = packet
+      .toString("hex")
+      .toUpperCase()
+      .replace(/(.{2})/g, "$1 ")
+      .trim();
+    const recordBase = {
+      timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+      protocol: "XGT",
+      op: opLabel,
+      txHex,
+      txBytes: packet.length,
+      rxHex: "",
+      rxBytes: 0,
+      error: null,
+    };
+    this.lastPacket = recordBase;
+
     return new Promise(async (resolve, reject) => {
       try {
         await this.connect();
       } catch (err) {
+        this.lastPacket = { ...recordBase, error: err.message };
         return reject(err);
       }
 
@@ -109,7 +129,9 @@ class LsXgtClient {
 
       const timer = setTimeout(() => {
         cleanup();
-        reject(new Error(`XGT 응답 시간 초과 (${this.timeoutMs}ms)`));
+        const err = new Error(`XGT 응답 시간 초과 (${this.timeoutMs}ms)`);
+        this.lastPacket = { ...recordBase, error: err.message };
+        reject(err);
       }, this.timeoutMs);
 
       const onData = (chunk) => {
@@ -121,6 +143,16 @@ class LsXgtClient {
           const bodyLen = buf.readUInt16LE(16);
           if (buf.length >= 20 + bodyLen) {
             cleanup();
+            const rxHex = buf
+              .toString("hex")
+              .toUpperCase()
+              .replace(/(.{2})/g, "$1 ")
+              .trim();
+            this.lastPacket = {
+              ...recordBase,
+              rxHex,
+              rxBytes: buf.length,
+            };
             resolve(buf);
           }
         }
@@ -129,6 +161,7 @@ class LsXgtClient {
       const onError = (err) => {
         cleanup();
         this.connected = false;
+        this.lastPacket = { ...recordBase, error: err.message };
         reject(err);
       };
 
@@ -183,7 +216,10 @@ class LsXgtClient {
     body.writeUInt16LE(byteCount, offset); // 48 Bytes
 
     const header = this.buildHeader(bodyLen);
-    const response = await this.sendAndReceive(Buffer.concat([header, body]));
+    const response = await this.sendAndReceive(
+      Buffer.concat([header, body]),
+      `READ %MW${startWordAddr}~%MW${startWordAddr + wordCount - 1} (${wordCount}W)`
+    );
 
     // 응답 검증: Offset 20=Command(0x0055), Offset 26=ErrorState(2B)
     const errState = response.readUInt16LE(26);

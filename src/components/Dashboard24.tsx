@@ -50,6 +50,7 @@ import LeakTestTab from "./dashboard/LeakTestTab";
 import WallboardView from "./dashboard/WallboardView";
 import HistoryReportTab from "./dashboard/HistoryReportTab";
 import BottomLogsSection from "./dashboard/BottomLogsSection";
+import PlcDumpTab from "./dashboard/PlcDumpTab";
 
 type MainTab =
   | "WALLBOARD"
@@ -57,6 +58,7 @@ type MainTab =
   | "GRID"
   | "LEAK_TEST"
   | "HISTORY_REPORT"
+  | "PLC_DUMP"
   | "FIELD_GUIDE";
 
 export default function Dashboard24() {
@@ -814,6 +816,7 @@ export default function Dashboard24() {
                     { id: "GRID", label: "🟢 22실린더 상세 그리드" },
                     { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
                     { id: "HISTORY_REPORT", label: "⏪ 과거 이력 & 📄 PDF 보고서" },
+                    { id: "PLC_DUMP", label: "📡 TX/RX 덤프 & 22워드" },
                     { id: "FIELD_GUIDE", label: "📖 현장 PLC 테스트 & S/W 다운로드" },
                   ].map((t) => (
                     <button
@@ -917,6 +920,8 @@ export default function Dashboard24() {
                 onRefreshHistory={fetchAllLogs}
               />
             )}
+
+            {activeTab === "PLC_DUMP" && <PlcDumpTab channels={channels} />}
 
             {activeTab === "FIELD_GUIDE" && (
               <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5">

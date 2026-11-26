@@ -50,6 +50,7 @@ const runtimeState = {
   channels: [],
   banks: [],
   recentAlerts: [],
+  packetLogs: [],
 };
 
 // 드라이버 인스턴스 준비
@@ -68,6 +69,51 @@ async function ensurePlcConnected() {
   }
 }
 
+let modbusTxSeq = 0;
+
+function toHexSpaced(buf) {
+  return buf.toString("hex").toUpperCase().replace(/(.{2})/g, "$1 ").trim();
+}
+
+function pushPacketLog(entry) {
+  runtimeState.packetLogs = [entry, ...runtimeState.packetLogs].slice(0, 30);
+}
+
+function buildModbusReadDump(startAddr, count, words) {
+  modbusTxSeq = (modbusTxSeq + 1) & 0xffff;
+  const tx = Buffer.alloc(12);
+  tx.writeUInt16BE(modbusTxSeq, 0);
+  tx.writeUInt16BE(0x0000, 2);
+  tx.writeUInt16BE(6, 4);
+  tx.writeUInt8(1, 6);
+  tx.writeUInt8(0x03, 7);
+  tx.writeUInt16BE(startAddr, 8);
+  tx.writeUInt16BE(count, 10);
+
+  const byteCount = words.length * 2;
+  const rx = Buffer.alloc(9 + byteCount);
+  rx.writeUInt16BE(modbusTxSeq, 0);
+  rx.writeUInt16BE(0x0000, 2);
+  rx.writeUInt16BE(3 + byteCount, 4);
+  rx.writeUInt8(1, 6);
+  rx.writeUInt8(0x03, 7);
+  rx.writeUInt8(byteCount, 8);
+  for (let i = 0; i < words.length; i++) {
+    rx.writeUInt16BE(words[i] & 0xffff, 9 + i * 2);
+  }
+
+  return {
+    timestamp: new Date().toISOString().replace("T", " ").slice(0, 23),
+    protocol: "MODBUS",
+    op: `FC03 HoldingReg ${startAddr}~${startAddr + count - 1} (${count}W)`,
+    txHex: toHexSpaced(tx),
+    txBytes: tx.length,
+    rxHex: toHexSpaced(rx),
+    rxBytes: rx.length,
+    error: null,
+  };
+}
+
 async function readPlcRegisters() {
   const startNs = process.hrtime.bigint();
   await ensurePlcConnected();
@@ -75,14 +121,17 @@ async function readPlcRegisters() {
   if (PLC_PROTOCOL === "XGT") {
     // %MW100~%MW121 (22워드 압력), %MW200~%MW221 (22워드 밸브)
     const pressures = await xgtClient.readWords(100, CHANNEL_COUNT);
+    const pressurePkt = xgtClient.lastPacket ? { ...xgtClient.lastPacket } : null;
     const valves = await xgtClient.readWords(200, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
+    if (pressurePkt) pushPacketLog(pressurePkt);
     return { pressures, valves, latencyMs: Number(elapsedMs.toFixed(2)) };
   } else {
     // Modbus Holding Register Offset 0~21 (22채널 압력), Offset 100~121 (22채널 밸브)
     const pRes = await modbusClient.readHoldingRegisters(0, CHANNEL_COUNT);
     const vRes = await modbusClient.readHoldingRegisters(100, CHANNEL_COUNT);
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
+    pushPacketLog(buildModbusReadDump(0, CHANNEL_COUNT, pRes.data));
     return {
       pressures: pRes.data,
       valves: vRes.data,
@@ -225,6 +274,65 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "GET" && pathname === "/api/diagnostics") {
     return sendJson(200, getNetworkDiagnostics());
+  }
+
+  if (req.method === "GET" && pathname === "/api/plc-dump") {
+    return sendJson(200, {
+      plcConnected: runtimeState.plcConnected,
+      protocol: runtimeState.protocol,
+      plcIp: runtimeState.plcIp,
+      plcPort: runtimeState.plcPort,
+      latencyMs: runtimeState.latencyMs,
+      lastPollAt: runtimeState.lastPollAt,
+      lastError: runtimeState.lastError,
+      rawPressures: runtimeState.rawPressures,
+      rawValves: runtimeState.rawValves,
+      packetLogs: runtimeState.packetLogs,
+    });
+  }
+
+  if (req.method === "POST" && pathname === "/api/plc-poll-once") {
+    try {
+      const { pressures, valves, latencyMs } = await readPlcRegisters();
+      runtimeState.plcConnected = true;
+      runtimeState.latencyMs = latencyMs;
+      runtimeState.lastPollAt = new Date().toISOString();
+      runtimeState.lastError = null;
+      runtimeState.rawPressures = pressures;
+      runtimeState.rawValves = valves;
+      return sendJson(200, {
+        ok: true,
+        plcConnected: true,
+        protocol: runtimeState.protocol,
+        plcIp: runtimeState.plcIp,
+        plcPort: runtimeState.plcPort,
+        latencyMs,
+        lastPollAt: runtimeState.lastPollAt,
+        lastError: null,
+        rawPressures: pressures,
+        rawValves: valves,
+        packetLogs: runtimeState.packetLogs,
+      });
+    } catch (err) {
+      runtimeState.plcConnected = false;
+      runtimeState.lastError = err.message;
+      if (PLC_PROTOCOL === "XGT" && xgtClient.lastPacket) {
+        pushPacketLog({ ...xgtClient.lastPacket, error: err.message });
+      }
+      return sendJson(502, {
+        ok: false,
+        plcConnected: false,
+        protocol: runtimeState.protocol,
+        plcIp: runtimeState.plcIp,
+        plcPort: runtimeState.plcPort,
+        latencyMs: runtimeState.latencyMs,
+        lastPollAt: runtimeState.lastPollAt,
+        lastError: err.message,
+        rawPressures: runtimeState.rawPressures,
+        rawValves: runtimeState.rawValves,
+        packetLogs: runtimeState.packetLogs,
+      });
+    }
   }
 
   if (req.method === "GET" && pathname === "/api/settings") {
