@@ -37,7 +37,7 @@ interface PlcDumpTabProps {
 }
 
 const DEFAULT_XGT_TX_HEX =
-  "4C 53 49 53 2D 58 47 54 00 00 00 00 A0 33 01 00 18 00 00 00 54 00 14 00 00 00 01 00 06 00 25 4D 42 32 30 30 2C 00";
+  "4C 53 49 53 2D 58 47 54 00 00 00 00 A0 33 01 00 12 00 00 00 54 00 14 00 00 00 01 00 06 00 25 4D 42 32 30 30 2C 00";
 
 export default function PlcDumpTab({
   channels,

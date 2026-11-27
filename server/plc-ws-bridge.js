@@ -121,20 +121,22 @@ function buildModbusReadDump(startAddr, count, words) {
   };
 }
 
-async function readPlcRegisters({ onTx = null } = {}) {
+async function readPlcRegisters({ onTx = null, includeValves = true } = {}) {
   const startNs = process.hrtime.bigint();
   await ensurePlcConnected();
 
   if (PLC_PROTOCOL === "XGT") {
-    // %MW100~%MW121 (22워드 압력), %MW200~%MW221 (22워드 밸브)
+    // %MW100~%MW121 (22워드 압력), 필요 시 %MW200~%MW221 (22워드 밸브)
     const pressures = await xgtClient.readWords(100, CHANNEL_COUNT, onTx);
     const pressurePkt = xgtClient.lastPacket ? { ...xgtClient.lastPacket } : null;
-    const valves = await xgtClient.readWords(200, CHANNEL_COUNT);
+    const valves = includeValves
+      ? await xgtClient.readWords(200, CHANNEL_COUNT)
+      : [...runtimeState.rawValves];
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
     if (pressurePkt) pushPacketLog(pressurePkt);
     return { pressures, valves, latencyMs: Number(elapsedMs.toFixed(2)) };
   } else {
-    // Modbus Holding Register Offset 0~21 (22채널 압력), Offset 100~121 (22채널 밸브)
+    // Modbus Holding Register Offset 0~21 (22채널 압력), 필요 시 Offset 100~121 (22채널 밸브)
     if (typeof onTx === "function") {
       const txPreview = buildModbusReadDump(0, CHANNEL_COUNT, []);
       onTx({
@@ -144,7 +146,9 @@ async function readPlcRegisters({ onTx = null } = {}) {
       });
     }
     const pRes = await modbusClient.readHoldingRegisters(0, CHANNEL_COUNT);
-    const vRes = await modbusClient.readHoldingRegisters(100, CHANNEL_COUNT);
+    const vRes = includeValves
+      ? await modbusClient.readHoldingRegisters(100, CHANNEL_COUNT)
+      : { data: [...runtimeState.rawValves] };
     const elapsedMs = Number(process.hrtime.bigint() - startNs) / 1e6;
     pushPacketLog(buildModbusReadDump(0, CHANNEL_COUNT, pRes.data));
     return {
@@ -339,8 +343,9 @@ const server = http.createServer(async (req, res) => {
     runtimeState.lastError = null;
     runtimeState.lastPollAt = null;
     try {
-      // 2) TX 송신 시 TX 버퍼 먼저 기록 -> 3) PLC RX 수신 시 값 채움
+      // 2) TX 송신 시 TX 버퍼 먼저 기록 -> 3) PLC RX 수신 시 값 채움 (압력 22워드 %MB200 1회만 요청)
       const { pressures, valves, latencyMs } = await readPlcRegisters({
+        includeValves: false,
         onTx: (txEntry) => {
           runtimeState.packetLogs = [txEntry];
         },
