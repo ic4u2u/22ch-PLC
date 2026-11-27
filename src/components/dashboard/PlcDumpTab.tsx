@@ -87,6 +87,22 @@ export default function PlcDumpTab({
     return () => clearInterval(timer);
   }, [fetchDump, autoRefresh]);
 
+  const handleToggleAutoRefresh = async () => {
+    const nextAutoRefresh = !autoRefresh;
+    setAutoRefresh(nextAutoRefresh);
+    const base = getBridgeBase();
+    if (!base) return;
+    try {
+      await fetch(`${base}/api/plc-polling-pause`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paused: !nextAutoRefresh }),
+      });
+    } catch {
+      // 브릿지 미연결 시 로컬 UI 상태만 전환
+    }
+  };
+
   const buildTxOnlyPacket = useCallback(
     (protocolName: string): PacketLogItem => {
       const isModbus = protocolName.toUpperCase().includes("MODBUS");
@@ -353,14 +369,16 @@ export default function PlcDumpTab({
           </button>
           <button
             type="button"
-            onClick={() => setAutoRefresh((v) => !v)}
+            onClick={handleToggleAutoRefresh}
             className={`min-h-[38px] rounded-xl border px-3 py-2 text-xs font-extrabold transition-all ${
               autoRefresh
                 ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
                 : "border-amber-500/50 bg-amber-500/15 text-amber-300"
             }`}
           >
-            {autoRefresh ? "⏸️ 실시간 0.5초 갱신 중" : "▶️ 일시정지됨 (클릭 시 재개)"}
+            {autoRefresh
+              ? "⏸️ 0.5초 자동수신 중 (일시정지)"
+              : "▶️ 일시정지됨 (단발 TX만 가능 · 클릭 시 재개)"}
           </button>
           {!wsConnected && onToggleVirtualData && (
             <button

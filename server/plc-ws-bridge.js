@@ -52,6 +52,7 @@ const runtimeState = {
   recentAlerts: [],
   packetLogs: [],
   dumpWaitingRx: false,
+  pollingPaused: false,
 };
 
 // 드라이버 인스턴스 준비
@@ -309,7 +310,21 @@ const server = http.createServer(async (req, res) => {
           : runtimeState.rawValves,
       packetLogs: runtimeState.packetLogs,
       dumpWaitingRx: runtimeState.dumpWaitingRx,
+      pollingPaused: runtimeState.pollingPaused,
     });
+  }
+
+  if (req.method === "POST" && pathname === "/api/plc-polling-pause") {
+    try {
+      const body = await readJsonBody(req);
+      runtimeState.pollingPaused = Boolean(body.paused);
+      return sendJson(200, {
+        ok: true,
+        pollingPaused: runtimeState.pollingPaused,
+      });
+    } catch (err) {
+      return sendJson(400, { ok: false, message: err.message });
+    }
   }
 
   if (req.method === "POST" && pathname === "/api/plc-poll-once") {
@@ -684,6 +699,7 @@ let consecutivePollFailures = 0;
 let commLostAlerted = false;
 
 setInterval(async () => {
+  if (runtimeState.pollingPaused) return;
   pollTick += 1;
   try {
     const { pressures, valves, latencyMs } = await readPlcRegisters();
