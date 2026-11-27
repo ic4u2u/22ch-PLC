@@ -26,6 +26,7 @@ interface PlcDumpResponse {
   rawValves: number[];
   packetLogs: PacketLogItem[];
   dumpWaitingRx?: boolean;
+  pollingPaused?: boolean;
 }
 
 interface PlcDumpTabProps {
@@ -74,6 +75,9 @@ export default function PlcDumpTab({
       if (!requestingRef.current) {
         setDump(data);
         setBridgeAvailable(true);
+        if (typeof data.pollingPaused === "boolean") {
+          setAutoRefresh(!data.pollingPaused);
+        }
       }
     } catch {
       setBridgeAvailable(false);

@@ -318,6 +318,11 @@ const server = http.createServer(async (req, res) => {
     try {
       const body = await readJsonBody(req);
       runtimeState.pollingPaused = Boolean(body.paused);
+      console.log(
+        runtimeState.pollingPaused
+          ? "⏸️ [BRIDGE] 0.5초 PLC 자동 폴링 일시정지됨 (단발 TX 요청만 허용)"
+          : "▶️ [BRIDGE] 0.5초 PLC 자동 폴링 재개됨"
+      );
       return sendJson(200, {
         ok: true,
         pollingPaused: runtimeState.pollingPaused,
