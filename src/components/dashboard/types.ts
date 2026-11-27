@@ -9,7 +9,7 @@ export type PressureUnit = 0 | 1 | 2 | 3; // 0: PSI, 1: Bar(기본), 2: MPa, 3: 
 
 // 상용 버전 정식 출시 전까지 화면 상단에 표시할 최신 버전 및 업데이트 일시 스탬프
 export const APP_UPDATE_STAMP =
-  "v2.11 · 업데이트: 2026-11-27 11:00 (가상데이터 ON/OFF · 일시정지 시 브릿지 PLC 폴링 중단 & 단발 TX)";
+  "v2.12 · 업데이트: 2026-11-28 08:08 (22워드 즉시요청 %MB200 1회TX · XGT 패킷길이 12 00)";
 
 export type FacilityZone = "CABINET" | "AUTO_CHANGE";
 
