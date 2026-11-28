@@ -272,7 +272,11 @@ export default function WallboardView({
           <span className="rounded-md bg-amber-400/20 border border-amber-400/50 px-2 py-0.5 font-mono text-[10px] font-extrabold text-amber-300">
             🕒 {APP_UPDATE_STAMP}
           </span>
-          {spotlightChannels.length > 0 ? (
+          {!diagnostics.plcConnected ? (
+            <span className="rounded-lg bg-cyan-500/20 border border-cyan-400/50 px-2.5 py-0.5 text-xs font-extrabold text-cyan-300 animate-pulse">
+              ⏳ 초기화 중 (PLC 연결 대기)
+            </span>
+          ) : spotlightChannels.length > 0 ? (
             <span className="rounded-lg bg-rose-500/25 border border-rose-500/50 px-2.5 py-0.5 text-xs font-extrabold text-rose-300 animate-pulse">
               🚨 경보/점검 {spotlightChannels.length}건
             </span>
@@ -844,7 +848,16 @@ export default function WallboardView({
           </div>
 
           {/* 하단: 위험 저압 / 센서 고장 집중 스포트라이트 (0건일 때는 슬림 1줄 정상 배너) */}
-          {spotlightChannels.length === 0 ? (
+          {!diagnostics.plcConnected ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-cyan-500/40 bg-cyan-950/25 px-4 py-2.5">
+              <span className="text-xs sm:text-sm font-black text-cyan-300 break-keep">
+                ⏳ 11개 뱅크 초기화 중 — PLC 통신 연결 및 실시간 데이터 수신 대기 중입니다.
+              </span>
+              <span className="font-mono text-xs font-bold text-cyan-400/90">
+                PLC INITIALIZING...
+              </span>
+            </div>
+          ) : spotlightChannels.length === 0 ? (
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-950/25 px-4 py-2.5">
               <span className="text-xs sm:text-sm font-black text-emerald-300 break-keep">
                 ✅ 전 뱅크 정상 가동 중 — 위험 저압 · 4~20mA 센서 고장 집중 스포트라이트 (0건)

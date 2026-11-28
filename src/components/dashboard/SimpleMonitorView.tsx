@@ -197,7 +197,12 @@ export default function SimpleMonitorView({
     const replaceSideLabel =
       isAAlert && isBAlert ? "좌·우(A/B)" : isAAlert ? "좌측 A" : isBAlert ? "우측 B" : "";
 
-    const statusBadge = hasDanger
+    const statusBadge = !diagnostics.plcConnected
+      ? {
+          label: "⏳ 초기화 중",
+          cls: "border-cyan-400/70 bg-gradient-to-b from-cyan-500/30 to-slate-900/85 text-cyan-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] animate-pulse",
+        }
+      : hasDanger
       ? {
           label: `🚨 위험 (${replaceSideLabel})`,
           cls: "border-rose-400/90 bg-gradient-to-b from-rose-500/40 to-rose-900/70 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.3)] animate-pulse",
