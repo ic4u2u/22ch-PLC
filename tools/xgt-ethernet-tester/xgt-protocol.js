@@ -133,6 +133,41 @@ function buildWordReadResponse(invokeId, wordValue, errorCode = 0x0000) {
   return Buffer.concat([header, instruction]);
 }
 
+/** XGT 연속 읽기(0x0014) 응답 프레임 생성 (가상 PLC 서버용) */
+function buildContinuousReadResponse(invokeId, dataBuf, errorCode = 0x0000) {
+  if (errorCode !== 0) {
+    const instruction = Buffer.alloc(8);
+    instruction.writeUInt16LE(CMD.READ_RES, 0);
+    instruction.writeUInt16LE(DATA_TYPE.CONTINUOUS, 2);
+    instruction.writeUInt16LE(0x0000, 4);
+    instruction.writeUInt16LE(errorCode, 6);
+    const header = buildHeader({
+      sourceOfFrame: 0x11,
+      invokeId,
+      length: instruction.length,
+      plcInfo: 0x0101,
+      cpuInfo: 0xa0,
+    });
+    return Buffer.concat([header, instruction]);
+  }
+  const body = Buffer.alloc(12 + dataBuf.length);
+  body.writeUInt16LE(CMD.READ_RES, 0);              // Command: 55 00
+  body.writeUInt16LE(DATA_TYPE.CONTINUOUS, 2);      // Data Type: 14 00
+  body.writeUInt16LE(0x0000, 4);                    // Reserved
+  body.writeUInt16LE(0x0000, 6);                    // Error Status
+  body.writeUInt16LE(0x0001, 8);                    // Block Count: 1
+  body.writeUInt16LE(dataBuf.length, 10);           // Data Byte Length (예: 44 = 2C 00)
+  dataBuf.copy(body, 12);
+  const header = buildHeader({
+    sourceOfFrame: 0x11,
+    invokeId,
+    length: body.length,
+    plcInfo: 0x0101,
+    cpuInfo: 0xa0,
+  });
+  return Buffer.concat([header, body]);
+}
+
 /** XGT 쓰기 응답 프레임 생성 (가상 PLC 서버용) */
 function buildWordWriteResponse(invokeId, errorCode = 0x0000) {
   const instruction = Buffer.alloc(10);
@@ -184,6 +219,13 @@ function parseXgtFrame(buf) {
     const varLen = buf.readUInt16LE(28);
     if (buf.length >= 30 + varLen) {
       result.variableName = buf.toString("ascii", 30, 30 + varLen);
+      if (
+        command === CMD.READ_REQ &&
+        dataType === DATA_TYPE.CONTINUOUS &&
+        buf.length >= 30 + varLen + 2
+      ) {
+        result.byteCount = buf.readUInt16LE(30 + varLen);
+      }
       if (command === CMD.WRITE_REQ && buf.length >= 30 + varLen + 4) {
         const valLen = buf.readUInt16LE(30 + varLen);
         if (valLen >= 2) {
@@ -217,6 +259,7 @@ module.exports = {
   buildWordReadRequest,
   buildWordWriteRequest,
   buildWordReadResponse,
+  buildContinuousReadResponse,
   buildWordWriteResponse,
   parseXgtFrame,
 };

@@ -482,6 +482,7 @@ wss.on("connection", (ws, req) => {
           bank_configs: getSetting("bank_configs", []),
           fa_preset: getSetting("fa_preset", null),
           floorplan_bg: getSetting("floorplan_bg", { dataUrl: "" }),
+          controller_configs: getSetting("controller_configs", {}),
           isDefaultPin: isUsingDefaultPin(),
         },
       },
@@ -493,6 +494,7 @@ wss.on("connection", (ws, req) => {
     "SET_VALVE",
     "UPDATE_CHANNEL_CONFIG",
     "UPDATE_BANK_CONFIG",
+    "UPDATE_CONTROLLER_CONFIG",
     "SAVE_FA_PRESET",
     "RESTORE_FA_PRESET",
     "UPDATE_FLOORPLAN",
@@ -589,6 +591,30 @@ wss.on("connection", (ws, req) => {
           payload.detail || `뱅크 설정 변경: ${JSON.stringify(payload.updates)}`
         );
         broadcast({ type: "SETTINGS_SYNC", payload: { bank_configs: updated } });
+      } else if (type === "UPDATE_CONTROLLER_CONFIG") {
+        const curMap = getSetting("controller_configs", {});
+        const nextMap = { ...(curMap && typeof curMap === "object" ? curMap : {}) };
+        const bankIds = Array.isArray(payload.bankIds) ? payload.bankIds : [];
+        const changedCode = payload.changedCode;
+        const changedValue = payload.changedValue;
+        bankIds.forEach((bId) => {
+          if (bankIds.length === 1 && payload.params && typeof payload.params === "object") {
+            nextMap[bId] = payload.params;
+          } else if (changedCode) {
+            nextMap[bId] = {
+              ...(nextMap[bId] || {}),
+              [changedCode]: changedValue,
+            };
+          }
+        });
+        setSetting("controller_configs", nextMap);
+        logAudit(
+          actorTag,
+          "CONTROLLER_CONFIG",
+          bankIds.join(",") || "HW-2601A",
+          payload.detail || `HW-2601A 컨트롤러 설정 변경 (${changedCode}=${changedValue})`
+        );
+        broadcast({ type: "SETTINGS_SYNC", payload: { controller_configs: nextMap } });
       } else if (type === "SAVE_FA_PRESET") {
         // 16) 현재 설정을 FA 표준값으로 저장
         const faObj = {

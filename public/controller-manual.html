@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HW-2601A 컨트롤러 &amp; 스마트 관제 앱 통합 사용자 설명서</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --emerald: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 24px 16px 60px;
+    }
+    .container { max-width: 1080px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #0c4a6e, #0f172a);
+      border: 1px solid #0284c7;
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; color: #7dd3fc; }
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 1.25rem;
+      color: var(--amber);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    h3 { margin: 18px 0 8px; font-size: 1.05rem; color: var(--accent); }
+    p, li { color: #e2e8f0; font-size: 0.95rem; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .panel-box {
+      background: linear-gradient(180deg, #0d6282, #08445c);
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      padding: 20px;
+      color: #fff;
+      margin: 14px 0;
+    }
+    .fnd-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+    .fnd-screen {
+      background: #020617;
+      border: 2px solid #475569;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .fnd-label { font-size: 0.78rem; color: #94a3b8; }
+    .fnd-val {
+      font-family: "Consolas", monospace;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #f43f5e;
+      letter-spacing: 3px;
+      margin-top: 4px;
+    }
+    .btn-layout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 12px;
+      padding: 16px;
+      flex-wrap: wrap;
+    }
+    .hw-btn {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid #cbd5e1;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    }
+    .updown-col { display: flex; flex-direction: column; gap: 10px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #0f172a; color: var(--accent); font-weight: 800; }
+    tr:nth-child(even) td { background: rgba(15, 23, 42, 0.45); }
+    code {
+      background: #020617;
+      color: var(--amber);
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-family: "Consolas", monospace;
+      font-weight: 700;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .badge-range { background: rgba(52,211,153,0.18); color: var(--emerald); border: 1px solid rgba(52,211,153,0.4); }
+    .badge-err { background: rgba(251,113,133,0.2); color: var(--rose); border: 1px solid rgba(251,113,133,0.4); }
+    @media print {
+      body { background: #fff; color: #000; }
+      .card, header { background: #fff; border-color: #ccc; color: #000; }
+      p, li, td { color: #111; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📘 HW-2601A 자동절체 컨트롤러 &amp; 스마트 관제 앱 통합 사용자 설명서</h1>
+    <p style="margin:0; color:#cbd5e1;">
+      제조사: <strong>HANWON chemicals</strong> · 모델명: <strong>HW-2601A (Auto Changeover System Controller)</strong><br/>
+      본 설명서는 <strong>실물 컨트롤러 전면 버튼 조작법</strong>과 <strong>웹 관제 앱([🎛️ HW-2601A 컨트롤러 설정] 탭)</strong> 사용법을 함께 안내합니다.
+    </p>
+  </header>
+
+  <h2>1. 실물 컨트롤러 전면 패널 &amp; 4개 버튼 구조</h2>
+  <div class="panel-box">
+    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; font-weight:800; font-size:0.95rem;">
+      <span>Auto Changeover System Controller</span>
+      <span>Model: HW-2601A · HANWON chemicals</span>
+    </div>
+    <div class="fnd-grid">
+      <div class="fnd-screen">
+        <div class="fnd-label">좌측 FND (메뉴번호)</div>
+        <div class="fnd-val">S-01</div>
+      </div>
+      <div class="fnd-screen">
+        <div class="fnd-label">중앙 FND (보기)</div>
+        <div class="fnd-val">A.b.P</div>
+      </div>
+      <div class="fnd-screen">
+        <div class="fnd-label">우측 FND (설정값)</div>
+        <div class="fnd-val">3</div>
+      </div>
+    </div>
+    <div class="btn-layout">
+      <div style="font-size:0.88rem; max-width:360px;">
+        <strong>전면 4개 버튼 배치도</strong><br/>
+        • 좌측 LED: <code>Run</code>, <code>Ready</code>, <code>Empty</code> / <code>Bar</code>, <code>Psi</code><br/>
+        • 우측 LED: <code>Run</code>, <code>Ready</code>, <code>Empty</code><br/>
+        • <code>S-01 A.b.P 3</code> 표시는 3개의 FND 표시창(메뉴번호 · 보기 · 설정값)을 의미합니다.
+      </div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <div class="hw-btn">Mode</div>
+        <div class="hw-btn">Set</div>
+        <div class="updown-col">
+          <div class="hw-btn" style="height:52px; width:58px;">Up</div>
+          <div class="hw-btn" style="height:52px; width:58px;">Down</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>2. 기본 조작법 및 에러 코드</h2>
+  <div class="card">
+    <ul>
+      <li><strong>수동 강제 정지 / 해제</strong>: <code>Up</code> 버튼과 <code>Down</code> 버튼을 동시에 <strong>2초 이상</strong> 누르면 모든 밸브가 닫힙니다. 다시 2초 이상 누르면 원상 복귀됩니다.</li>
+      <li><strong>알람 소리 끄기</strong>: 알람이 울릴 때 <strong>아무 버튼이나 1회</strong> 누르면 소리가 꺼집니다.</li>
+      <li><strong>메뉴 진입</strong>: <code>Mode</code> 버튼을 <strong>2초 이상</strong> 누릅니다.</li>
+      <li><strong>메뉴 이동</strong>: <code>Mode</code> 버튼을 누르면 좌측 메뉴번호에 점(예: <code>S-01.</code>)이 들어옵니다. 이때 <code>Up</code> / <code>Down</code>으로 메뉴를 이동합니다.</li>
+      <li><strong>설정값 선택 &amp; 변경</strong>: <code>Set</code> 버튼을 누르면 우측 설정값에 점(예: <code>3.</code>)이 들어옵니다. <code>Up</code> / <code>Down</code>으로 값을 변경합니다.</li>
+      <li><strong>설정값 저장</strong>: 값을 바꾼 뒤 <code>Set</code> 버튼을 다시 누르면 우측 창에 <code>0.</code>이 들어오면서 저장됩니다.</li>
+      <li><strong>메뉴 종료</strong>: 메뉴 선택 상태에서 <code>Mode</code> 버튼을 <strong>2초 이상</strong> 누르거나, 10분 동안 아무 조작이 없으면 자동 종료됩니다.</li>
+    </ul>
+
+    <h3>🚨 에러 코드 (E-01 ~ E-04)</h3>
+    <table>
+      <thead><tr><th>코드</th><th>원인 및 점검 사항</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-err">E-01</span></td><td>센서 A 측정치가 2mA 이하 (A측 압력센서 단선 또는 전원/결선 점검)</td></tr>
+        <tr><td><span class="badge badge-err">E-02</span></td><td>센서 B 측정치가 2mA 이하 (B측 압력센서 단선 또는 전원/결선 점검)</td></tr>
+        <tr><td><span class="badge badge-err">E-03</span></td><td>밸브 A 동작 시 전류를 소모하지 않음 (A 밸브 코일/단자대 점검)</td></tr>
+        <tr><td><span class="badge badge-err">E-04</span></td><td>밸브 B 동작 시 전류를 소모하지 않음 (B 밸브 코일/단자대 점검)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>3. 사용자 메뉴 설정표 [S-01 ~ S-20]</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:76px;">메뉴번호</th>
+          <th style="width:140px;">항목명</th>
+          <th style="width:110px;">FND 보기</th>
+          <th style="width:85px;">초기값</th>
+          <th style="width:155px;">설정 가능 범위</th>
+          <th>상세 설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>S-01</code></td><td>밸브 구성</td><td><code>A.b</code> / <code>A</code> / <code>A.P</code> / <code>A.b.P</code></td><td><code>3</code></td><td><span class="badge badge-range">0 ~ 3</span></td><td>0: A+B / 1: A / 2: A+Pou / 3: A+B+Pou</td></tr>
+        <tr><td><code>S-02</code></td><td>가스통 우선순위</td><td><code>A-b</code> / <code>A</code> / <code>b</code></td><td><code>0</code></td><td><span class="badge badge-range">0 ~ 2</span></td><td>0: A·B 중 적은 쪽 열림 / 1: A 우선 / 2: B 우선</td></tr>
+        <tr><td><code>S-03</code></td><td>A 압력 최대값</td><td><code>toP.A</code></td><td><code>160</code></td><td><span class="badge badge-range">20 ~ 300 bar</span></td><td>A측 압력 최대 스케일 설정</td></tr>
+        <tr><td><code>S-04</code></td><td>B 압력 최대값</td><td><code>toP.b</code></td><td><code>160</code></td><td><span class="badge badge-range">20 ~ 300 bar</span></td><td>B측 압력 최대 스케일 설정</td></tr>
+        <tr><td><code>S-05</code></td><td>A 교체 압력값</td><td><code>CHG.A</code></td><td><code>7</code></td><td><span class="badge badge-range">2 ~ 250 bar</span></td><td>A측 압력이 이 값 이하일 때 절체 조건</td></tr>
+        <tr><td><code>S-06</code></td><td>B 교체 압력값</td><td><code>CHG.b</code></td><td><code>7</code></td><td><span class="badge badge-range">2 ~ 250 bar</span></td><td>B측 압력이 이 값 이하일 때 절체 조건</td></tr>
+        <tr><td><code>S-07</code></td><td>Ready 압력값</td><td><code>rEdY</code></td><td><code>3</code></td><td><span class="badge badge-range">1 ~ 250 bar</span></td><td>예비통 ≥ (교체압력 + Ready압력)일 때 절체</td></tr>
+        <tr><td><code>S-08</code></td><td>알람주기 설정</td><td><code>oFF</code>, <code>-01-</code>, <code>-15-</code>, <code>-30-</code>, <code>-60-</code></td><td><code>0</code></td><td><span class="badge badge-range">0 ~ 4</span></td><td>0: 연속 / 1: 1분 / 2: 15분 / 3: 30분 / 4: 60분</td></tr>
+        <tr><td><code>S-09</code></td><td>알람소리 시간</td><td><code>on</code>, <code>S_15</code>, <code>S_30</code>, <code>S_60</code></td><td><code>0</code></td><td><span class="badge badge-range">0 ~ 3</span></td><td>0: 연속 / 1: 15초 / 2: 30초 / 3: 60초</td></tr>
+        <tr><td><code>S-10</code></td><td>단위 표시 설정</td><td><code>PSI</code>, <code>bAr</code>, <code>nPA</code>, <code>PEr</code></td><td><code>1</code></td><td><span class="badge badge-range">0 ~ 3</span></td><td>0: psi / 1: bar / 2: MPa / 3: 퍼센트(%)</td></tr>
+        <tr><td><code>S-11</code></td><td>체인지오버 모드</td><td><code>Auto</code>, <code>AI</code>, <code>duAL</code>, <code>noni</code></td><td><code>0</code></td><td><span class="badge badge-range">0 ~ 3</span></td><td>0: Auto / 1: AI 제어 / 2: A·B 동시 오픈 / 3: 모니터</td></tr>
+        <tr><td><code>S-12</code></td><td>12V 전원 설정</td><td><code>12.01</code> (측정전원)</td><td><code>111</code></td><td><span class="badge badge-range">0 ~ 127</span></td><td>밸브 구동 12V 전원 디지털 설정</td></tr>
+        <tr><td><code>S-13</code></td><td>A 밸브 동작시간</td><td><code>on A</code></td><td><code>5.0</code></td><td><span class="badge badge-range">4.0 ~ 8.0 초</span></td><td>A 밸브 동작 시간 (초 단위)</td></tr>
+        <tr><td><code>S-14</code></td><td>B 밸브 동작시간</td><td><code>on b</code></td><td><code>5.0</code></td><td><span class="badge badge-range">4.0 ~ 8.0 초</span></td><td>B 밸브 동작 시간 (초 단위)</td></tr>
+        <tr><td><code>S-15</code></td><td>교차 지연 시간</td><td><code>CroS</code></td><td><code>0.0</code></td><td><span class="badge badge-range">0.0 ~ 8.0 초</span></td><td>A 밸브가 닫히기 시작한 뒤 B 밸브가 열리는 시간</td></tr>
+        <tr><td><code>S-16</code></td><td>밸브 강제 테스트</td><td><code>tESt</code></td><td><code>oFF</code></td><td><span class="badge badge-range">oFF / on A / on b</span></td><td>oFF: 둘다 닫힘 / on A: A열림 / on b: B열림</td></tr>
+        <tr><td><code>S-17</code></td><td>설정값 저장</td><td><code>SAUE</code></td><td><code>no</code></td><td><span class="badge badge-range">no / YES</span></td><td>S-01 ~ S-15 설정값을 메모리에 저장</td></tr>
+        <tr><td><code>S-18</code></td><td>설정값 불러오기</td><td><code>LOAd</code></td><td><code>no</code></td><td><span class="badge badge-range">no / YES</span></td><td>저장된 S-01 ~ S-15 설정값 불러오기</td></tr>
+        <tr><td><code>S-19</code></td><td>A 압력 0점 설정</td><td><code>0.0</code> (측정값)</td><td><code>0</code></td><td><span class="badge badge-range">-100 ~ 100</span></td><td>A측 센서 영점 보정</td></tr>
+        <tr><td><code>S-20</code></td><td>B 압력 0점 설정</td><td><code>0.0</code> (측정값)</td><td><code>0</code></td><td><span class="badge badge-range">-100 ~ 100</span></td><td>B측 센서 영점 보정</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>4. 시스템 설정 [H-01 ~ H-09]</h2>
+  <div class="card">
+    <ul>
+      <li><strong>진입 방법</strong>: <code>Set</code> 버튼을 <strong>7초 이상</strong> 누릅니다. (※ 현재 에러가 발생한 상태에서는 진입되지 않습니다.)</li>
+      <li><strong>IP 등 4자리 주소 입력</strong>: 메뉴 선택에서 <code>Set</code>을 누른 뒤, <code>Mode</code> 버튼으로 <code>IP 1.</code> ~ <code>IP 4.</code>를 순환 이동하며 <code>Up/Down</code>으로 값을 맞춥니다. 완료 후 <code>Mode</code> 2초 이상 누르면 메뉴 선택으로 나옵니다.</li>
+    </ul>
+    <table>
+      <thead>
+        <tr><th>메뉴번호</th><th>항목명</th><th>FND 보기</th><th>초기값</th><th>범위 / 설명</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>H-01</code></td><td>화면 밝기 조절</td><td><code>brit</code></td><td><code>3</code></td><td>0 ~ 7 단계</td></tr>
+        <tr><td><code>H-02</code></td><td>IP 설정</td><td><code>IP 1.</code> ~ <code>IP 4.</code></td><td><code>192.168.0.200</code></td><td>각 자리 0 ~ 255</td></tr>
+        <tr><td><code>H-03</code></td><td>서브넷 마스크</td><td><code>Sub.1.</code> ~ <code>Sub.4.</code></td><td><code>255.255.255.0</code></td><td>각 자리 0 ~ 255</td></tr>
+        <tr><td><code>H-04</code></td><td>게이트웨이</td><td><code>GAt.1.</code> ~ <code>GAt.4.</code></td><td><code>192.168.0.1</code></td><td>각 자리 0 ~ 255</td></tr>
+        <tr><td><code>H-05</code></td><td>DNS 서버</td><td><code>dnS.1.</code> ~ <code>dnS.4.</code></td><td><code>168.126.63.1</code></td><td>각 자리 0 ~ 255</td></tr>
+        <tr><td><code>H-06</code></td><td>MAC 어드레스</td><td><code>nAc.1.</code> ~ <code>nAc.6.</code></td><td><code>00:08:dC:12:34:56</code></td><td>각 자리 00 ~ FF (16진수)</td></tr>
+        <tr><td><code>H-07</code></td><td>DHCP 설정</td><td><code>dhcP</code></td><td><code>no</code></td><td>no: 사용안함 / YES: 사용</td></tr>
+        <tr><td><code>H-08</code></td><td>S/W 업데이트</td><td><code>SoFt</code></td><td><code>dnLd</code></td><td>펌웨어 업데이트 (미정)</td></tr>
+        <tr><td><code>H-09</code></td><td>공장 초기화</td><td><code>FACt</code></td><td><code>no</code></td><td>YES 선택 시 모든 설정값 초기화</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>5. 웹 관제 앱에서 컨트롤러 설정하는 방법</h2>
+  <div class="card">
+    <ol>
+      <li><strong>관리자 잠금 해제</strong>: 앱 상단 우측의 <strong>[🔒 잠금]</strong> 버튼을 눌러 관리자 PIN(기본 <code>1234</code>)을 입력해 잠금을 해제합니다.</li>
+      <li><strong>컨트롤러 설정 탭 이동</strong>: 상단에서 <strong>[🎛️ 관제(제어·시험) 시스템]</strong> → <strong>[🎛️ HW-2601A 컨트롤러 설정]</strong> 탭을 클릭합니다.</li>
+      <li><strong>뱅크 선택</strong>: 1번 ~ 11번 뱅크 중 설정을 변경할 뱅크(컨트롤러)를 선택합니다.</li>
+      <li><strong>가상 FND 패널 또는 카드에서 설정 변경</strong>:
+        <ul>
+          <li>상단의 <strong>가상 HW-2601A 전면 패널</strong>에서 실물과 똑같이 <code>Mode</code> / <code>Set</code> / <code>Up</code> / <code>Down</code> 버튼을 눌러 조작해 볼 수 있습니다.</li>
+          <li>아래 카드 목록에서 <code>S-03</code>(A 압력 최대값: 초기 <code>160 bar</code>, 설정 범위 <code>20 ~ 300 bar</code>)처럼 숫자를 입력하고 <strong>[적용]</strong>(또는 11개 전체에 똑같이 넣으려면 <strong>[전체적용]</strong>)을 누릅니다.</li>
+          <li>허용 범위를 벗어난 숫자를 입력하면 빨간색 경고 메시지가 표시되며, 적용 시 자동으로 안전 범위 내로 보정됩니다.</li>
+        </ul>
+      </li>
+      <li><strong>대시보드 즉시 반영</strong>: <code>S-03/04</code>(최대압력), <code>S-05/06</code>(교체압력), <code>S-07</code>(Ready압력), <code>S-10</code>(단위), <code>S-11</code>(모드), <code>S-13/14</code>(밸브동작시간 4.0~8.0초)을 변경하면 앱의 실린더 게이지와 자동절체 기준에 즉시 반영되고 서버 DB에 자동 저장됩니다.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

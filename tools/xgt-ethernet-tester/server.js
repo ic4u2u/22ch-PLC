@@ -8,24 +8,28 @@ const net = require("net");
 const os = require("os");
 const {
   CMD,
+  DATA_TYPE,
   toHex,
   parseXgtFrame,
   buildWordReadResponse,
+  buildContinuousReadResponse,
   buildWordWriteResponse,
 } = require("./xgt-protocol");
 
 const PORT = Number(process.env.XGT_PORT || 2004);
 const HOST = "0.0.0.0";
 
-// 가상 PLC 워드 메모리 (%MW0, %MW100 등) 초기 샘플 데이터 (압력 × 10 단위)
+// 가상 PLC 워드 메모리 (%MW0, %MW100~121 압력×10, %MW200~221 밸브상태) 초기 샘플 데이터
 const plcMemory = new Map([
-  ["%MW0", 486],    // PDF 예시 번지 (%MW0 -> 48.6 Bar)
-  ["%MW100", 486],  // 1번 고순도메탄 A (48.6 Bar)
-  ["%MW101", 1130], // 2번 일반메탄 A (113.0 Bar)
-  ["%MW102", 428],  // 3번 고순도수소 A (42.8 Bar)
-  ["%MW103", 310],  // 4번 혼합가스 A (31.0 Bar)
-  ["%MW104", 185],  // 5번 아세틸렌 A (18.5 Bar)
+  ["%MW0", 486],
 ]);
+for (let i = 0; i < 22; i++) {
+  const isAcetylene = i === 8 || i === 9; // CH09, CH10 아세틸렌
+  const isPrimaryA = i % 2 === 0;
+  const pVal = isAcetylene ? (isPrimaryA ? 210 : 240) : (isPrimaryA ? 1200 : 1480);
+  plcMemory.set(`%MW${100 + i}`, pVal);
+  plcMemory.set(`%MW${200 + i}`, isPrimaryA ? 0 : 1); // 0: OPEN, 1: SHUTOFF
+}
 
 /** 현재 시각 문자열 (HH:MM:SS.mmm) */
 function nowStr() {
@@ -60,6 +64,35 @@ const server = net.createServer((socket) => {
       // 1) LSIS-XGT 읽기 요청 처리
       if (parsed.command === CMD.READ_REQ) {
         const varName = parsed.variableName || "%MW0";
+        if (parsed.dataType === DATA_TYPE.CONTINUOUS && parsed.byteCount > 0) {
+          const byteCount = Math.min(256, parsed.byteCount);
+          const mbMatch = /^%MB(\d+)$/i.exec(varName.trim());
+          const mwMatch = /^%MW(\d+)$/i.exec(varName.trim());
+          const startWord = mbMatch
+            ? Math.floor(Number(mbMatch[1]) / 2)
+            : mwMatch
+            ? Number(mwMatch[1])
+            : 0;
+          const wordCount = Math.ceil(byteCount / 2);
+          const dataBuf = Buffer.alloc(byteCount, 0);
+          for (let w = 0; w < wordCount; w++) {
+            const key = `%MW${startWord + w}`;
+            const val = plcMemory.has(key) ? plcMemory.get(key) : 0;
+            if (w * 2 + 1 < byteCount) {
+              dataBuf.writeUInt16LE(val & 0xffff, w * 2);
+            }
+          }
+          const res = buildContinuousReadResponse(parsed.invokeId, dataBuf, 0x0000);
+          socket.write(res);
+          console.log(
+            `   해석: [XGT 연속읽기] ${varName} (${byteCount}B / ${wordCount}W -> %MW${startWord}~%MW${
+              startWord + wordCount - 1
+            })`
+          );
+          console.log(`[${nowStr()}] 📤 TX (${res.length}B): ${toHex(res)}`);
+          return;
+        }
+
         const val = plcMemory.has(varName) ? plcMemory.get(varName) : 0;
         const res = buildWordReadResponse(parsed.invokeId, val, 0x0000);
         socket.write(res);

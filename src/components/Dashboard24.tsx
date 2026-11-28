@@ -51,11 +51,14 @@ import WallboardView from "./dashboard/WallboardView";
 import HistoryReportTab from "./dashboard/HistoryReportTab";
 import BottomLogsSection from "./dashboard/BottomLogsSection";
 import PlcDumpTab from "./dashboard/PlcDumpTab";
+import ControllerSettingsTab from "./dashboard/ControllerSettingsTab";
+import type { ControllerParamValues } from "./dashboard/controllerMenuSpec";
 
 type MainTab =
   | "WALLBOARD"
   | "MANIFOLD"
   | "GRID"
+  | "CONTROLLER"
   | "LEAK_TEST"
   | "HISTORY_REPORT"
   | "PLC_DUMP"
@@ -115,6 +118,9 @@ export default function Dashboard24() {
     useState<HistoryLogItem[]>(INITIAL_HISTORY_LOGS);
   const [wsConnected, setWsConnected] = useState(false);
   const [virtualDataEnabled, setVirtualDataEnabled] = useState(true);
+  const [controllerConfigs, setControllerConfigs] = useState<
+    Record<string, ControllerParamValues>
+  >({});
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -126,6 +132,13 @@ export default function Dashboard24() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const savedCtrl = window.localStorage.getItem("acsc_controller_configs");
+      if (savedCtrl) {
+        const parsed = JSON.parse(savedCtrl);
+        if (parsed && typeof parsed === "object") {
+          setControllerConfigs(parsed);
+        }
+      }
       const saved = window.localStorage.getItem("acsc_virtual_data_enabled");
       if (saved === "false") {
         setVirtualDataEnabled(false);
@@ -276,6 +289,9 @@ export default function Dashboard24() {
               if (p.settings?.isDefaultPin !== undefined) {
                 setIsDefaultPin(Boolean(p.settings.isDefaultPin));
               }
+              if (p.settings?.controller_configs && typeof p.settings.controller_configs === "object") {
+                setControllerConfigs(p.settings.controller_configs);
+              }
             } else if (msg.type === "AUTH_ERROR") {
               authTokenRef.current = "";
               setIsUnlocked(false);
@@ -318,6 +334,9 @@ export default function Dashboard24() {
                 setFaSavedAt(
                   msg.payload.fa_preset.savedAt.slice(0, 19).replace("T", " ")
                 );
+              }
+              if (msg.payload.controller_configs && typeof msg.payload.controller_configs === "object") {
+                setControllerConfigs(msg.payload.controller_configs);
               }
               fetchAllLogs();
             } else if (msg.type === "LEAK_TEST_SAVED") {
@@ -867,6 +886,7 @@ export default function Dashboard24() {
                   {[
                     { id: "MANIFOLD", label: "🔀 A/B 자동절체 제어" },
                     { id: "GRID", label: "🟢 22실린더 상세 그리드" },
+                    { id: "CONTROLLER", label: "🎛️ HW-2601A 컨트롤러 설정" },
                     { id: "LEAK_TEST", label: "🧪 기밀/누출 시험" },
                     { id: "HISTORY_REPORT", label: "⏪ 과거 이력 & 📄 PDF 보고서" },
                     { id: "PLC_DUMP", label: "📡 TX/RX 덤프 & 22워드" },
@@ -919,6 +939,163 @@ export default function Dashboard24() {
                     actor: "ADMIN",
                   });
                   showToast(`✅ ${detail}`);
+                }}
+              />
+            )}
+
+            {activeTab === "CONTROLLER" && (
+              <ControllerSettingsTab
+                banks={banks}
+                channels={channels}
+                unit={unit}
+                isUnlocked={isUnlocked}
+                controllerConfigs={controllerConfigs}
+                onChangeUnit={(u) => setUnit(u)}
+                onRequestPin={() => setPinModalOpen(true)}
+                onUpdateControllerConfig={(
+                  bankId,
+                  nextParams,
+                  changedCode,
+                  changedValue,
+                  applyAllBanks
+                ) => {
+                  const targetBankIds = applyAllBanks
+                    ? banks.map((b) => b.id)
+                    : [bankId];
+
+                  setControllerConfigs((prev) => {
+                    const nextMap = { ...prev };
+                    targetBankIds.forEach((id) => {
+                      nextMap[id] = { ...(prev[id] || {}), [changedCode]: changedValue };
+                      if (!applyAllBanks && id === bankId) {
+                        nextMap[id] = nextParams;
+                      }
+                    });
+                    try {
+                      window.localStorage.setItem(
+                        "acsc_controller_configs",
+                        JSON.stringify(nextMap)
+                      );
+                    } catch {}
+                    return nextMap;
+                  });
+
+                  // S-03~S-14 핵심 운전 파라미터를 앱의 채널 및 뱅크 상태에 즉시 반영
+                  const targetBanks = banks.filter((b) =>
+                    targetBankIds.includes(b.id)
+                  );
+                  targetBanks.forEach((tb) => {
+                    if (changedCode === "S-03") {
+                      const maxVal = Number(changedValue);
+                      setChannels((prev) =>
+                        prev.map((c) =>
+                          c.id === tb.chA ? { ...c, maxBar: maxVal } : c
+                        )
+                      );
+                      sendWsCommand("UPDATE_CHANNEL_CONFIG", {
+                        id: tb.chA,
+                        updates: { maxBar: maxVal },
+                        detail: `[HW-2601A ${changedCode}] A 압력 최대값 변경 (${maxVal} bar)`,
+                        actionType: "CONTROLLER_S03",
+                      });
+                    } else if (changedCode === "S-04") {
+                      const maxVal = Number(changedValue);
+                      setChannels((prev) =>
+                        prev.map((c) =>
+                          c.id === tb.chB ? { ...c, maxBar: maxVal } : c
+                        )
+                      );
+                      sendWsCommand("UPDATE_CHANNEL_CONFIG", {
+                        id: tb.chB,
+                        updates: { maxBar: maxVal },
+                        detail: `[HW-2601A ${changedCode}] B 압력 최대값 변경 (${maxVal} bar)`,
+                        actionType: "CONTROLLER_S04",
+                      });
+                    } else if (changedCode === "S-05") {
+                      const chgVal = Number(changedValue);
+                      setChannels((prev) =>
+                        prev.map((c) =>
+                          c.id === tb.chA ? { ...c, dangerBar: chgVal } : c
+                        )
+                      );
+                      setBanks((prev) =>
+                        prev.map((b) =>
+                          b.id === tb.id ? { ...b, switchPressureBar: chgVal } : b
+                        )
+                      );
+                      sendWsCommand("UPDATE_CHANNEL_CONFIG", {
+                        id: tb.chA,
+                        updates: { dangerBar: chgVal },
+                        detail: `[HW-2601A ${changedCode}] A 교체 압력값 변경 (${chgVal} bar)`,
+                        actionType: "CONTROLLER_S05",
+                      });
+                    } else if (changedCode === "S-06") {
+                      const chgVal = Number(changedValue);
+                      setChannels((prev) =>
+                        prev.map((c) =>
+                          c.id === tb.chB ? { ...c, dangerBar: chgVal } : c
+                        )
+                      );
+                      sendWsCommand("UPDATE_CHANNEL_CONFIG", {
+                        id: tb.chB,
+                        updates: { dangerBar: chgVal },
+                        detail: `[HW-2601A ${changedCode}] B 교체 압력값 변경 (${chgVal} bar)`,
+                        actionType: "CONTROLLER_S06",
+                      });
+                    } else if (changedCode === "S-07") {
+                      const rdyVal = Number(changedValue);
+                      setBanks((prev) =>
+                        prev.map((b) =>
+                          b.id === tb.id ? { ...b, hysteresisBar: rdyVal } : b
+                        )
+                      );
+                      sendWsCommand("UPDATE_BANK_CONFIG", {
+                        id: tb.id,
+                        updates: { hysteresisBar: rdyVal },
+                        detail: `[HW-2601A ${changedCode}] Ready 압력값 변경 (${rdyVal} bar)`,
+                      });
+                    } else if (changedCode === "S-11") {
+                      const modeVal = Number(changedValue) as 0 | 1 | 2 | 3;
+                      setBanks((prev) =>
+                        prev.map((b) =>
+                          b.id === tb.id ? { ...b, mode: modeVal } : b
+                        )
+                      );
+                      sendWsCommand("UPDATE_BANK_CONFIG", {
+                        id: tb.id,
+                        updates: { mode: modeVal },
+                        detail: `[HW-2601A ${changedCode}] 체인지오버 모드 변경 (${modeVal})`,
+                      });
+                    } else if (changedCode === "S-13" || changedCode === "S-14") {
+                      const secVal = Number(changedValue);
+                      setBanks((prev) =>
+                        prev.map((b) =>
+                          b.id === tb.id ? { ...b, runTimeSec: secVal } : b
+                        )
+                      );
+                      sendWsCommand("UPDATE_BANK_CONFIG", {
+                        id: tb.id,
+                        updates: { runTimeSec: secVal },
+                        detail: `[HW-2601A ${changedCode}] 밸브 동작 시간 변경 (${secVal}초)`,
+                      });
+                    }
+                  });
+
+                  sendWsCommand("UPDATE_CONTROLLER_CONFIG", {
+                    bankIds: targetBankIds,
+                    changedCode,
+                    changedValue,
+                    params: nextParams,
+                    detail: `${
+                      applyAllBanks ? "전체 11뱅크" : bankId
+                    } HW-2601A [${changedCode}] 설정 변경 → ${changedValue}`,
+                  });
+
+                  showToast(
+                    `🎛️ ${
+                      applyAllBanks ? "전체 11뱅크" : bankId
+                    } [${changedCode}] 설정이 ${changedValue}(으)로 적용되었습니다.`
+                  );
                 }}
               />
             )}
@@ -995,6 +1172,14 @@ export default function Dashboard24() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <a
+                      href="/controller-manual.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-[38px] items-center rounded-xl bg-amber-400 px-3.5 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-300 transition-all"
+                    >
+                      🎛️ HW-2601A 컨트롤러 &amp; 앱 사용자 설명서
+                    </a>
                     <a
                       href="https://github.com/ic4u2u/22ch-PLC/archive/refs/heads/main.zip"
                       target="_blank"

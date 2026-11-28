@@ -49,7 +49,22 @@ export default function BankManifoldTab({
   const [zoneFilter, setZoneFilter] = useState<"ALL" | "CABINET" | "AUTO_CHANGE">(
     "ALL"
   );
+  const [manualModalOpen, setManualModalOpen] = useState(false);
+  const [manualTab, setManualTab] = useState<"RAW" | "GUIDE">("RAW");
+  const [rawManualText, setRawManualText] = useState<string>("");
   const unitLabel = getUnitLabel(unit);
+
+  const openManualModal = async () => {
+    setManualModalOpen(true);
+    if (!rawManualText) {
+      try {
+        const res = await fetch("/manual.txt");
+        if (res.ok) {
+          setRawManualText(await res.text());
+        }
+      } catch {}
+    }
+  };
 
   const cabinetBanks = banks.filter((b) => b.bankNumber <= 5);
   const autoChangeBanks = banks.filter((b) => b.bankNumber >= 6);
@@ -229,12 +244,12 @@ export default function BankManifoldTab({
         {/* 0.1 단위 정밀 파라미터 조절 */}
         <div className="mt-3 space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400 whitespace-nowrap">⏱️ 절체유지시간 (4.0~6.0초)</span>
+            <span className="text-slate-400 whitespace-nowrap">⏱️ 절체유지시간 (4.0~8.0초)</span>
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() =>
-                  handleParamAdjust(bank, "runTimeSec", -0.1, 4.0, 6.0, "절체유지시간")
+                  handleParamAdjust(bank, "runTimeSec", -0.1, 4.0, 8.0, "절체유지시간")
                 }
                 className="h-7 w-8 rounded bg-slate-800 font-bold hover:bg-slate-700"
               >
@@ -246,7 +261,7 @@ export default function BankManifoldTab({
               <button
                 type="button"
                 onClick={() =>
-                  handleParamAdjust(bank, "runTimeSec", +0.1, 4.0, 6.0, "절체유지시간")
+                  handleParamAdjust(bank, "runTimeSec", +0.1, 4.0, 8.0, "절체유지시간")
                 }
                 className="h-7 w-8 rounded bg-slate-800 font-bold hover:bg-slate-700"
               >
@@ -372,6 +387,15 @@ export default function BankManifoldTab({
         >
           🔄 제2·3구역: 오토체인지 6뱅크 (6~11번 뱅크 · 12실린더)
         </button>
+
+        {/* 우측: 오프라인 매뉴얼 파일 보기 버튼 */}
+        <button
+          type="button"
+          onClick={openManualModal}
+          className="ml-auto min-h-[40px] rounded-xl border border-amber-400/60 bg-amber-400 px-4 py-1.5 text-xs sm:text-sm font-black text-slate-950 shadow hover:bg-amber-300 transition-all whitespace-nowrap"
+        >
+          📘 매뉴얼 파일
+        </button>
       </div>
 
       {/* 제1구역: 가스캐비닛 5뱅크 (10실린더) */}
@@ -406,6 +430,69 @@ export default function BankManifoldTab({
             {autoChangeBanks.map(renderBankCard)}
           </div>
         </section>
+      )}
+
+      {/* 오프라인 매뉴얼 파일 뷰어 모달 (인터넷 없이 로컬에서 즉시 열람) */}
+      {manualModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 p-4">
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-amber-300">
+                  📘 HW-2601A 컨트롤러 매뉴얼 파일 (오프라인 로컬 뷰어)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  인터넷 연결 없이도 매뉴얼.txt 원문과 통합 사용자 설명서를 바로 확인할 수 있습니다.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setManualTab("RAW")}
+                  className={`min-h-[36px] rounded-lg px-3 text-xs font-extrabold ${
+                    manualTab === "RAW"
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  📄 매뉴얼.txt 원문
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setManualTab("GUIDE")}
+                  className={`min-h-[36px] rounded-lg px-3 text-xs font-extrabold ${
+                    manualTab === "GUIDE"
+                      ? "bg-amber-400 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  🎛️ 그림·표 통합 설명서
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setManualModalOpen(false)}
+                  className="min-h-[36px] rounded-lg bg-slate-800 px-3 text-xs font-bold text-slate-200 hover:bg-slate-700"
+                >
+                  ✕ 닫기
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {manualTab === "RAW" ? (
+                <pre className="whitespace-pre-wrap rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs sm:text-sm leading-relaxed text-slate-200">
+                  {rawManualText || "매뉴얼 파일을 불러오는 중..."}
+                </pre>
+              ) : (
+                <iframe
+                  src="/controller-manual.html"
+                  title="HW-2601A 통합 사용자 설명서"
+                  className="h-[68vh] w-full rounded-xl border border-slate-800 bg-slate-950"
+                />
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
