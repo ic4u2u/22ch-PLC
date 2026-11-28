@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>22채널 특수가스 관제 시스템 — 오늘 저녁 업그레이드 완료 보고서</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --card: #151e32;
+      --border: #2a3754;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --amber: #fbbf24;
+      --emerald: #34d399;
+      --rose: #fb7185;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Malgun Gothic", -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 24px 16px 64px;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, #0c4a6e, #1e1b4b);
+      border: 1px solid #0284c7;
+      border-radius: 18px;
+      padding: 26px;
+      margin-bottom: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.55rem; color: #7dd3fc; }
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 1.2rem;
+      color: var(--amber);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .b-cyan { background: rgba(56,189,248,0.18); color: var(--cyan); border: 1px solid rgba(56,189,248,0.4); }
+    .b-amber { background: rgba(251,191,36,0.18); color: var(--amber); border: 1px solid rgba(251,191,36,0.4); }
+    .b-green { background: rgba(52,211,153,0.18); color: var(--emerald); border: 1px solid rgba(52,211,153,0.4); }
+    .b-rose { background: rgba(251,113,133,0.18); color: var(--rose); border: 1px solid rgba(251,113,133,0.4); }
+    h3 { margin: 4px 0 8px; font-size: 1.05rem; color: #fff; }
+    p, li { font-size: 0.93rem; color: #cbd5e1; margin: 4px 0; }
+    ul, ol { padding-left: 20px; margin: 8px 0; }
+    code, pre {
+      background: #020617;
+      color: var(--amber);
+      border-radius: 6px;
+      font-family: "Consolas", monospace;
+    }
+    code { padding: 2px 6px; font-size: 0.88rem; }
+    pre { padding: 12px 14px; overflow-x: auto; border: 1px solid var(--border); font-size: 0.86rem; color: #e2e8f0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+    }
+    th { background: #0f172a; color: var(--cyan); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🚀 22채널 특수가스 관제 시스템 — 오늘 저녁 업그레이드 완료 보고서</h1>
+    <p style="margin:0; color:#e2e8f0;">
+      적용 일시: <strong>2026-11-28 (야간)</strong> · 대상 장비: <strong>HANWON HW-2601A &amp; LS XGT PLC</strong><br/>
+      프로덕션 빌드(<code>npm run build</code>) 및 GitHub(<code>origin/main</code>) 배포 검증 완료
+    </p>
+  </header>
+
+  <h2>1. 핵심 업그레이드 5대 요약</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="badge b-cyan">업그레이드 ①</span>
+      <h3>🎛️ HW-2601A 컨트롤러 설정 &amp; 가상 패널</h3>
+      <p><strong>메뉴얼.txt</strong>의 <code>S-01~S-20</code>(사용자), <code>H-01~H-09</code>(시스템) 설정과 허용 범위를 웹 앱에 그대로 탑재했습니다.</p>
+      <ul>
+        <li>실물과 동일한 <strong>3개 FND 표시창</strong>(메뉴번호·보기·설정값) + <strong>4개 버튼</strong>(Mode·Set·Up·Down) 시뮬레이터 제공</li>
+        <li>예: <code>S-03</code> A압력 최대값 초기 <code>160 bar</code> / 설정 <code>20 ~ 300 bar</code> 범위 자동 검증</li>
+        <li>밸브 동작시간 <code>4.0 ~ 8.0초</code>, 교체압력 <code>2 ~ 250 bar</code> 즉시 대시보드 반영</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="badge b-amber">업그레이드 ②</span>
+      <h3>📘 A/B 자동절체 제어 우측 [매뉴얼 파일] 버튼</h3>
+      <p><strong>관제시스템 → A/B 자동절체 제어</strong> 상단 바 맨 오른쪽에 <code>📘 매뉴얼 파일</code> 버튼을 추가했습니다.</p>
+      <ul>
+        <li>클릭 즉시 <strong>인터넷 없이도</strong> <code>매뉴얼.txt</code> 원문과 그림·표 통합 설명서를 바로 열람 가능</li>
+        <li><code>public/manual.txt</code> 및 <code>public/controller-manual.html</code> 로컬 탑재</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="badge b-green">업그레이드 ③</span>
+      <h3>⏳ PLC 미연결 시 11개 뱅크 (초기화 중) 표시</h3>
+      <p>SW 처음 구동 시 PLC와 통신이 연결되기 전까지 거짓 '정상' 표시 대신 명확한 대기 상태를 표시합니다.</p>
+      <ul>
+        <li><strong>간편모니터링(와이지원 뷰)</strong>: 11개 뱅크 카드 하단 배지 → <code>⏳ 초기화 중</code></li>
+        <li><strong>기본 월보드 뷰</strong>: 상단/하단 상태 배너 → <code>⏳ 초기화 중 (PLC 연결 대기)</code></li>
+        <li>PLC 연결 즉시 실제 상태(<code>✅ 정상</code>, <code>⚠️ 주의</code> 등)로 자동 전환</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="badge b-rose">업그레이드 ④</span>
+      <h3>📡 XGT 가상 PLC 22워드(76B) 연속 응답 지원</h3>
+      <p>가상 PLC(<code>tools/xgt-ethernet-tester</code>)가 1워드(34B)만 응답해 <code>0.0 bar</code>로 나오던 문제를 해결했습니다.</p>
+      <ul>
+        <li><code>%MB200</code>(압력 22W), <code>%MB400</code>(밸브 22W) 연속 읽기(<code>0x0014</code>) 시 <strong>76 Bytes 정상 응답</strong></li>
+        <li><code>Word 1 ~ Word 22</code> 실제 압력/밸브 상태 즉시 수신 확인 가능</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="badge b-cyan">업그레이드 ⑤</span>
+      <h3>💾 오프라인 100% 동작 &amp; USB 포터블 호환</h3>
+      <p>모든 매뉴얼·컨트롤러 설정·가상 PLC 기능이 외부 인터넷 없이 로컬 및 USB 포터블 환경에서 동작합니다.</p>
+      <ul>
+        <li><code>0_오프라인_USB포터블_패키지_만들기.bat</code> 실행 후 USB에 복사하면 현장 PC 무설치 실행</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. 미니PC(800G4)에서 최신 코드 내려받는 방법</h2>
+  <div class="card">
+    <p>⚠️ <code>C:\Users\800G4&gt;</code> 기본 폴더에서 <code>git pull</code>을 치면 <code>not a git repository</code> 오류가 납니다. 반드시 <strong>프로젝트 폴더로 이동</strong>하거나 아래처럼 새로 받으세요.</p>
+    <pre>cd C:\Users\800G4\Desktop
+git clone https://github.com/ic4u2u/22ch-PLC.git 22ch-PLC-new
+cd 22ch-PLC-new
+npm install
+npm run build</pre>
+    <p style="margin-top:8px;">이미 <code>git clone</code>으로 받아둔 폴더가 있다면 그 폴더 안으로 이동한 뒤 아래 명령어를 실행하세요:</p>
+    <pre>git pull origin main
+npm run build</pre>
+  </div>
+
+  <h2>3. 변경된 주요 파일 목록</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>구분</th><th>파일 경로</th><th>주요 변경 내용</th></tr></thead>
+      <tbody>
+        <tr><td>컨트롤러 규격</td><td><code>src/components/dashboard/controllerMenuSpec.ts</code></td><td>S-01~S-20, H-01~H-09 초기값·허용범위·에러코드 정의</td></tr>
+        <tr><td>컨트롤러 UI</td><td><code>src/components/dashboard/ControllerSettingsTab.tsx</code></td><td>가상 3-FND/4버튼 시뮬레이터 및 11뱅크 설정 패널</td></tr>
+        <tr><td>매뉴얼 버튼</td><td><code>src/components/dashboard/BankManifoldTab.tsx</code></td><td>우측 [매뉴얼 파일] 버튼 및 오프라인 모달 뷰어</td></tr>
+        <tr><td>초기화 표시</td><td><code>src/components/dashboard/SimpleMonitorView.tsx</code><br/><code>src/components/dashboard/WallboardView.tsx</code></td><td>PLC 미연결 시 11뱅크 (초기화 중) 상태 표시</td></tr>
+        <tr><td>서버 동기화</td><td><code>server/plc-ws-bridge.js</code></td><td>컨트롤러 설정 DB 저장 및 실시간 브로드캐스트</td></tr>
+        <tr><td>가상 PLC</td><td><code>tools/xgt-ethernet-tester/server.js</code><br/><code>tools/xgt-ethernet-tester/xgt-protocol.js</code></td><td>XGT 연속읽기(0x0014) 22워드 76B 응답 구현</td></tr>
+        <tr><td>오프라인 문서</td><td><code>public/manual.txt</code><br/><code>public/controller-manual.html</code></td><td>원본 매뉴얼 및 그림·표 통합 사용자 설명서</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>
